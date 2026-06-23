@@ -17,6 +17,7 @@ from app.services.events import (
     get_upcoming_events,
     register_user,
 )
+from app.services.admin_notifications import notify_admins_registration_change
 from app.utils.calendar import (
     build_google_calendar_url,
     build_outlook_calendar_url,
@@ -93,6 +94,7 @@ async def register_for_event(
         raise
 
     date_str = format_event_date(event.date, event.time)
+    await notify_admins_registration_change(user, event, reg_count, registered=True)
     return RegistrationResponse(
         message=f"Вы зарегистрированы на {event.name} на {date_str}",
         registration_count=reg_count,
@@ -113,6 +115,7 @@ async def cancel_event_registration(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Регистрация не найдена")
         raise
 
+    await notify_admins_registration_change(user, event, reg_count, registered=False)
     return RegistrationResponse(
         message=f"Вы отменили регистрацию на {event.name}",
         registration_count=reg_count,
