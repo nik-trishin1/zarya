@@ -43,11 +43,17 @@ def is_admin(telegram_id: int) -> bool:
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
-    await message.answer(
+    settings = get_settings()
+    text = (
         "Привет! 🌅 Добро пожаловать в zarya — платформу для организации встреч с друзьями.\n\n"
-        "Нажми кнопку ниже, чтобы открыть приложение и посмотреть предстоящие события.",
-        reply_markup=open_app_keyboard(),
+        "Нажми кнопку ниже, чтобы открыть приложение и посмотреть предстоящие события."
     )
+    if not settings.webapp_url.strip().lower().startswith("https://"):
+        text += (
+            "\n\n⚠️ Администратору: задайте `WEBAPP_URL` на Railway "
+            "(публичный HTTPS-URL frontend, не `.internal` и не localhost)."
+        )
+    await message.answer(text, reply_markup=open_app_keyboard())
 
 
 @router.message(Command("myid"))
@@ -520,4 +526,5 @@ async def run_bot():
 
     bot = Bot(token=settings.bot_token.strip())
     dp = create_dispatcher()
+    logger.info("Telegram bot polling started (webapp_url=%s)", settings.webapp_url)
     await dp.start_polling(bot)

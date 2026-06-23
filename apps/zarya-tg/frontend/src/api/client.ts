@@ -19,9 +19,8 @@ export interface RegistrationResponse {
 function resolveApiBase(): string {
   const envUrl = import.meta.env.VITE_API_URL?.trim();
   if (envUrl) return envUrl;
-  // In dev, use same origin — Vite proxies /api to localhost:8000
-  if (import.meta.env.DEV) return "";
-  return "http://localhost:8000";
+  // Same origin: dev uses Vite proxy, production uses nginx proxy to backend
+  return "";
 }
 
 const API_BASE = resolveApiBase();
@@ -62,8 +61,21 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   }
 
   if (!response.ok) {
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      throw new Error(
+        "API вернул неверный ответ. Проверьте API_UPSTREAM на frontend (URL backend) и redeploy.",
+      );
+    }
     const error = await response.json().catch(() => ({ detail: "Ошибка сервера" }));
     throw new Error(parseErrorDetail(error.detail));
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      "API вернул неверный ответ. Проверьте API_UPSTREAM на frontend (URL backend) и redeploy.",
+    );
   }
 
   if (response.status === 204) {

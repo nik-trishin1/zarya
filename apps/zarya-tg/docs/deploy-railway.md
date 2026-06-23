@@ -76,9 +76,18 @@ PostgreSQL is added as a **Database** template (no GitHub build).
 2. **Settings:**
    - **Root Directory:** `apps/zarya-tg/frontend`
    - **Builder:** `Dockerfile`
-3. **Variables:** `VITE_API_URL` = backend URL from Step 2 (**before** build)
-4. **Networking** → **Generate Domain** → copy frontend URL
+3. **Variables:**
+
+   | Variable | Value |
+   |----------|--------|
+   | `API_UPSTREAM` | backend **public** URL from Step 2 (e.g. `https://zarya-api-production.up.railway.app`) |
+
+   Do **not** use `.railway.internal` URLs. Do **not** paste the frontend URL here — only the backend.
+
+4. **Networking** → **Generate Domain** → copy frontend URL (port **80**)
 5. **Deploy** → open frontend URL in browser (zarya UI should load)
+
+`VITE_API_URL` is optional — leave empty; nginx proxies `/api` to `API_UPSTREAM` at runtime.
 
 ### Step 4 — Link backend and frontend
 
@@ -95,6 +104,24 @@ PostgreSQL is added as a **Database** template (no GitHub build).
 4. `/admin` → inline buttons **Создать событие** / **Управлять событиями**
 
 ### Step 6 — Verify
+
+#### 1. Проверка backend (health)
+
+1. Откройте [railway.app](https://railway.app) → ваш проект
+2. Кликните сервис **backend** (у вас может называться `zarya`)
+3. Вкладка **Networking** → скопируйте **Public URL** (заканчивается на `.up.railway.app`)
+4. Откройте **Safari или Chrome**
+5. В адресную строку вставьте скопированный URL и **добавьте в конец** `/health`
+
+   Пример: если URL `https://zarya-production-xxxx.up.railway.app`, откройте:
+
+   `https://zarya-production-xxxx.up.railway.app/health`
+
+6. Нажмите Enter
+
+**Ожидаемый результат:** на белой странице текст `{"status":"ok"}`
+
+Если видите ошибку 502/404 или HTML-страницу — backend не запущен или неверный URL. Смотрите **Deployments → View logs**.
 
 | Check | Expected |
 |-------|----------|
@@ -140,9 +167,32 @@ Stop local backend using the same `BOT_TOKEN` — only one instance may poll Tel
 
 Buttons are **inline**, below the message text (not a BotFather command menu).
 
-### Mini App empty
+### Mini App empty / `Unexpected token '<'` / «is not valid JSON»
 
-Check `WEBAPP_URL`, `VITE_API_URL`, `CORS_ORIGINS`; ensure `DEV_MODE=false` on production.
+Браузер запрашивает `/api/events`, а вместо JSON приходит HTML (`<!doctype...`). Значит frontend не проксирует запросы на backend.
+
+1. **Frontend** → **Variables** → `API_UPSTREAM` = **публичный** URL backend (`.up.railway.app`, без `/` в конце)
+2. Убедитесь, что в `API_UPSTREAM` **не** frontend URL и **не** `.railway.internal`
+3. **Redeploy** frontend (после изменения переменной)
+4. Откройте frontend URL в браузере — должен загрузиться интерфейс zarya без ошибки JSON
+
+Также проверьте на **backend**: `WEBAPP_URL` = frontend URL, `CORS_ORIGINS` включает frontend URL.
+
+### `/start` — нет ответа / нет кнопок
+
+**Важно:** у zarya **нет** меню команд внизу (как у `/help`). Кнопки — **под текстом сообщения** (inline).
+
+1. Отправьте `/myid` — если **нет ответа вообще**, бот не работает:
+   - **Backend** → **Variables** → `BOT_TOKEN` задан (формат `123456789:AAH...`)
+   - Остановите локальный `./scripts/dev-local.sh` — один токен = один процесс
+   - **Deployments → View logs** → ищите `Telegram bot polling started`
+2. Если `/myid` отвечает, а `/start` нет — redeploy backend с последним `main`
+3. `WEBAPP_URL` на backend = **публичный HTTPS** frontend (не localhost, не `.internal`)
+4. Кнопка **внизу экрана** чата (menu button) — отдельно: [@BotFather](https://t.me/BotFather) → `/setmenubutton` → URL frontend
+
+### Mini App empty (старая диагностика)
+
+Check `WEBAPP_URL`, `API_UPSTREAM`, `CORS_ORIGINS`; ensure `DEV_MODE=false` on production.
 
 ---
 
