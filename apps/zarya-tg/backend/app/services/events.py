@@ -214,6 +214,20 @@ async def delete_event(db: AsyncSession, event: Event) -> None:
     await db.commit()
 
 
+async def get_event_registered_users(db: AsyncSession, event_id: int) -> list[User]:
+    result = await db.execute(
+        select(User)
+        .join(
+            Registration,
+            (Registration.user_id == User.user_id)
+            & (Registration.event_id == event_id)
+            & (Registration.status == RegistrationStatus.ACTIVE.value),
+        )
+        .order_by(Registration.registered_at.asc())
+    )
+    return list(result.scalars().all())
+
+
 async def get_or_create_admin_user(db: AsyncSession, telegram_id: int, username: str | None, first_name: str | None) -> User:
     result = await db.execute(select(User).where(User.telegram_id == telegram_id))
     user = result.scalar_one_or_none()

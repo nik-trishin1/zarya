@@ -16,10 +16,13 @@ from app.bot.states import AdminStates
 
 def test_edit_confirm_does_not_match_edit_start_pattern():
     assert "admin:edit:confirm".startswith("admin:edit:")
+    assert "admin:edit:keep".startswith("admin:edit:")
     import re
 
-    assert re.match(r"^admin:edit:\d+$", "admin:edit:confirm") is None
-    assert re.match(r"^admin:edit:\d+$", "admin:edit:42") is not None
+    pattern = re.compile(r"^admin:edit:\d+$")
+    assert pattern.match("admin:edit:confirm") is None
+    assert pattern.match("admin:edit:keep") is None
+    assert pattern.match("admin:edit:42") is not None
 
 
 def test_edit_confirm_handler_matches_without_fsm_state():

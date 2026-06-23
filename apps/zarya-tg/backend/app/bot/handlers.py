@@ -13,12 +13,15 @@ from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
 from app.bot.keyboards import (
     admin_menu_keyboard,
+    back_to_event_keyboard,
     back_to_menu_keyboard,
     confirm_keyboard,
     delete_confirm_keyboard,
+    edit_keep_keyboard,
     event_manage_keyboard,
     skip_image_keyboard,
 )
+from app.bot.participants import format_participants_message
 from app.bot.parsers import format_date_ru, format_time_ru, parse_date, parse_time
 from app.bot.states import AdminStates
 from app.config import get_settings
@@ -28,6 +31,7 @@ from app.services.events import (
     delete_event,
     get_all_events_admin,
     get_event_by_id,
+    get_event_registered_users,
     get_or_create_admin_user,
     update_event,
 )
@@ -84,6 +88,104 @@ async def _finish_admin_callback(
     if callback.message is not None:
         await _edit_or_answer(callback.message, text, reply_markup=reply_markup)
     await callback.answer()
+
+
+async def _send_edit_prompt(
+    message: Message,
+    state: FSMContext,
+    *,
+    text: str,
+    next_state: AdminStates,
+    reply_markup: InlineKeyboardMarkup | None = None,
+    edit: bool = False,
+) -> None:
+    await state.set_state(next_state)
+    if edit:
+        await _edit_or_answer(message, text, reply_markup=reply_markup)
+    else:
+        await message.answer(text, reply_markup=reply_markup)
+
+
+async def _goto_edit_name(message: Message, state: FSMContext, *, edit: bool = False) -> None:
+    data = await state.get_data()
+    await _send_edit_prompt(
+        message,
+        state,
+        text=f"Текущее название: {data['name']}\n\nВведите новое название или нажмите «Оставить»:",
+        next_state=AdminStates.EDIT_NAME,
+        reply_markup=edit_keep_keyboard(),
+        edit=edit,
+    )
+
+
+async def _goto_edit_date(message: Message, state: FSMContext, *, edit: bool = False) -> None:
+    data = await state.get_data()
+    event_date = date.fromisoformat(data["event_date"])
+    await _send_edit_prompt(
+        message,
+        state,
+        text=(
+            f"Текущая дата: {format_date_ru(event_date)}\n\n"
+            "Введите новую дату или нажмите «Оставить»:"
+        ),
+        next_state=AdminStates.EDIT_DATE,
+        reply_markup=edit_keep_keyboard(),
+        edit=edit,
+    )
+
+
+async def _goto_edit_time(message: Message, state: FSMContext, *, edit: bool = False) -> None:
+    data = await state.get_data()
+    event_time = time.fromisoformat(data["event_time"])
+    await _send_edit_prompt(
+        message,
+        state,
+        text=(
+            f"Текущее время: {format_time_ru(event_time)}\n\n"
+            "Введите новое время или нажмите «Оставить»:"
+        ),
+        next_state=AdminStates.EDIT_TIME,
+        reply_markup=edit_keep_keyboard(),
+        edit=edit,
+    )
+
+
+async def _goto_edit_location(message: Message, state: FSMContext, *, edit: bool = False) -> None:
+    data = await state.get_data()
+    await _send_edit_prompt(
+        message,
+        state,
+        text=f"Текущее место: {data['location']}\n\nВведите новое место или нажмите «Оставить»:",
+        next_state=AdminStates.EDIT_LOCATION,
+        reply_markup=edit_keep_keyboard(),
+        edit=edit,
+    )
+
+
+async def _goto_edit_description(message: Message, state: FSMContext, *, edit: bool = False) -> None:
+    data = await state.get_data()
+    await _send_edit_prompt(
+        message,
+        state,
+        text=(
+            f"Текущее описание: {data.get('description', '')}\n\n"
+            "Введите новое описание или нажмите «Оставить»:"
+        ),
+        next_state=AdminStates.EDIT_DESCRIPTION,
+        reply_markup=edit_keep_keyboard(),
+        edit=edit,
+    )
+
+
+async def _goto_edit_image(message: Message, state: FSMContext, *, edit: bool = False) -> None:
+    await _send_edit_prompt(
+        message,
+        state,
+        text="Загрузите новую обложку (JPEG или PNG, до 5 МБ) или нажмите «Оставить текущую»:",
+        next_state=AdminStates.EDIT_IMAGE,
+        reply_markup=skip_image_keyboard(keep_current=True),
+        edit=edit,
+    )
 
 
 @router.message(CommandStart())
@@ -357,6 +459,27 @@ async def admin_event_detail(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+@router.callback_query(F.data.regexp(r"^admin:registrations:\d+$"))
+async def admin_event_registrations(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    event_id = int(callback.data.split(":")[-1])
+    async with async_session() as db:
+        event = await get_event_by_id(db, event_id)
+        if event is None:
+            await callback.answer("Событие не найдено", show_alert=True)
+            return
+        users = await get_event_registered_users(db, event_id)
+
+    await state.set_state(AdminStates.MANAGE_DETAIL)
+    await state.update_data(event_id=event_id)
+    text = format_participants_message(event.name, users)
+    await callback.message.edit_text(text, reply_markup=back_to_event_keyboard(event_id))
+    await callback.answer()
+
+
 # --- Edit event ---
 
 @router.callback_query(F.data == "admin:edit:confirm")
@@ -406,6 +529,10 @@ async def edit_confirm(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data.regexp(r"^admin:edit:\d+$"))
 async def admin_edit_start(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
     event_id = int(callback.data.split(":")[-1])
     async with async_session() as db:
         event = await get_event_by_id(db, event_id)
@@ -423,75 +550,87 @@ async def admin_edit_start(callback: CallbackQuery, state: FSMContext):
         cover_image_url=normalize_cover_image_url(event.cover_image_url),
         edit_mode=True,
     )
-    await state.set_state(AdminStates.EDIT_NAME)
-    await callback.message.edit_text(
-        f"Текущее название: {event.name}\n\nВведите новое название или отправьте «-» чтобы оставить:"
-    )
+    if callback.message is None:
+        await callback.answer()
+        return
+    await _goto_edit_name(callback.message, state, edit=True)
+    await callback.answer()
+
+
+@router.callback_query(F.data == "admin:edit:keep")
+async def edit_keep_current(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    data = await state.get_data()
+    if not data.get("edit_mode"):
+        await callback.answer("Сессия редактирования истекла", show_alert=True)
+        return
+    if callback.message is None:
+        await callback.answer()
+        return
+
+    current_state = await state.get_state()
+    if current_state == AdminStates.EDIT_NAME.state:
+        await _goto_edit_date(callback.message, state, edit=True)
+    elif current_state == AdminStates.EDIT_DATE.state:
+        await _goto_edit_time(callback.message, state, edit=True)
+    elif current_state == AdminStates.EDIT_TIME.state:
+        await _goto_edit_location(callback.message, state, edit=True)
+    elif current_state == AdminStates.EDIT_LOCATION.state:
+        await _goto_edit_description(callback.message, state, edit=True)
+    elif current_state == AdminStates.EDIT_DESCRIPTION.state:
+        await _goto_edit_image(callback.message, state, edit=True)
+    else:
+        await callback.answer()
+        return
+
     await callback.answer()
 
 
 @router.message(AdminStates.EDIT_NAME)
 async def edit_name(message: Message, state: FSMContext):
-    if message.text and message.text.strip() != "-":
-        await state.update_data(name=message.text.strip())
-    await state.set_state(AdminStates.EDIT_DATE)
-    data = await state.get_data()
-    await message.answer(
-        f"Текущая дата: {format_date_ru(date.fromisoformat(data['event_date']))}\n"
-        "Введите новую дату или «-» чтобы оставить:"
-    )
+    if not message.text or len(message.text.strip()) < 2:
+        await message.answer("Название слишком короткое. Попробуйте ещё раз или нажмите «Оставить»:")
+        return
+    await state.update_data(name=message.text.strip())
+    await _goto_edit_date(message, state)
 
 
 @router.message(AdminStates.EDIT_DATE)
 async def edit_date(message: Message, state: FSMContext):
-    if message.text and message.text.strip() != "-":
-        parsed = parse_date(message.text)
-        if parsed is None:
-            await message.answer("Не удалось распознать дату. Формат: ДД.ММ.ГГГГ")
-            return
-        await state.update_data(event_date=parsed.isoformat())
-    await state.set_state(AdminStates.EDIT_TIME)
-    data = await state.get_data()
-    await message.answer(
-        f"Текущее время: {format_time_ru(time.fromisoformat(data['event_time']))}\n"
-        "Введите новое время или «-» чтобы оставить:"
-    )
+    parsed = parse_date(message.text or "")
+    if parsed is None:
+        await message.answer("Не удалось распознать дату. Формат: ДД.ММ.ГГГГ")
+        return
+    await state.update_data(event_date=parsed.isoformat())
+    await _goto_edit_time(message, state)
 
 
 @router.message(AdminStates.EDIT_TIME)
 async def edit_time(message: Message, state: FSMContext):
-    if message.text and message.text.strip() != "-":
-        parsed = parse_time(message.text)
-        if parsed is None:
-            await message.answer("Не удалось распознать время. Формат: ЧЧ:ММ")
-            return
-        await state.update_data(event_time=parsed.isoformat())
-    await state.set_state(AdminStates.EDIT_LOCATION)
-    data = await state.get_data()
-    await message.answer(f"Текущее место: {data['location']}\nВведите новое место или «-» чтобы оставить:")
+    parsed = parse_time(message.text or "")
+    if parsed is None:
+        await message.answer("Не удалось распознать время. Формат: ЧЧ:ММ")
+        return
+    await state.update_data(event_time=parsed.isoformat())
+    await _goto_edit_location(message, state)
 
 
 @router.message(AdminStates.EDIT_LOCATION)
 async def edit_location(message: Message, state: FSMContext):
-    if message.text and message.text.strip() != "-":
-        await state.update_data(location=message.text.strip())
-    await state.set_state(AdminStates.EDIT_DESCRIPTION)
-    data = await state.get_data()
-    await message.answer(
-        f"Текущее описание: {data.get('description', '')}\n"
-        "Введите новое описание или «-» чтобы оставить:"
-    )
+    if not message.text or len(message.text.strip()) < 2:
+        await message.answer("Место слишком короткое. Попробуйте ещё раз или нажмите «Оставить»:")
+        return
+    await state.update_data(location=message.text.strip())
+    await _goto_edit_description(message, state)
 
 
 @router.message(AdminStates.EDIT_DESCRIPTION)
 async def edit_description(message: Message, state: FSMContext):
-    if message.text and message.text.strip() != "-":
-        await state.update_data(description=message.text.strip())
-    await state.set_state(AdminStates.EDIT_IMAGE)
-    await message.answer(
-        "Загрузите новую обложку (JPEG или PNG, до 5 МБ) или пропустите (оставить текущую):",
-        reply_markup=skip_image_keyboard(),
-    )
+    await state.update_data(description=(message.text or "").strip())
+    await _goto_edit_image(message, state)
 
 
 @router.message(AdminStates.EDIT_IMAGE, F.photo)
