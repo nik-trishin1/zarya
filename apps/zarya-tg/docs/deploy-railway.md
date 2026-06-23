@@ -2,6 +2,83 @@
 
 Step-by-step guide for production deployment.
 
+## Is zarya allowed on Railway?
+
+**Yes.** Railway prohibits **mirrors** and **userbots** — services that log in as a *human Telegram account* (unofficial APIs, scraping, relaying channels).
+
+**zarya is not that.** It uses:
+
+- Official **Telegram Bot API** (token from [@BotFather](https://t.me/BotFather), aiogram)
+- Official **Telegram Mini App** (Web App SDK)
+
+This is a normal web app + bot for event RSVP. Same category as any legitimate Bot API project. You can accept Railway's Fair Use Policy.
+
+---
+
+## After you log in to Railway — do this
+
+### Step 0 — Prepare (2 minutes)
+
+- [ ] Stop local `./scripts/dev-local.sh` (or leave `BOT_TOKEN` empty locally)
+- [ ] Have BotFather **bot token** ready
+- [ ] GitHub repo `zarya` is pushed to `main`
+
+### Step 1 — New project + database
+
+1. [railway.app](https://railway.app) → **New Project**
+2. **Deploy from GitHub repo** → authorize GitHub → select **`zarya`**
+3. Railway creates first service from repo — we'll reconfigure it as backend later, or delete and re-add; easier path:
+   - Click **+ New** → **Database** → **PostgreSQL**
+   - Wait until PostgreSQL is **Active**
+
+### Step 2 — Backend
+
+1. **+ New** → **GitHub Repo** → `zarya` (second service from same repo)
+2. Click the new service → **Settings**:
+   - **Root Directory:** `apps/zarya-tg/backend`
+   - **Builder:** Dockerfile
+3. **Networking** → **Generate Domain** → copy URL (e.g. `https://zarya-api-production.up.railway.app`)
+4. **Variables** → add (use **Add Reference** for Postgres `DATABASE_URL`):
+
+   | Variable | Value |
+   |----------|--------|
+   | `DATABASE_URL` | Reference → PostgreSQL → `DATABASE_URL` |
+   | `BOT_TOKEN` | your BotFather token |
+   | `ADMIN_TELEGRAM_IDS` | your Telegram ID (from @userinfobot for now) |
+   | `API_BASE_URL` | backend domain from step 3 |
+   | `WEBAPP_URL` | temporary: same as backend; update after frontend |
+   | `UPLOAD_DIR` | `/app/uploads` |
+   | `CORS_ORIGINS` | `https://web.telegram.org` (add frontend URL after step 3) |
+   | `DEV_MODE` | `false` |
+   | `SECRET_KEY` | any long random string |
+
+5. **Volumes** → **Add Volume** → mount path `/app/uploads`
+6. **Deploy** → wait for **Active** → open `https://your-api.../health` → `{"status":"ok"}`
+
+### Step 3 — Frontend
+
+1. **+ New** → **GitHub Repo** → `zarya`
+2. **Settings** → **Root Directory:** `apps/zarya-tg/frontend`, **Builder:** Dockerfile
+3. **Variables** → `VITE_API_URL` = backend URL from Step 2 (must be set **before** build)
+4. **Networking** → **Generate Domain** → copy frontend URL
+5. Deploy → open frontend URL in browser (should show zarya UI)
+
+### Step 4 — Link services
+
+1. **Backend** → Variables → update:
+   - `WEBAPP_URL` = frontend URL
+   - `CORS_ORIGINS` = `https://your-frontend.up.railway.app,https://web.telegram.org`
+2. **Redeploy** backend and frontend
+
+### Step 5 — Telegram
+
+1. [@BotFather](https://t.me/BotFather) → `/setmenubutton` → your bot → Menu button URL = **frontend URL**
+2. Open bot → tap menu button → Mini App should load
+3. Send `/myid` → put ID in `ADMIN_TELEGRAM_IDS` on Railway → redeploy backend
+4. Send `/admin` → inline buttons **Создать событие** / **Управлять событиями**
+
+---
+
 ## Before you start
 
 - GitHub repo connected to Railway
