@@ -108,46 +108,16 @@ export async function cancelRegistration(eventId: number): Promise<RegistrationR
 }
 
 export async function downloadCalendar(eventId: number, _eventName: string): Promise<void> {
-  const initData = getInitData();
   const fileName = `zarya-event-${eventId}.ics`;
   const calendarPath = `/api/events/${eventId}/calendar`;
 
-  let token: string;
-  try {
-    const tokenResponse = await apiFetch<{ token: string }>(
-      `/api/registrations/${eventId}/calendar-token`,
-    );
-    token = tokenResponse.token;
-  } catch (err) {
-    throw err instanceof Error ? err : new Error("Не удалось скачать календарь");
-  }
+  const { token } = await apiFetch<{ token: string }>(
+    `/api/registrations/${eventId}/calendar-token`,
+  );
 
   const calendarUrl = `${window.location.origin}${calendarPath}?calendar_token=${encodeURIComponent(token)}`;
 
-  if (initData && WebApp.isVersionAtLeast("8.0")) {
-    await new Promise<void>((resolve, reject) => {
-      try {
-        WebApp.downloadFile({ url: calendarUrl, file_name: fileName }, (accepted) => {
-          if (accepted) {
-            resolve();
-          } else {
-            reject(new Error("Скачивание отменено"));
-          }
-        });
-      } catch {
-        reject(new Error("Не удалось скачать календарь. Обновите Telegram до последней версии."));
-      }
-    });
-    return;
-  }
-
-  let response: Response;
-  try {
-    response = await fetch(calendarUrl);
-  } catch {
-    throw new Error(networkErrorMessage());
-  }
-
+  const response = await fetch(calendarUrl);
   if (!response.ok) {
     const contentType = response.headers.get("content-type") || "";
     if (contentType.includes("application/json")) {
@@ -158,14 +128,47 @@ export async function downloadCalendar(eventId: number, _eventName: string): Pro
   }
 
   const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
+  const file = new File([blob], fileName, { type: "text/calendar" });
+
+  if (navigator.canShare?.({ files: [file] })) {
+    await navigator.share({ files: [file] });
+    return;
+  }
+
+  const initData = getInitData();
+  if (initData && WebApp.isVersionAtLeast("8.0")) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        WebApp.downloadFile({ url: calendarUrl, file_name: fileName }, (accepted) => {
+          if (accepted) {
+            resolve();
+          } else {
+            reject(new Error("Скачивание отменено"));
+          }
+        });
+      });
+      return;
+    } catch {
+      if (typeof WebApp.openLink === "function") {
+        WebApp.openLink(calendarUrl);
+        return;
+      }
+    }
+  }
+
+  if (initData && typeof WebApp.openLink === "function") {
+    WebApp.openLink(calendarUrl);
+    return;
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url;
+  a.href = objectUrl;
   a.download = fileName;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  URL.revokeObjectURL(objectUrl);
 }
 
 export function getDefaultCoverUrl(): string {

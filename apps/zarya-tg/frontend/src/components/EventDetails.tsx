@@ -66,8 +66,8 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     if (!event) return;
     try {
       await downloadCalendar(event.event_id, event.name);
-    } catch {
-      setToast("Не удалось скачать календарь");
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : "Не удалось скачать календарь");
     }
   };
 

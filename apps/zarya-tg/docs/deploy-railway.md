@@ -222,11 +222,10 @@ nginx listening on 0.0.0.0:8080, 0.0.0.0:80, proxying API to: https://...
 
 ### Обложка события не отображается (битая картинка)
 
-1. **Backend** → **Volumes** → volume на `/app/uploads` (без volume файлы пропадают при redeploy)
-2. **Redeploy frontend** и **backend** с последним `main` (относительные URL `/uploads/...`)
-3. Пересоздайте событие или отредактируйте обложку в боте (JPEG/PNG, до 5 МБ)
-4. Проверка: `https://ваш-frontend.up.railway.app/static/default-cover.svg` → SVG (200)
-5. Отправляйте фото **как картинку**, не как файл — или файл `.jpg`/`.png` до 5 МБ
+1. **Backend** → **Volumes** → volume на `/app/uploads` (**обязательно** — без volume файлы удаляются при каждом redeploy)
+2. После redeploy **перезагрузите обложку** в боте (редактировать событие → новое фото)
+3. Если файла нет — показывается оранжевый градиент-заглушка (это нормально)
+4. Проверка: `https://ваш-frontend.up.railway.app/static/default-cover.svg` → 200
 
 ### Mini App empty / `Unexpected token '<'` / «API вернул неверный ответ»
 
