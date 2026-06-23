@@ -28,19 +28,28 @@ python_version_ok() {
 
 find_python() {
   local candidates=(
-    python3.12 python3.11 python3.10 python3
+    python3.14 python3.13 python3.12 python3.11 python3.10 python3
+    /opt/homebrew/bin/python3.14
+    /opt/homebrew/bin/python3.13
     /opt/homebrew/bin/python3.12
     /opt/homebrew/bin/python3.11
     /opt/homebrew/bin/python3.10
+    /opt/homebrew/opt/python@3.14/bin/python3.14
+    /opt/homebrew/opt/python@3.13/bin/python3.13
     /opt/homebrew/opt/python@3.12/bin/python3.12
     /opt/homebrew/opt/python@3.11/bin/python3.11
     /opt/homebrew/opt/python@3.10/bin/python3.10
+    /usr/local/bin/python3.14
+    /usr/local/bin/python3.13
     /usr/local/bin/python3.12
     /usr/local/bin/python3.11
     /usr/local/bin/python3.10
+    /Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14
+    /Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13
     /Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12
     /Library/Frameworks/Python.framework/Versions/3.11/bin/python3.11
     /Library/Frameworks/Python.framework/Versions/3.10/bin/python3.10
+    /usr/local/bin/python3
   )
 
   local candidate version
