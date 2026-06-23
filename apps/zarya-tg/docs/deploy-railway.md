@@ -220,6 +220,14 @@ nginx listening on 0.0.0.0:8080, 0.0.0.0:80, proxying API to: https://...
 4. Если в логах `ERROR: API_UPSTREAM is not set` — добавьте переменную и redeploy
 5. Healthcheck проверяет `/nginx-health` (не зависит от backend)
 
+### Обложка события не отображается (битая картинка)
+
+1. **Backend** → **Volumes** → volume на `/app/uploads` (без volume файлы пропадают при redeploy)
+2. **Redeploy frontend** и **backend** с последним `main` (относительные URL `/uploads/...`)
+3. Пересоздайте событие или отредактируйте обложку в боте (JPEG/PNG, до 5 МБ)
+4. Проверка: `https://ваш-frontend.up.railway.app/static/default-cover.svg` → SVG (200)
+5. Отправляйте фото **как картинку**, не как файл — или файл `.jpg`/`.png` до 5 МБ
+
 ### Mini App empty / `Unexpected token '<'` / «API вернул неверный ответ»
 
 nginx проксировал API с неверным заголовком `Host` (frontend вместо backend) — Railway зависал и отдавал HTML.

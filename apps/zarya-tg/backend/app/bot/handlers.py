@@ -30,7 +30,14 @@ from app.services.events import (
     get_or_create_admin_user,
     update_event,
 )
-from app.services.storage import MAX_FILE_SIZE, image_too_large_message, save_cover_image_bytes
+from app.services.storage import (
+    DEFAULT_COVER_URL,
+    MAX_FILE_SIZE,
+    cover_filename_from_document,
+    image_too_large_message,
+    normalize_cover_image_url,
+    save_cover_image_bytes,
+)
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -203,7 +210,9 @@ async def create_image_document(message: Message, state: FSMContext):
     file = await message.bot.get_file(doc.file_id)
     buffer = io.BytesIO()
     await message.bot.download_file(file.file_path, buffer)
-    cover_url = await _save_cover_from_message(message, buffer.getvalue(), doc.file_name or "cover.jpg")
+    cover_url = await _save_cover_from_message(
+        message, buffer.getvalue(), cover_filename_from_document(doc.file_name, doc.mime_type)
+    )
     if cover_url is None:
         return
     await state.update_data(cover_image_url=cover_url)
@@ -212,9 +221,7 @@ async def create_image_document(message: Message, state: FSMContext):
 
 @router.callback_query(F.data == "admin:skip_image", AdminStates.CREATE_IMAGE)
 async def create_skip_image(callback: CallbackQuery, state: FSMContext):
-    settings = get_settings()
-    default_url = f"{settings.api_base_url.rstrip('/')}/static/default-cover.svg"
-    await state.update_data(cover_image_url=default_url)
+    await state.update_data(cover_image_url=DEFAULT_COVER_URL)
     await show_create_confirm(callback.message, state, edit=True)
     await callback.answer()
 
@@ -254,7 +261,7 @@ async def create_confirm(callback: CallbackQuery, state: FSMContext):
             event_date=date.fromisoformat(data["event_date"]),
             event_time=time.fromisoformat(data["event_time"]),
             location=data["location"],
-            cover_image_url=data.get("cover_image_url"),
+            cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
             admin_user=admin_user,
         )
 
@@ -346,7 +353,7 @@ async def admin_edit_start(callback: CallbackQuery, state: FSMContext):
         event_time=event.time.isoformat(),
         location=event.location,
         description=event.description,
-        cover_image_url=event.cover_image_url,
+        cover_image_url=normalize_cover_image_url(event.cover_image_url),
         edit_mode=True,
     )
     await state.set_state(AdminStates.EDIT_NAME)
@@ -448,7 +455,9 @@ async def edit_image_document(message: Message, state: FSMContext):
     file = await message.bot.get_file(doc.file_id)
     buffer = io.BytesIO()
     await message.bot.download_file(file.file_path, buffer)
-    cover_url = await _save_cover_from_message(message, buffer.getvalue(), doc.file_name or "cover.jpg")
+    cover_url = await _save_cover_from_message(
+        message, buffer.getvalue(), cover_filename_from_document(doc.file_name, doc.mime_type)
+    )
     if cover_url is None:
         return
     await state.update_data(cover_image_url=cover_url)
@@ -496,7 +505,7 @@ async def edit_confirm(callback: CallbackQuery, state: FSMContext):
             date=date.fromisoformat(data["event_date"]),
             time=time.fromisoformat(data["event_time"]),
             location=data["location"],
-            cover_image_url=data.get("cover_image_url"),
+            cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
         )
 
     await state.clear()

@@ -1,5 +1,5 @@
 import type { Event } from "../api/client";
-import { resolveCoverUrl } from "../api/client";
+import { CoverImage } from "./CoverImage";
 import { formatEventDate } from "../utils/format";
 import "./EventCard.css";
 
@@ -9,12 +9,10 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onClick }: EventCardProps) {
-  const coverUrl = resolveCoverUrl(event.cover_image_url);
-
   return (
     <button type="button" className="event-card" onClick={() => onClick(event)}>
       <div className="event-card__image-wrap">
-        <img src={coverUrl} alt="" className="event-card__image" loading="lazy" />
+        <CoverImage url={event.cover_image_url} className="event-card__image" />
       </div>
       <div className="event-card__content">
         <time className="event-card__date">{formatEventDate(event.date, event.time)}</time>

@@ -4,6 +4,7 @@ from datetime import date, time
 
 from app.schemas.event import EventDetailResponse, EventResponse
 from app.services.events import MOSCOW_TZ
+from app.services.storage import normalize_cover_image_url
 
 
 RU_MONTHS = [
@@ -39,7 +40,7 @@ def event_to_response(event, reg_count: int, is_registered: bool) -> EventRespon
         date=event.date,
         time=event.time,
         location=event.location,
-        cover_image_url=event.cover_image_url,
+        cover_image_url=normalize_cover_image_url(event.cover_image_url),
         registration_count=reg_count,
         is_registered=is_registered,
     )
@@ -53,7 +54,7 @@ def event_to_detail(event, reg_count: int, is_registered: bool) -> EventDetailRe
         date=event.date,
         time=event.time,
         location=event.location,
-        cover_image_url=event.cover_image_url,
+        cover_image_url=normalize_cover_image_url(event.cover_image_url),
         registration_count=reg_count,
         is_registered=is_registered,
     )

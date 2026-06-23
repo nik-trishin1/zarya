@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import os
 import uuid
 from pathlib import Path
+from urllib.parse import urlparse
 
 import aiofiles
 from fastapi import UploadFile
@@ -17,9 +17,42 @@ DEFAULT_COVER_URL = "/static/default-cover.svg"
 _IMAGE_TOO_LARGE = f"Изображение слишком большое. Максимальный размер — {MAX_FILE_SIZE_MB} МБ."
 _INVALID_FORMAT = "Допустимы только изображения JPEG и PNG."
 
+_MIME_TO_EXT = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/pjpeg": ".jpg",
+    "image/png": ".png",
+}
+
 
 def image_too_large_message() -> str:
     return _IMAGE_TOO_LARGE
+
+
+def normalize_cover_image_url(url: str | None) -> str | None:
+    """Return a same-origin path (/uploads/... or /static/...) for API responses."""
+    if not url:
+        return None
+    trimmed = url.strip()
+    if trimmed.startswith("/uploads/") or trimmed.startswith("/static/"):
+        return trimmed
+    path = urlparse(trimmed).path
+    if path.startswith("/uploads/") or path.startswith("/static/"):
+        return path
+    return trimmed
+
+
+def cover_filename_from_document(file_name: str | None, mime_type: str | None) -> str:
+    name = (file_name or "").strip()
+    if name:
+        ext = Path(name).suffix.lower()
+        if ext in ALLOWED_EXTENSIONS:
+            return name
+        stem = Path(name).stem or "cover"
+    else:
+        stem = "cover"
+    ext = _MIME_TO_EXT.get((mime_type or "").lower(), ".jpg")
+    return f"{stem}{ext}"
 
 
 def validate_cover_image_bytes(content: bytes, filename: str) -> None:
@@ -49,8 +82,7 @@ async def save_cover_image(file: UploadFile) -> str:
     async with aiofiles.open(file_path, "wb") as f:
         await f.write(content)
 
-    settings = get_settings()
-    return f"{settings.api_base_url.rstrip('/')}/uploads/{filename}"
+    return f"/uploads/{filename}"
 
 
 async def save_cover_image_bytes(content: bytes, filename: str) -> str:
@@ -64,5 +96,4 @@ async def save_cover_image_bytes(content: bytes, filename: str) -> str:
     async with aiofiles.open(file_path, "wb") as f:
         await f.write(content)
 
-    settings = get_settings()
-    return f"{settings.api_base_url.rstrip('/')}/uploads/{new_filename}"
+    return f"/uploads/{new_filename}"

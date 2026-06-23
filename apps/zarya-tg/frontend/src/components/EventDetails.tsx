@@ -5,8 +5,8 @@ import {
   downloadCalendar,
   fetchEvent,
   registerForEvent,
-  resolveCoverUrl,
 } from "../api/client";
+import { CoverImage } from "./CoverImage";
 import { formatEventDate } from "../utils/format";
 import "./EventDetails.css";
 
@@ -88,15 +88,13 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     );
   }
 
-  const coverUrl = resolveCoverUrl(event.cover_image_url);
-
   return (
     <div className="event-details">
       <button type="button" className="event-details__back" onClick={onClose} aria-label="На главную">
         🏠
       </button>
 
-      <img src={coverUrl} alt="" className="event-details__cover" />
+      <CoverImage url={event.cover_image_url} className="event-details__cover" />
 
       <div className="event-details__body">
         <h2 className="event-details__title">{event.name}</h2>
