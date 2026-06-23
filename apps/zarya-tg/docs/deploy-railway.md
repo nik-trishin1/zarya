@@ -118,9 +118,15 @@ Railway tried to auto-build the monorepo root. Fix the existing service:
 
 Or delete the failed service and follow **Recommended deploy** from Step 1.
 
-### `/health` fails
+### `/health` fails / Healthcheck failure
 
-Backend did not start — open **Deploy logs** on the backend service.
+1. **Deploy logs** — open backend service → Deployments → latest → **View logs**. Common causes:
+   - `Could not connect to database` → add `DATABASE_URL` reference to PostgreSQL service
+   - `Token is invalid` → fix `BOT_TOKEN` (API should still start after redeploy with latest code)
+   - App listening on wrong port → fixed in code: server uses Railway `PORT` env var
+2. Confirm **Root Directory** = `apps/zarya-tg/backend`, **Builder** = Dockerfile
+3. **Redeploy** after pulling latest `main`
+4. Open `https://your-api.../health` manually in browser after deploy
 
 ### `/admin` — «Нет доступа»
 

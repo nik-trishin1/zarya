@@ -20,8 +20,18 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ensure_upload_dir()
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    last_error: Exception | None = None
+    for attempt in range(1, 6):
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            break
+        except Exception as exc:
+            last_error = exc
+            logger.warning("Database not ready (attempt %s/5): %s", attempt, exc)
+            await asyncio.sleep(2)
+    else:
+        raise RuntimeError("Could not connect to database") from last_error
     yield
 
 
