@@ -65,13 +65,13 @@ async def get_current_user(
 ) -> User:
     settings = get_settings()
 
-    if settings.dev_mode and not x_telegram_init_data:
+    if settings.allow_browser_dev and not x_telegram_init_data:
         return await _get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
 
     if not x_telegram_init_data:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing Telegram init data")
 
-    if not settings.bot_token:
+    if not settings.bot_token_configured:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Bot token not configured",
@@ -92,7 +92,7 @@ async def get_optional_user(
 ) -> User | None:
     settings = get_settings()
     if not x_telegram_init_data:
-        if settings.dev_mode:
+        if settings.allow_browser_dev:
             return await _get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
         return None
     return await get_current_user(x_telegram_init_data, db)

@@ -9,7 +9,7 @@
 
 ### macOS setup (first time)
 
-**No Homebrew?** Install from [python.org](https://www.python.org/downloads/) (Python 3.11 or 3.12 `.pkg`), then [Node.js](https://nodejs.org/en/download) (LTS `.pkg`). Restart Terminal after each install.
+**No Homebrew?** Install from [python.org](https://www.python.org/downloads/release/python-3120/) — **Python 3.12** `.pkg` (not 3.14). Then [Node.js](https://nodejs.org/en/download) LTS `.pkg`. Restart Terminal after each install.
 
 If you previously ran with system Python 3.9, delete the old virtualenv first:
 

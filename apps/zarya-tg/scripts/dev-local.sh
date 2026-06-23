@@ -80,18 +80,20 @@ print_python_diagnostics() {
     echo "  (none)"
   fi
   echo ""
-  echo "Install Python 3.11 on macOS (no Homebrew required):"
-  echo "  1. Open https://www.python.org/downloads/"
-  echo "  2. Download macOS installer for Python 3.11 or 3.12"
+  if command -v python3.14 >/dev/null 2>&1; then
+    echo "NOTE: Python 3.14 is installed but NOT supported (pydantic fails to build)."
+    echo "      Install Python 3.12 from https://www.python.org/downloads/"
+    echo ""
+  fi
+  echo "Install Python 3.12 on macOS (recommended, no Homebrew required):"
+  echo "  1. Open https://www.python.org/downloads/release/python-3120/"
+  echo "  2. Download macOS installer (.pkg) at the bottom of the page"
   echo "  3. Run installer, restart Terminal"
-  echo "  4. Verify: python3.11 --version"
+  echo "  4. Verify: python3.12 --version"
   echo ""
-  echo "Or with Homebrew:"
-  echo "  brew install python@3.11"
-  echo "  echo 'export PATH=\"/opt/homebrew/opt/python@3.11/bin:\$PATH\"' >> ~/.zshrc"
-  echo "  source ~/.zshrc"
+  echo "Supported range: Python 3.${MIN_PYTHON_MINOR} – 3.${MAX_PYTHON_MINOR}"
   echo ""
-  echo "macOS system Python 3.9 is NOT supported — remove old venv:"
+  echo "Remove incompatible venv and retry:"
   echo "  cd apps/zarya-tg/backend && rm -rf .venv"
   echo "  cd .. && ./scripts/dev-local.sh"
 }
@@ -196,7 +198,7 @@ ensure_node() {
 }
 
 PYTHON_BIN=$(find_python) || {
-  echo "ERROR: Python 3.${MIN_PYTHON_MINOR}+ required."
+  echo "ERROR: Python 3.${MIN_PYTHON_MINOR}–3.${MAX_PYTHON_MINOR} required."
   echo ""
   print_python_diagnostics
   exit 1
@@ -224,14 +226,14 @@ if [ -d .venv ]; then
     OLD_PY=$(grep '^version' .venv/pyvenv.cfg | cut -d= -f2 | tr -d ' ')
     OLD_MINOR=${OLD_PY#*.}
     OLD_MINOR=${OLD_MINOR%%.*}
-    if [ -n "$OLD_MINOR" ] && [ "$OLD_MINOR" -lt "$MIN_PYTHON_MINOR" ]; then
-      echo "    Removing old .venv (Python $OLD_PY is too old, need 3.${MIN_PYTHON_MINOR}+)..."
+    if [ -n "$OLD_MINOR" ] && { [ "$OLD_MINOR" -lt "$MIN_PYTHON_MINOR" ] || [ "$OLD_MINOR" -gt "$MAX_PYTHON_MINOR" ]; }; then
+      echo "    Removing old .venv (Python $OLD_PY — need 3.${MIN_PYTHON_MINOR}–3.${MAX_PYTHON_MINOR})..."
       rm -rf .venv
     fi
   elif [ -x .venv/bin/python ]; then
     VENV_MINOR=$(.venv/bin/python -c 'import sys; print(sys.version_info.minor)')
-    if [ "$VENV_MINOR" -lt "$MIN_PYTHON_MINOR" ]; then
-      echo "    Removing old .venv (Python 3.$VENV_MINOR is too old, need 3.${MIN_PYTHON_MINOR}+)..."
+    if [ "$VENV_MINOR" -lt "$MIN_PYTHON_MINOR" ] || [ "$VENV_MINOR" -gt "$MAX_PYTHON_MINOR" ]; then
+      echo "    Removing old .venv (Python 3.$VENV_MINOR — need 3.${MIN_PYTHON_MINOR}–3.${MAX_PYTHON_MINOR})..."
       rm -rf .venv
     fi
   fi
@@ -256,6 +258,20 @@ echo "==> Starting backend on :8000..."
 python run.py &
 BACKEND_PID=$!
 
+echo "==> Waiting for backend..."
+BACKEND_READY=false
+for _ in $(seq 1 30); do
+  if curl -sf http://localhost:8000/health >/dev/null 2>&1; then
+    BACKEND_READY=true
+    echo "    Backend ready at http://localhost:8000/health"
+    break
+  fi
+  sleep 1
+done
+if [ "$BACKEND_READY" = false ]; then
+  echo "    WARNING: Backend did not respond on :8000 — check errors above"
+fi
+
 if [ "$BACKEND_ONLY" = true ]; then
   echo ""
   echo "==> Backend only. API: http://localhost:8000/health"
@@ -271,6 +287,12 @@ npm install --silent
 
 if [ ! -f .env ]; then
   cp .env.example .env
+fi
+# Route API through Vite proxy in local dev (avoids CORS and connection issues)
+if grep -q '^VITE_API_URL=' .env; then
+  sed -i.bak 's|^VITE_API_URL=.*|VITE_API_URL=|' .env && rm -f .env.bak
+else
+  echo 'VITE_API_URL=' >> .env
 fi
 
 echo "==> Starting frontend on :5173..."

@@ -16,13 +16,27 @@ export interface RegistrationResponse {
   is_registered: boolean;
 }
 
-const API_BASE =
-  import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "" : "http://localhost:8000");
+function resolveApiBase(): string {
+  const envUrl = import.meta.env.VITE_API_URL?.trim();
+  if (envUrl) return envUrl;
+  // In dev, use same origin — Vite proxies /api to localhost:8000
+  if (import.meta.env.DEV) return "";
+  return "http://localhost:8000";
+}
+
+const API_BASE = resolveApiBase();
 
 function parseErrorDetail(detail: unknown): string {
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg);
   return "Ошибка сервера";
+}
+
+function networkErrorMessage(): string {
+  if (import.meta.env.DEV) {
+    return "Не удалось подключиться к API. Убедитесь, что backend запущен: http://localhost:8000/health";
+  }
+  return "Не удалось подключиться к серверу";
 }
 
 function getInitData(): string {
@@ -40,7 +54,12 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     headers["X-Telegram-Init-Data"] = initData;
   }
 
-  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  } catch {
+    throw new Error(networkErrorMessage());
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: "Ошибка сервера" }));
@@ -76,9 +95,14 @@ export async function cancelRegistration(eventId: number): Promise<RegistrationR
 
 export async function downloadCalendar(eventId: number, eventName: string): Promise<void> {
   const initData = getInitData();
-  const response = await fetch(`${API_BASE}/api/events/${eventId}/calendar`, {
-    headers: { "X-Telegram-Init-Data": initData },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}/api/events/${eventId}/calendar`, {
+      headers: { "X-Telegram-Init-Data": initData },
+    });
+  } catch {
+    throw new Error(networkErrorMessage());
+  }
 
   if (!response.ok) {
     throw new Error("Не удалось скачать календарь");

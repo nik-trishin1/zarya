@@ -36,6 +36,14 @@ class Settings(BaseSettings):
         return bool(_BOT_TOKEN_PATTERN.match(token))
 
     @property
+    def allow_browser_dev(self) -> bool:
+        """Allow API access from a regular browser without Telegram initData."""
+        if self.dev_mode:
+            return True
+        # Local SQLite setup without a bot — typical `dev-local.sh` workflow
+        return not self.bot_token_configured and self.database_url.startswith("sqlite")
+
+    @property
     def admin_ids(self) -> set[int]:
         if not self.admin_telegram_ids.strip():
             return set()
