@@ -5,10 +5,11 @@ import logging
 from datetime import date, time
 
 from aiogram import Bot, Dispatcher, F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
 from app.bot.keyboards import (
     admin_menu_keyboard,
@@ -62,6 +63,27 @@ async def _save_cover_from_message(message: Message, content: bytes, filename: s
 
 def _telegram_file_too_large(file_size: int | None) -> bool:
     return file_size is not None and file_size > MAX_FILE_SIZE
+
+
+async def _edit_or_answer(
+    message: Message,
+    text: str,
+    reply_markup: InlineKeyboardMarkup | None = None,
+) -> None:
+    try:
+        await message.edit_text(text, reply_markup=reply_markup)
+    except TelegramBadRequest:
+        await message.answer(text, reply_markup=reply_markup)
+
+
+async def _finish_admin_callback(
+    callback: CallbackQuery,
+    text: str,
+    reply_markup: InlineKeyboardMarkup | None = None,
+) -> None:
+    if callback.message is not None:
+        await _edit_or_answer(callback.message, text, reply_markup=reply_markup)
+    await callback.answer()
 
 
 @router.message(CommandStart())
@@ -337,6 +359,51 @@ async def admin_event_detail(callback: CallbackQuery, state: FSMContext):
 
 # --- Edit event ---
 
+@router.callback_query(F.data == "admin:edit:confirm")
+async def edit_confirm(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    data = await state.get_data()
+    event_id = data.get("event_id")
+    if event_id is None or not data.get("edit_mode"):
+        await callback.answer(
+            "Сессия редактирования истекла. Откройте событие и нажмите «Редактировать» снова.",
+            show_alert=True,
+        )
+        return
+
+    try:
+        async with async_session() as db:
+            event = await get_event_by_id(db, event_id)
+            if event is None:
+                await callback.answer("Событие не найдено", show_alert=True)
+                return
+            await update_event(
+                db,
+                event,
+                name=data["name"],
+                description=data.get("description", ""),
+                date=date.fromisoformat(data["event_date"]),
+                time=time.fromisoformat(data["event_time"]),
+                location=data["location"],
+                cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
+            )
+    except Exception:
+        logger.exception("Failed to confirm event edit for event_id=%s", event_id)
+        await callback.answer("Не удалось сохранить изменения", show_alert=True)
+        return
+
+    await state.clear()
+    await state.set_state(AdminStates.MENU)
+    await _finish_admin_callback(
+        callback,
+        f"Событие обновлено: {data['name']} ✅",
+        reply_markup=admin_menu_keyboard(),
+    )
+
+
 @router.callback_query(F.data.regexp(r"^admin:edit:\d+$"))
 async def admin_edit_start(callback: CallbackQuery, state: FSMContext):
     event_id = int(callback.data.split(":")[-1])
@@ -482,48 +549,11 @@ async def show_edit_confirm(message: Message, state: FSMContext, edit: bool = Fa
         f"📝 {data.get('description', '')}\n"
     )
     await state.set_state(AdminStates.EDIT_CONFIRM)
+    keyboard = confirm_keyboard("edit")
     if edit:
-        await message.edit_text(text, reply_markup=confirm_keyboard("edit"))
+        await _edit_or_answer(message, text, reply_markup=keyboard)
     else:
-        await message.answer(text, reply_markup=confirm_keyboard("edit"))
-
-
-@router.callback_query(F.data == "admin:edit:confirm", AdminStates.EDIT_CONFIRM)
-async def edit_confirm(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    event_id = data.get("event_id")
-    if event_id is None:
-        await callback.answer("Сессия редактирования истекла", show_alert=True)
-        return
-
-    try:
-        async with async_session() as db:
-            event = await get_event_by_id(db, event_id)
-            if event is None:
-                await callback.answer("Событие не найдено", show_alert=True)
-                return
-            await update_event(
-                db,
-                event,
-                name=data["name"],
-                description=data.get("description", ""),
-                date=date.fromisoformat(data["event_date"]),
-                time=time.fromisoformat(data["event_time"]),
-                location=data["location"],
-                cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
-            )
-    except Exception:
-        logger.exception("Failed to confirm event edit for event_id=%s", event_id)
-        await callback.answer("Не удалось сохранить изменения", show_alert=True)
-        return
-
-    await state.clear()
-    await state.set_state(AdminStates.MENU)
-    await callback.message.edit_text(
-        f"Событие обновлено: {data['name']} ✅",
-        reply_markup=admin_menu_keyboard(),
-    )
-    await callback.answer()
+        await message.answer(text, reply_markup=keyboard)
 
 
 # --- Delete event ---
