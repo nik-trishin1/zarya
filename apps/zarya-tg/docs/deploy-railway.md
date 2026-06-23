@@ -118,7 +118,7 @@ Mini App открывается **только внутри Telegram**, не в 
    **Direct Links** — опционально, для MVP не обязательно.
 
 5. Закройте и снова откройте чат с ботом в Telegram (или перезапустите Telegram)
-6. `/start` → кнопка **«🌅 Открыть zarya»** под сообщением (если `WEBAPP_URL` верный)
+6. `/start` → приветственное сообщение (Mini App открывается через **Menu Button**)
 7. `/myid` → ваш ID → `ADMIN_TELEGRAM_IDS` на Railway → redeploy backend
 
 **Если открывается браузер, а не Mini App:**
