@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Python 3.10+** (3.11+ recommended; macOS system Python 3.9 will not work)
+- **Python 3.9+** (3.11+ recommended; macOS ships 3.9 — works, but `brew install python@3.11` is better)
 - **Node.js 20+** with `npm` in PATH
 - Telegram Bot Token from [@BotFather](https://t.me/BotFather) (optional for browser-only local testing)
 - Docker — **optional** (only if you prefer `docker compose`)
