@@ -13,10 +13,15 @@ from app.schemas.event import EventResponse
 from app.schemas.registration import RegistrationResponse
 from app.services.events import (
     cancel_registration,
-    generate_ics,
     get_event_detail,
     get_upcoming_events,
     register_user,
+)
+from app.utils.calendar import (
+    build_google_calendar_url,
+    build_outlook_calendar_url,
+    build_yahoo_calendar_url,
+    generate_ics,
 )
 from app.utils.calendar_tokens import create_calendar_token, verify_calendar_token
 from app.utils.formatting import event_to_response, format_event_date
@@ -115,16 +120,34 @@ async def cancel_event_registration(
     )
 
 
+@router.get("/registrations/{event_id}/calendar-links")
+async def get_calendar_links(
+    event_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    event = await _require_registered_event(db, event_id, user)
+    settings = get_settings()
+    token = create_calendar_token(user.user_id, event_id, settings.secret_key)
+    return {
+        "google_url": build_google_calendar_url(event),
+        "outlook_url": build_outlook_calendar_url(event),
+        "yahoo_url": build_yahoo_calendar_url(event),
+        "ics_token": token,
+    }
+
+
 @router.get("/registrations/{event_id}/calendar-token")
 async def get_calendar_download_token(
     event_id: int,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    await _require_registered_event(db, event_id, user)
+    """Deprecated: use /calendar-links."""
+    event = await _require_registered_event(db, event_id, user)
     settings = get_settings()
     token = create_calendar_token(user.user_id, event_id, settings.secret_key)
-    return {"token": token}
+    return {"token": token, "google_url": build_google_calendar_url(event)}
 
 
 @router.get("/events/{event_id}/calendar")

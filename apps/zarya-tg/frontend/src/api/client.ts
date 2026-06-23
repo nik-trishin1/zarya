@@ -106,75 +106,22 @@ export async function cancelRegistration(eventId: number): Promise<RegistrationR
   return apiFetch<RegistrationResponse>(`/api/registrations/${eventId}`, { method: "DELETE" });
 }
 
+interface CalendarLinksResponse {
+  google_url: string;
+  outlook_url: string;
+  yahoo_url: string;
+}
+
 export async function downloadCalendar(eventId: number, _eventName: string): Promise<void> {
-  const fileName = `zarya-event-${eventId}.ics`;
-  const calendarPath = `/api/events/${eventId}/calendar`;
-
-  const { token } = await apiFetch<{ token: string }>(
-    `/api/registrations/${eventId}/calendar-token`,
-  );
-
-  const calendarUrl = `${window.location.origin}${calendarPath}?calendar_token=${encodeURIComponent(token)}`;
-
-  const response = await fetch(calendarUrl);
-  if (!response.ok) {
-    const contentType = response.headers.get("content-type") || "";
-    if (contentType.includes("application/json")) {
-      const error = await response.json().catch(() => ({ detail: "Ошибка сервера" }));
-      throw new Error(parseErrorDetail(error.detail));
-    }
-    throw new Error("Не удалось скачать календарь");
-  }
-
-  const blob = await response.blob();
-  const file = new File([blob], fileName, { type: "text/calendar" });
-
-  if (navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file] });
-      return;
-    } catch {
-      // User cancelled or share unavailable — try other methods
-    }
-  }
+  const links = await apiFetch<CalendarLinksResponse>(`/api/registrations/${eventId}/calendar-links`);
 
   const tg = getTelegramWebApp();
-  const initData = getInitData();
-
-  if (initData && typeof tg?.downloadFile === "function") {
-    const downloadFile = tg.downloadFile;
-    try {
-      await new Promise<void>((resolve, reject) => {
-        downloadFile({ url: calendarUrl, file_name: fileName }, (accepted: boolean) => {
-          if (accepted) {
-            resolve();
-          } else {
-            reject(new Error("Скачивание отменено"));
-          }
-        });
-      });
-      return;
-    } catch {
-      if (typeof tg.openLink === "function") {
-        tg.openLink(calendarUrl);
-        return;
-      }
-    }
-  }
-
-  if (initData && typeof tg?.openLink === "function") {
-    tg.openLink(calendarUrl);
+  if (typeof tg?.openLink === "function") {
+    tg.openLink(links.google_url);
     return;
   }
 
-  const objectUrl = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = objectUrl;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(objectUrl);
+  window.open(links.google_url, "_blank", "noopener,noreferrer");
 }
 
 /** Same-origin absolute URL for uploaded covers; null → gradient placeholder. */

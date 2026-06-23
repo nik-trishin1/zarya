@@ -67,7 +67,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     try {
       await downloadCalendar(event.event_id, event.name);
     } catch (err) {
-      setToast(err instanceof Error ? err.message : "Не удалось скачать календарь");
+      setToast(err instanceof Error ? err.message : "Не удалось открыть календарь");
     }
   };
 
@@ -108,7 +108,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
             <>
               <div className="event-details__registered">Вы зарегистрированы ✅</div>
               <button type="button" className="btn btn--secondary" onClick={handleCalendar}>
-                Добавить в календарь
+                Открыть в календаре
               </button>
               <button
                 type="button"
