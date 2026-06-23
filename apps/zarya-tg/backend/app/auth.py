@@ -33,41 +33,22 @@ def validate_telegram_init_data(init_data: str, bot_token: str) -> dict:
     return json.loads(user_data)
 
 
-async def get_current_user(
-    x_telegram_init_data: str = Header(..., alias="X-Telegram-Init-Data"),
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    settings = get_settings()
-    if not settings.bot_token:
-        # Dev mode without bot token — use mock user from header
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Bot token not configured",
-        )
-
-    tg_user = validate_telegram_init_data(x_telegram_init_data, settings.bot_token)
-    telegram_id = int(tg_user["id"])
-
+async def _get_or_create_user(db: AsyncSession, telegram_id: int, username: str | None, first_name: str | None) -> User:
     result = await db.execute(select(User).where(User.telegram_id == telegram_id))
     user = result.scalar_one_or_none()
 
     if user is None:
-        user = User(
-            telegram_id=telegram_id,
-            username=tg_user.get("username"),
-            first_name=tg_user.get("first_name"),
-        )
+        user = User(telegram_id=telegram_id, username=username, first_name=first_name)
         db.add(user)
         await db.commit()
         await db.refresh(user)
     else:
-        # Update username/first_name if changed
         updated = False
-        if tg_user.get("username") and user.username != tg_user.get("username"):
-            user.username = tg_user.get("username")
+        if username and user.username != username:
+            user.username = username
             updated = True
-        if tg_user.get("first_name") and user.first_name != tg_user.get("first_name"):
-            user.first_name = tg_user.get("first_name")
+        if first_name and user.first_name != first_name:
+            user.first_name = first_name
             updated = True
         if updated:
             await db.commit()
@@ -76,10 +57,40 @@ async def get_current_user(
     return user
 
 
+async def get_current_user(
+    x_telegram_init_data: str | None = Header(None, alias="X-Telegram-Init-Data"),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    settings = get_settings()
+
+    if settings.dev_mode and not x_telegram_init_data:
+        return await _get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
+
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing Telegram init data")
+
+    if not settings.bot_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Bot token not configured",
+        )
+
+    tg_user = validate_telegram_init_data(x_telegram_init_data, settings.bot_token)
+    return await _get_or_create_user(
+        db,
+        telegram_id=int(tg_user["id"]),
+        username=tg_user.get("username"),
+        first_name=tg_user.get("first_name"),
+    )
+
+
 async def get_optional_user(
     x_telegram_init_data: str | None = Header(None, alias="X-Telegram-Init-Data"),
     db: AsyncSession = Depends(get_db),
 ) -> User | None:
+    settings = get_settings()
     if not x_telegram_init_data:
+        if settings.dev_mode:
+            return await _get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
         return None
     return await get_current_user(x_telegram_init_data, db)

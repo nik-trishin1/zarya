@@ -45,6 +45,7 @@ Thumbs.db
 # Database
 *.sqlite
 *.db
+zarya.db
 
 # Uploads
 uploads/

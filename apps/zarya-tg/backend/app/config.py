@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    database_url: str = "postgresql+asyncpg://zarya:zarya@localhost:5432/zarya"
+    database_url: str = "sqlite+aiosqlite:///./zarya.db"
     bot_token: str = ""
     admin_telegram_ids: str = ""
     webapp_url: str = "http://localhost:5173"
@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     upload_dir: str = "./uploads"
     cors_origins: str = "*"
     secret_key: str = "change-me-in-production"
+    dev_mode: bool = False
 
     @property
     def admin_ids(self) -> set[int]:
