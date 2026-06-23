@@ -9,6 +9,10 @@
 
 ### macOS setup (first time)
 
+**No Homebrew?** Use the [Node.js official installer](https://nodejs.org/en/download) (macOS `.pkg`, LTS). Restart Terminal after install, then check `node -v` and `npm -v`.
+
+**With Homebrew:**
+
 ```bash
 brew install python@3.11 node
 ```
@@ -20,11 +24,20 @@ node -v   # should print v20+
 npm -v
 ```
 
-If `npm` is not found, add Homebrew to your shell:
+If `npm` is not found after Homebrew install:
 
 ```bash
 echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
+```
+
+**Without Homebrew — nvm:**
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.zshrc
+nvm install 20
+nvm use 20
 ```
 
 If you use **nvm** or **fnm**, open a regular terminal first — `dev-local.sh` tries to load them automatically. As a fallback:
