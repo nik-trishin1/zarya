@@ -61,14 +61,13 @@ PostgreSQL is added as a **Database** template (no GitHub build).
    | `ADMIN_TELEGRAM_IDS` | your Telegram ID |
    | `API_BASE_URL` | backend URL from step 3 |
    | `WEBAPP_URL` | temporary: backend URL; update after frontend |
-   | `UPLOAD_DIR` | `/app/uploads` |
+   | `UPLOAD_DIR` | `/app/uploads` (legacy disk cache; optional) |
    | `CORS_ORIGINS` | `https://web.telegram.org` (add frontend URL in step 4) |
    | `DEV_MODE` | `false` |
    | `SECRET_KEY` | any long random string |
 
-5. **Volumes** → **Add Volume** → mount path `/app/uploads`
-6. **Deploy** → wait for **Active**
-7. Check: `https://your-api.../health` → `{"status":"ok"}`
+5. **Deploy** → wait for **Active** (cover images are stored in PostgreSQL — no volume required)
+6. Check: `https://your-api.../health` → `{"status":"ok"}`
 
 ### Step 3 — Frontend (Mini App)
 
@@ -222,10 +221,15 @@ nginx listening on 0.0.0.0:8080, 0.0.0.0:80, proxying API to: https://...
 
 ### Обложка события не отображается (битая картинка)
 
-1. **Backend** → **Volumes** → volume на `/app/uploads` (**обязательно** — без volume файлы удаляются при каждом redeploy)
-2. После redeploy **перезагрузите обложку** в боте (редактировать событие → новое фото)
-3. Если файла нет — показывается оранжевый градиент-заглушка (это нормально)
-4. Проверка: `https://ваш-frontend.up.railway.app/static/default-cover.svg` → 200
+**С версии с хранением в PostgreSQL** новые обложки сохраняются в базе и **не пропадают при redeploy**. Volume для `/app/uploads` больше не обязателен.
+
+1. **Redeploy backend** с последним `main` (нужна таблица `media_files`)
+2. События со **старыми** URL `/uploads/...` (до миграции) — один раз **перезагрузите обложку** в боте (редактировать → новое фото). Новый URL будет `/media/...` и сохранится навсегда
+3. Если файла нет — оранжевая градиент-заглушка (это нормально)
+4. Проверка API: `https://ваш-backend.../health` → `{"status":"ok"}`
+5. Проверка media (после загрузки): `https://ваш-frontend.../media/<id>` → 200, `image/jpeg`
+
+**Legacy:** volume на `/app/uploads` нужен только для старых файлов в формате `/uploads/...`; для новых загрузок не требуется.
 
 ### Mini App empty / `Unexpected token '<'` / «API вернул неверный ответ»
 

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from app.models.event import Event
+from app.models.media_file import MediaFile
 from app.models.registration import Registration
 from app.models.user import User
 
-__all__ = ["User", "Event", "Registration"]
+__all__ = ["User", "Event", "Registration", "MediaFile"]

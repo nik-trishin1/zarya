@@ -124,25 +124,29 @@ export async function downloadCalendar(eventId: number, _eventName: string): Pro
   window.open(links.google_url, "_blank", "noopener,noreferrer");
 }
 
-/** Same-origin absolute URL for uploaded covers; null → gradient placeholder. */
+/** Same-origin absolute URL for event covers; null → gradient placeholder. */
 export function resolveCoverUrl(url: string | null | undefined): string | null {
   if (!url) return null;
 
   const trimmed = url.trim();
-  let path: string | null = null;
+  const prefixes = ["/uploads/", "/media/", "/static/"];
 
-  if (trimmed.startsWith("/uploads/")) {
-    path = trimmed;
-  } else {
-    try {
-      const parsed = new URL(trimmed);
-      if (parsed.pathname.startsWith("/uploads/")) {
-        path = parsed.pathname;
-      }
-    } catch {
-      return null;
+  for (const prefix of prefixes) {
+    if (trimmed.startsWith(prefix)) {
+      return toAbsoluteUrl(trimmed);
     }
   }
 
-  return path ? toAbsoluteUrl(path) : null;
+  try {
+    const parsed = new URL(trimmed);
+    for (const prefix of prefixes) {
+      if (parsed.pathname.startsWith(prefix)) {
+        return toAbsoluteUrl(parsed.pathname);
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }

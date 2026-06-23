@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api import events, registrations
+from app.api import events, media, registrations
 from app.config import get_settings
 from app.database import Base, engine
 from app.services.storage import ensure_upload_dir
@@ -51,6 +51,7 @@ def create_app() -> FastAPI:
 
     app.include_router(events.router, prefix="/api")
     app.include_router(registrations.router, prefix="/api")
+    app.include_router(media.router)
 
     upload_path = Path(settings.upload_dir)
     upload_path.mkdir(parents=True, exist_ok=True)
