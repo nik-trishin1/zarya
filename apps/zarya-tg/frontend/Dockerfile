@@ -18,11 +18,11 @@ FROM nginx:alpine
 RUN apk add --no-cache gettext
 
 COPY nginx.conf.template /etc/nginx/nginx.conf.template
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+COPY start.sh /start.sh
+RUN chmod +x /start.sh && rm -f /etc/nginx/conf.d/default.conf
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 8080
 
-CMD ["/docker-entrypoint.sh"]
+CMD ["/start.sh"]

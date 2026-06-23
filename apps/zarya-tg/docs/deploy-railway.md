@@ -167,16 +167,18 @@ Stop local backend using the same `BOT_TOKEN` — only one instance may poll Tel
 
 Buttons are **inline**, below the message text (not a BotFather command menu).
 
-### Frontend — «Application failed to respond»
+### Frontend — «Application failed to respond» / healthcheck failure
 
-Контейнер не слушает порт, который ожидает Railway.
-
-1. **Variables** → `API_UPSTREAM` = `https://zarya-production-be.up.railway.app` (ваш backend URL)
+1. **Variables** → `API_UPSTREAM` = `https://zarya-production-be.up.railway.app` (публичный URL backend)
+   - Без этой переменной контейнер **сразу падает** → healthcheck failure
+   - `VITE_API_URL` — не задавать
 2. Подтяните последний `main` и **Redeploy** frontend
 3. **Deployments → View logs** — должно быть:
-   - `nginx listening on port ...`
+   - `nginx listening on 0.0.0.0:...`
    - `proxying API to: https://...`
+   - `configuration file ... test is successful`
 4. Если в логах `ERROR: API_UPSTREAM is not set` — добавьте переменную и redeploy
+5. Healthcheck проверяет `/nginx-health` (не зависит от backend)
 
 ### Mini App empty / `Unexpected token '<'` / «is not valid JSON»
 
