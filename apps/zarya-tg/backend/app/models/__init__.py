@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from app.models.event import Event
 from app.models.registration import Registration
 from app.models.user import User

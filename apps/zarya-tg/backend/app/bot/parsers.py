@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date, datetime, time
 
 from dateutil import parser as date_parser
