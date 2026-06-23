@@ -84,7 +84,7 @@ PostgreSQL is added as a **Database** template (no GitHub build).
 
    Do **not** use `.railway.internal` URLs. Do **not** paste the frontend URL here — only the backend.
 
-4. **Networking** → **Generate Domain** → copy frontend URL (port **80**)
+4. **Networking** → **Generate Domain** → copy frontend URL (Railway sets `PORT` automatically — do not hardcode port 80)
 5. **Deploy** → open frontend URL in browser (zarya UI should load)
 
 `VITE_API_URL` is optional — leave empty; nginx proxies `/api` to `API_UPSTREAM` at runtime.
@@ -166,6 +166,17 @@ Stop local backend using the same `BOT_TOKEN` — only one instance may poll Tel
 ### `/admin` — no buttons
 
 Buttons are **inline**, below the message text (not a BotFather command menu).
+
+### Frontend — «Application failed to respond»
+
+Контейнер не слушает порт, который ожидает Railway.
+
+1. **Variables** → `API_UPSTREAM` = `https://zarya-production-be.up.railway.app` (ваш backend URL)
+2. Подтяните последний `main` и **Redeploy** frontend
+3. **Deployments → View logs** — должно быть:
+   - `nginx listening on port ...`
+   - `proxying API to: https://...`
+4. Если в логах `ERROR: API_UPSTREAM is not set` — добавьте переменную и redeploy
 
 ### Mini App empty / `Unexpected token '<'` / «is not valid JSON»
 
