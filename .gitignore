@@ -46,5 +46,8 @@ Thumbs.db
 *.sqlite
 *.db
 
+# Uploads
+uploads/
+
 # Railway
 .railway/
