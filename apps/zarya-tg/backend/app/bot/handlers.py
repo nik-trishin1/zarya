@@ -337,7 +337,7 @@ async def admin_event_detail(callback: CallbackQuery, state: FSMContext):
 
 # --- Edit event ---
 
-@router.callback_query(F.data.startswith("admin:edit:"))
+@router.callback_query(F.data.regexp(r"^admin:edit:\d+$"))
 async def admin_edit_start(callback: CallbackQuery, state: FSMContext):
     event_id = int(callback.data.split(":")[-1])
     async with async_session() as db:
@@ -488,25 +488,34 @@ async def show_edit_confirm(message: Message, state: FSMContext, edit: bool = Fa
         await message.answer(text, reply_markup=confirm_keyboard("edit"))
 
 
-@router.callback_query(F.data == "admin:edit:confirm")
+@router.callback_query(F.data == "admin:edit:confirm", AdminStates.EDIT_CONFIRM)
 async def edit_confirm(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    event_id = data["event_id"]
-    async with async_session() as db:
-        event = await get_event_by_id(db, event_id)
-        if event is None:
-            await callback.answer("Событие не найдено", show_alert=True)
-            return
-        await update_event(
-            db,
-            event,
-            name=data["name"],
-            description=data.get("description", ""),
-            date=date.fromisoformat(data["event_date"]),
-            time=time.fromisoformat(data["event_time"]),
-            location=data["location"],
-            cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
-        )
+    event_id = data.get("event_id")
+    if event_id is None:
+        await callback.answer("Сессия редактирования истекла", show_alert=True)
+        return
+
+    try:
+        async with async_session() as db:
+            event = await get_event_by_id(db, event_id)
+            if event is None:
+                await callback.answer("Событие не найдено", show_alert=True)
+                return
+            await update_event(
+                db,
+                event,
+                name=data["name"],
+                description=data.get("description", ""),
+                date=date.fromisoformat(data["event_date"]),
+                time=time.fromisoformat(data["event_time"]),
+                location=data["location"],
+                cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
+            )
+    except Exception:
+        logger.exception("Failed to confirm event edit for event_id=%s", event_id)
+        await callback.answer("Не удалось сохранить изменения", show_alert=True)
+        return
 
     await state.clear()
     await state.set_state(AdminStates.MENU)
