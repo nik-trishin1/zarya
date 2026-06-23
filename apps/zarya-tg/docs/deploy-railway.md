@@ -97,24 +97,34 @@ PostgreSQL is added as a **Database** template (no GitHub build).
    - `CORS_ORIGINS` = `https://your-frontend.up.railway.app,https://web.telegram.org`
 2. **Redeploy** backend and frontend
 
-### Step 5 — Telegram Mini App (не обычная веб-страница)
+### Step 5 — Telegram Mini App (настройка в BotFather)
 
 Mini App открывается **только внутри Telegram**, не в Safari/Chrome.
 
 1. **Backend** → `WEBAPP_URL` = `https://zarya-production-fe.up.railway.app` (ваш frontend, HTTPS)
-2. **Redeploy backend** после смены `WEBAPP_URL`
-3. [@BotFather](https://t.me/BotFather):
-   - `/newapp` → выберите бота → Short name → URL = **frontend URL** (`https://zarya-production-fe.up.railway.app`)
-   - `/setmenubutton` → выберите бота → URL = тот же **frontend URL**
-4. Откройте бота в Telegram → кнопка меню (слева внизу у поля ввода) → откроется Mini App **внутри Telegram**
-5. `/start` → кнопка **«🌅 Открыть zarya»** тоже должна открывать Mini App (тип `web_app`, не браузер)
-6. `/myid` → ваш ID → `ADMIN_TELEGRAM_IDS` на Railway → redeploy backend
-7. `/admin` → inline-кнопки **Создать событие** / **Управлять событиями**
+2. **Backend** → `CORS_ORIGINS` = `https://zarya-production-fe.up.railway.app,https://web.telegram.org`
+3. **Redeploy backend** после смены переменных
+4. [@BotFather](https://t.me/BotFather) → `/mybots` → ваш бот → **Bot Settings** → раздел Mini App:
+
+   **Menu Button** (кнопка слева внизу в чате с ботом):
+   - Выберите **Enter URL**
+   - URL: `https://zarya-production-fe.up.railway.app`
+   - **Enter Title**: например `zarya` или `Открыть zarya`
+
+   **Main App** (кнопка запуска в профиле бота):
+   - **Enter URL**: тот же `https://zarya-production-fe.up.railway.app`
+   - **Launch Mode**: **Fullsize** (полноэкранный Mini App внутри Telegram)
+
+   **Direct Links** — опционально, для MVP не обязательно.
+
+5. Закройте и снова откройте чат с ботом в Telegram (или перезапустите Telegram)
+6. `/start` → кнопка **«🌅 Открыть zarya»** под сообщением (если `WEBAPP_URL` верный)
+7. `/myid` → ваш ID → `ADMIN_TELEGRAM_IDS` на Railway → redeploy backend
 
 **Если открывается браузер, а не Mini App:**
 - `WEBAPP_URL` на backend ≠ frontend URL или без `https://` → redeploy backend
-- В BotFather не создан Mini App (`/newapp`) или menu button указывает не туда
-- Кнопка типа `url` (fallback) вместо `web_app` — исправьте `WEBAPP_URL`
+- В BotFather не настроен **Menu Button** → **Enter URL** (не Disabled)
+- Открываете ссылку в Safari, а не через кнопку в Telegram
 
 ### Step 6 — Verify
 
@@ -210,16 +220,14 @@ nginx listening on 0.0.0.0:8080, 0.0.0.0:80, proxying API to: https://...
 4. Если в логах `ERROR: API_UPSTREAM is not set` — добавьте переменную и redeploy
 5. Healthcheck проверяет `/nginx-health` (не зависит от backend)
 
-### Mini App empty / `Unexpected token '<'` / «is not valid JSON»
+### Mini App empty / `Unexpected token '<'` / «API вернул неверный ответ»
 
-Браузер запрашивает `/api/events`, а вместо JSON приходит HTML (`<!doctype...`). Значит frontend не проксирует запросы на backend.
+nginx проксировал API с неверным заголовком `Host` (frontend вместо backend) — Railway зависал и отдавал HTML.
 
-1. **Frontend** → **Variables** → `API_UPSTREAM` = **публичный** URL backend (`.up.railway.app`, без `/` в конце)
-2. Убедитесь, что в `API_UPSTREAM` **не** frontend URL и **не** `.railway.internal`
-3. **Redeploy** frontend (после изменения переменной)
-4. Откройте frontend URL в браузере — должен загрузиться интерфейс zarya без ошибки JSON
-
-Также проверьте на **backend**: `WEBAPP_URL` = frontend URL, `CORS_ORIGINS` включает frontend URL.
+1. Подтяните последний `main` и **Redeploy frontend**
+2. **Variables** → `API_UPSTREAM` = `https://zarya-production-be.up.railway.app`
+3. **Удалите** `VITE_API_URL`, если задан
+4. Проверка: `https://ваш-frontend.up.railway.app/api/events` → JSON `{"detail":"Missing Telegram init data"}` (это нормально в браузере)
 
 ### `/start` — нет ответа / нет кнопок
 
