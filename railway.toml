@@ -1,0 +1,7 @@
+# Monorepo: do NOT deploy this file as a single service from repo root.
+# Create separate Railway services with Root Directory:
+#   - apps/zarya-tg/backend  (Dockerfile)
+#   - apps/zarya-tg/frontend (Dockerfile)
+# PostgreSQL: add via "Database" template (no GitHub build).
+#
+# See apps/zarya-tg/docs/deploy-railway.md

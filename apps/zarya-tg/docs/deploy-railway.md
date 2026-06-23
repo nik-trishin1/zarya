@@ -25,11 +25,22 @@ This is a normal web app + bot for event RSVP. Same category as any legitimate B
 
 ### Step 1 — New project + database
 
-1. [railway.app](https://railway.app) → **New Project**
-2. **Deploy from GitHub repo** → authorize GitHub → select **`zarya`**
-3. Railway creates first service from repo — we'll reconfigure it as backend later, or delete and re-add; easier path:
-   - Click **+ New** → **Database** → **PostgreSQL**
-   - Wait until PostgreSQL is **Active**
+1. [railway.app](https://railway.app) → **New Project** → **Empty Project** (not "Deploy from GitHub" yet)
+2. **+ New** → **Database** → **PostgreSQL** → wait until **Active**
+
+> **Do not** deploy the whole `zarya` repo as one service from the root — Railway will run Railpack, fail with `start.sh not found`, and show `Railpack could not determine how to build the app`.
+
+### Step 1b — If you already created a failed service from GitHub
+
+Either **delete** that service, or fix it:
+
+1. Open the failed service → **Settings**
+2. **Root Directory:** `apps/zarya-tg/backend`
+3. **Builder:** `Dockerfile` (not Railpack / Nixpacks)
+4. **Dockerfile path:** `Dockerfile` (relative to root directory above)
+5. **Deploy** → **Redeploy**
+
+For frontend later: separate service, Root Directory = `apps/zarya-tg/frontend`.
 
 ### Step 2 — Backend
 
@@ -174,6 +185,14 @@ In [@BotFather](https://t.me/BotFather):
 | Create event | `/admin` → create → event appears in Mini App |
 
 ---
+
+## Troubleshooting deploy
+
+| Error | Fix |
+|-------|-----|
+| `Railpack could not determine how to build` / `start.sh not found` | Wrong builder. Set **Root Directory** (`apps/zarya-tg/backend` or `frontend`), **Builder = Dockerfile**, redeploy. Do not build from monorepo root. |
+| `/health` fails | Backend not started — check Deploy logs |
+| `/admin` «Нет доступа» | Fix `ADMIN_TELEGRAM_IDS` on Railway, redeploy |
 
 ## Troubleshooting `/admin`
 
