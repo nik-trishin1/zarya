@@ -20,9 +20,16 @@ case "${API_UPSTREAM}" in
     ;;
 esac
 
-export PORT API_UPSTREAM
-envsubst '${PORT} ${API_UPSTREAM}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
+# Railway may route public traffic to port 80 while setting PORT=8080 for healthchecks.
+if [ "${PORT}" = "80" ]; then
+  NGINX_EXTRA_LISTEN=""
+else
+  NGINX_EXTRA_LISTEN="listen 80;"
+fi
 
-echo "nginx listening on 0.0.0.0:${PORT}, proxying API to: ${API_UPSTREAM}"
+export PORT API_UPSTREAM NGINX_EXTRA_LISTEN
+envsubst '${PORT} ${API_UPSTREAM} ${NGINX_EXTRA_LISTEN}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
+
+echo "nginx listening on 0.0.0.0:${PORT}${NGINX_EXTRA_LISTEN:+, 0.0.0.0:80}, proxying API to: ${API_UPSTREAM}"
 nginx -t
 exec nginx -g 'daemon off;'

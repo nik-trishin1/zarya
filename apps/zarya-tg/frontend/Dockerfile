@@ -23,6 +23,6 @@ RUN chmod +x /start.sh && rm -f /etc/nginx/conf.d/default.conf
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
-EXPOSE 8080
+EXPOSE 80 8080
 
-CMD ["/start.sh"]
+ENTRYPOINT ["/start.sh"]

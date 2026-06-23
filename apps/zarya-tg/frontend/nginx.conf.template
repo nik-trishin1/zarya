@@ -1,5 +1,6 @@
 server {
-    listen ${PORT};
+    listen 0.0.0.0:${PORT};
+    ${NGINX_EXTRA_LISTEN}
     server_name _;
     root /usr/share/nginx/html;
     index index.html;

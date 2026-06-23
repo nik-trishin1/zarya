@@ -168,7 +168,24 @@ Stop local backend using the same `BOT_TOKEN` — only one instance may poll Tel
 
 Buttons are **inline**, below the message text (not a BotFather command menu).
 
-### Frontend — «Application failed to respond» / healthcheck failure
+### Frontend — «Application failed to respond» / 502 (deploy Active, URL не открывается)
+
+Частая причина: в **Networking** домен направлен на **порт 80**, а Railway задаёт `PORT=8080`.
+
+**Быстрое исправление (без кода):**
+1. Frontend → **Settings** → **Networking**
+2. Откройте ваш домен `zarya-production-fe.up.railway.app`
+3. Поле **Port** → поставьте **8080** (или удалите домен и **Generate Domain** заново — порт подставится автоматически)
+4. Сохраните и подождите 1–2 минуты
+
+**После redeploy с последним `main`:** nginx слушает и `PORT`, и **80** — должно работать даже при порте 80 в Networking.
+
+В логах deploy ищите:
+```
+nginx listening on 0.0.0.0:8080, 0.0.0.0:80, proxying API to: https://...
+```
+
+### Frontend — healthcheck failure
 
 1. **Variables** → `API_UPSTREAM` = `https://zarya-production-be.up.railway.app` (публичный URL backend)
    - Без этой переменной контейнер **сразу падает** → healthcheck failure
