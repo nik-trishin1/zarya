@@ -50,10 +50,26 @@ async def cmd_start(message: Message):
     )
 
 
+@router.message(Command("myid"))
+async def cmd_myid(message: Message):
+    user = message.from_user
+    await message.answer(
+        f"Ваш Telegram ID: `{user.id}`\n\n"
+        "Добавьте его в `ADMIN_TELEGRAM_IDS` на сервере (Railway → Variables), "
+        "если `/admin` отвечает «нет доступа».",
+        parse_mode="Markdown",
+    )
+
+
 @router.message(Command("admin"))
 async def cmd_admin(message: Message, state: FSMContext):
     if not is_admin(message.from_user.id):
-        await message.answer("У вас нет доступа к панели администратора.")
+        await message.answer(
+            "У вас нет доступа к панели администратора.\n\n"
+            f"Ваш Telegram ID: `{message.from_user.id}`\n"
+            "Отправьте `/myid` и добавьте этот ID в `ADMIN_TELEGRAM_IDS` на Railway.",
+            parse_mode="Markdown",
+        )
         return
 
     await state.set_state(AdminStates.MENU)

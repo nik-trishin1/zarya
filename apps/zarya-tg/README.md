@@ -133,23 +133,9 @@ To find your Telegram ID, message [@userinfobot](https://t.me/userinfobot).
 
 ## Railway Deployment
 
-Deploy two services on Railway:
+**Full guide:** [docs/deploy-railway.md](docs/deploy-railway.md)
 
-1. **Backend** — use `apps/zarya-tg/backend/Dockerfile`, attach PostgreSQL plugin, set env vars
-2. **Frontend** — use `apps/zarya-tg/frontend/Dockerfile` with `VITE_API_URL` build arg pointing to backend URL
-
-Required environment variables:
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string (auto from Railway plugin) |
-| `BOT_TOKEN` | Telegram bot token |
-| `ADMIN_TELEGRAM_IDS` | Comma-separated admin Telegram user IDs |
-| `WEBAPP_URL` | Public URL of the frontend |
-| `API_BASE_URL` | Public URL of the backend |
-| `UPLOAD_DIR` | `/app/uploads` (mount a volume) |
-| `CORS_ORIGINS` | Frontend URL(s) |
-| `DEV_MODE` | `false` in production |
+Quick summary: 3 services on Railway (PostgreSQL + backend + frontend). Set `ADMIN_TELEGRAM_IDS` to your real Telegram ID from `/myid`. Do not run the same `BOT_TOKEN` locally and on Railway at the same time.
 
 ---
 

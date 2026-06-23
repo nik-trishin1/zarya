@@ -15,6 +15,9 @@ _BOT_TOKEN_PLACEHOLDERS = {
 _BOT_TOKEN_PATTERN = re.compile(r"^\d+:[A-Za-z0-9_-]+$")
 
 
+_ADMIN_ID_PLACEHOLDERS = {0, 123456789}
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
@@ -47,7 +50,18 @@ class Settings(BaseSettings):
     def admin_ids(self) -> set[int]:
         if not self.admin_telegram_ids.strip():
             return set()
-        return {int(x.strip()) for x in self.admin_telegram_ids.split(",") if x.strip()}
+        ids: set[int] = set()
+        for part in self.admin_telegram_ids.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            try:
+                value = int(part)
+            except ValueError:
+                continue
+            if value not in _ADMIN_ID_PLACEHOLDERS:
+                ids.add(value)
+        return ids
 
 
 @lru_cache
