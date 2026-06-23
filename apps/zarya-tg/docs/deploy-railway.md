@@ -97,12 +97,24 @@ PostgreSQL is added as a **Database** template (no GitHub build).
    - `CORS_ORIGINS` = `https://your-frontend.up.railway.app,https://web.telegram.org`
 2. **Redeploy** backend and frontend
 
-### Step 5 — Telegram
+### Step 5 — Telegram Mini App (не обычная веб-страница)
 
-1. [@BotFather](https://t.me/BotFather) → `/setmenubutton` → your bot → URL = **frontend URL**
-2. Open bot → menu button → Mini App loads
-3. `/myid` → verify ID → update `ADMIN_TELEGRAM_IDS` on Railway if needed → redeploy backend
-4. `/admin` → inline buttons **Создать событие** / **Управлять событиями**
+Mini App открывается **только внутри Telegram**, не в Safari/Chrome.
+
+1. **Backend** → `WEBAPP_URL` = `https://zarya-production-fe.up.railway.app` (ваш frontend, HTTPS)
+2. **Redeploy backend** после смены `WEBAPP_URL`
+3. [@BotFather](https://t.me/BotFather):
+   - `/newapp` → выберите бота → Short name → URL = **frontend URL** (`https://zarya-production-fe.up.railway.app`)
+   - `/setmenubutton` → выберите бота → URL = тот же **frontend URL**
+4. Откройте бота в Telegram → кнопка меню (слева внизу у поля ввода) → откроется Mini App **внутри Telegram**
+5. `/start` → кнопка **«🌅 Открыть zarya»** тоже должна открывать Mini App (тип `web_app`, не браузер)
+6. `/myid` → ваш ID → `ADMIN_TELEGRAM_IDS` на Railway → redeploy backend
+7. `/admin` → inline-кнопки **Создать событие** / **Управлять событиями**
+
+**Если открывается браузер, а не Mini App:**
+- `WEBAPP_URL` на backend ≠ frontend URL или без `https://` → redeploy backend
+- В BotFather не создан Mini App (`/newapp`) или menu button указывает не туда
+- Кнопка типа `url` (fallback) вместо `web_app` — исправьте `WEBAPP_URL`
 
 ### Step 6 — Verify
 

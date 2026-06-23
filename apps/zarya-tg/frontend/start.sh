@@ -20,6 +20,9 @@ case "${API_UPSTREAM}" in
     ;;
 esac
 
+API_UPSTREAM_HOST="${API_UPSTREAM#*://}"
+API_UPSTREAM_HOST="${API_UPSTREAM_HOST%%/*}"
+
 # Railway may route public traffic to port 80 while setting PORT=8080 for healthchecks.
 if [ "${PORT}" = "80" ]; then
   NGINX_EXTRA_LISTEN=""
@@ -27,9 +30,14 @@ else
   NGINX_EXTRA_LISTEN="listen 80;"
 fi
 
-export PORT API_UPSTREAM NGINX_EXTRA_LISTEN
-envsubst '${PORT} ${API_UPSTREAM} ${NGINX_EXTRA_LISTEN}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
+export PORT API_UPSTREAM API_UPSTREAM_HOST NGINX_EXTRA_LISTEN
+envsubst '${PORT} ${API_UPSTREAM} ${API_UPSTREAM_HOST} ${NGINX_EXTRA_LISTEN}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
 
-echo "nginx listening on 0.0.0.0:${PORT}${NGINX_EXTRA_LISTEN:+, 0.0.0.0:80}, proxying API to: ${API_UPSTREAM}"
+if [ -n "${NGINX_EXTRA_LISTEN}" ]; then
+  echo "nginx listening on 0.0.0.0:${PORT} and 0.0.0.0:80, upstream host: ${API_UPSTREAM_HOST}"
+else
+  echo "nginx listening on 0.0.0.0:${PORT}, upstream host: ${API_UPSTREAM_HOST}"
+fi
+echo "proxying API to: ${API_UPSTREAM}"
 nginx -t
 exec nginx -g 'daemon off;'
