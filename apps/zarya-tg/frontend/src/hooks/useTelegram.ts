@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import WebApp from "@twa-dev/sdk";
+import { applyAppTheme } from "../utils/theme";
 
 function isTelegramWebApp(): boolean {
   return Boolean(window.Telegram?.WebApp?.initData);
@@ -21,27 +22,39 @@ function applySafeAreaInsets(): void {
 
 export function useTelegram() {
   useEffect(() => {
+    applyAppTheme();
+
     if (!isTelegramWebApp()) {
-      return;
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const onSystemThemeChange = () => {
+        applyAppTheme();
+      };
+      mediaQuery.addEventListener("change", onSystemThemeChange);
+      return () => mediaQuery.removeEventListener("change", onSystemThemeChange);
     }
 
     try {
       WebApp.ready();
       WebApp.expand();
-      WebApp.setHeaderColor("#0D0D0D");
-      WebApp.setBackgroundColor("#0D0D0D");
+      applyAppTheme();
 
       if (typeof WebApp.requestFullscreen === "function") {
         WebApp.requestFullscreen();
       }
 
+      const onThemeChanged = () => {
+        applyAppTheme();
+      };
+
       applySafeAreaInsets();
       WebApp.onEvent("safeAreaChanged", applySafeAreaInsets);
       WebApp.onEvent("contentSafeAreaChanged", applySafeAreaInsets);
+      WebApp.onEvent("themeChanged", onThemeChanged);
 
       return () => {
         WebApp.offEvent("safeAreaChanged", applySafeAreaInsets);
         WebApp.offEvent("contentSafeAreaChanged", applySafeAreaInsets);
+        WebApp.offEvent("themeChanged", onThemeChanged);
       };
     } catch {
       // Running outside Telegram Mini App (e.g. local browser dev)

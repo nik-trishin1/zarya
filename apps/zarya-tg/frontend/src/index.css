@@ -1,13 +1,36 @@
 /* zarya global styles */
 :root {
-  --color-bg: #0d0d0d;
-  --color-card: #1c1c1e;
   --color-accent: #e8874a;
-  --color-text-primary: #f5f0e8;
-  --color-text-secondary: #888888;
   --color-success: #4caf50;
   --radius-card: 16px;
   --radius-button: 12px;
+}
+
+:root,
+:root[data-theme="dark"] {
+  --color-bg: #0d0d0d;
+  --color-card: #1c1c1e;
+  --color-text-primary: #f5f0e8;
+  --color-text-secondary: #888888;
+  --color-border: #2a2a2c;
+  --color-surface-active: #2a2a2c;
+  --color-btn-primary-text: #0d0d0d;
+  --color-error: #e57373;
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  --shadow-toast: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="light"] {
+  --color-bg: #f5f0e8;
+  --color-card: #ffffff;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6b6560;
+  --color-border: #e5dfd6;
+  --color-surface-active: #ece7df;
+  --color-btn-primary-text: #0d0d0d;
+  --color-error: #c62828;
+  --color-overlay: rgba(0, 0, 0, 0.45);
+  --shadow-toast: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 *,

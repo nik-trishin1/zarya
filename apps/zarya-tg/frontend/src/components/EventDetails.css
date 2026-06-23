@@ -17,7 +17,7 @@
   top: calc(12px + var(--tg-content-safe-area-inset-top, var(--tg-safe-area-inset-top, env(safe-area-inset-top, 0px))));
   left: calc(12px + var(--tg-safe-area-inset-left, env(safe-area-inset-left, 0px)));
   z-index: 2;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-overlay);
   border: none;
   border-radius: 50%;
   width: 40px;
@@ -106,7 +106,7 @@
 
 .btn--primary {
   background: var(--color-accent);
-  color: #0D0D0D;
+  color: var(--color-btn-primary-text);
 }
 
 .btn--secondary {
@@ -133,6 +133,6 @@
   border-radius: var(--radius-button);
   font-size: 14px;
   z-index: 200;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-toast);
   cursor: pointer;
 }

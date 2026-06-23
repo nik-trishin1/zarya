@@ -13,7 +13,7 @@
 }
 
 .event-card:active {
-  background: #2a2a2c;
+  background: var(--color-surface-active);
 }
 
 .event-card__image-wrap {

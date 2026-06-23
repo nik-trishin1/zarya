@@ -17,7 +17,7 @@
 }
 
 .app__status--error {
-  color: #e57373;
+  color: var(--color-error);
 }
 
 .event-list {
