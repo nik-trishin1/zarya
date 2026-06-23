@@ -17,7 +17,7 @@ if [ "$BACKEND_ONLY" = false ]; then
 fi
 echo ""
 
-MIN_PYTHON_MINOR=9
+MIN_PYTHON_MINOR=10
 
 python_version_ok() {
   local version="$1"
@@ -38,6 +38,9 @@ find_python() {
     /usr/local/bin/python3.12
     /usr/local/bin/python3.11
     /usr/local/bin/python3.10
+    /Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12
+    /Library/Frameworks/Python.framework/Versions/3.11/bin/python3.11
+    /Library/Frameworks/Python.framework/Versions/3.10/bin/python3.10
   )
 
   local candidate version
@@ -69,14 +72,20 @@ print_python_diagnostics() {
     echo "  (none)"
   fi
   echo ""
-  echo "Install Python 3.11 on macOS:"
+  echo "Install Python 3.11 on macOS (no Homebrew required):"
+  echo "  1. Open https://www.python.org/downloads/"
+  echo "  2. Download macOS installer for Python 3.11 or 3.12"
+  echo "  3. Run installer, restart Terminal"
+  echo "  4. Verify: python3.11 --version"
+  echo ""
+  echo "Or with Homebrew:"
   echo "  brew install python@3.11"
   echo "  echo 'export PATH=\"/opt/homebrew/opt/python@3.11/bin:\$PATH\"' >> ~/.zshrc"
   echo "  source ~/.zshrc"
   echo ""
-  echo "Then recreate the virtualenv:"
+  echo "macOS system Python 3.9 is NOT supported — remove old venv:"
   echo "  cd apps/zarya-tg/backend && rm -rf .venv"
-  echo "  ./scripts/dev-local.sh"
+  echo "  cd .. && ./scripts/dev-local.sh"
 }
 
 add_dir_to_path_if_npm() {
@@ -202,13 +211,21 @@ echo ""
 echo "==> Setting up backend..."
 cd "$ROOT/backend"
 
-if [ -d .venv ] && [ -f .venv/pyvenv.cfg ]; then
-  OLD_PY=$(grep '^version' .venv/pyvenv.cfg | cut -d= -f2 | tr -d ' ')
-  OLD_MINOR=${OLD_PY#*.}
-  OLD_MINOR=${OLD_MINOR%%.*}
-  if [ -n "$OLD_MINOR" ] && [ "$OLD_MINOR" -lt "$MIN_PYTHON_MINOR" ]; then
-    echo "    Removing old .venv (Python $OLD_PY)..."
-    rm -rf .venv
+if [ -d .venv ]; then
+  if [ -f .venv/pyvenv.cfg ]; then
+    OLD_PY=$(grep '^version' .venv/pyvenv.cfg | cut -d= -f2 | tr -d ' ')
+    OLD_MINOR=${OLD_PY#*.}
+    OLD_MINOR=${OLD_MINOR%%.*}
+    if [ -n "$OLD_MINOR" ] && [ "$OLD_MINOR" -lt "$MIN_PYTHON_MINOR" ]; then
+      echo "    Removing old .venv (Python $OLD_PY is too old, need 3.${MIN_PYTHON_MINOR}+)..."
+      rm -rf .venv
+    fi
+  elif [ -x .venv/bin/python ]; then
+    VENV_MINOR=$(.venv/bin/python -c 'import sys; print(sys.version_info.minor)')
+    if [ "$VENV_MINOR" -lt "$MIN_PYTHON_MINOR" ]; then
+      echo "    Removing old .venv (Python 3.$VENV_MINOR is too old, need 3.${MIN_PYTHON_MINOR}+)..."
+      rm -rf .venv
+    fi
   fi
 fi
 

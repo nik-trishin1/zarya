@@ -2,14 +2,20 @@
 
 ## Prerequisites
 
-- **Python 3.9+** (3.11+ recommended; macOS ships 3.9 — works, but `brew install python@3.11` is better)
+- **Python 3.10+** (3.11+ recommended). **macOS system Python 3.9 does not work** — install from [python.org](https://www.python.org/downloads/) if you don't have Homebrew.
 - **Node.js 20+** with `npm` in PATH
 - Telegram Bot Token from [@BotFather](https://t.me/BotFather) (optional for browser-only local testing)
 - Docker — **optional** (only if you prefer `docker compose`)
 
 ### macOS setup (first time)
 
-**No Homebrew?** Use the [Node.js official installer](https://nodejs.org/en/download) (macOS `.pkg`, LTS). Restart Terminal after install, then check `node -v` and `npm -v`.
+**No Homebrew?** Install from [python.org](https://www.python.org/downloads/) (Python 3.11 or 3.12 `.pkg`), then [Node.js](https://nodejs.org/en/download) (LTS `.pkg`). Restart Terminal after each install.
+
+If you previously ran with system Python 3.9, delete the old virtualenv first:
+
+```bash
+rm -rf apps/zarya-tg/backend/.venv
+```
 
 **With Homebrew:**
 

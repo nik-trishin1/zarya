@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, String, Text, Time, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -22,17 +22,17 @@ class Event(Base):
     date: Mapped[date] = mapped_column(Date, nullable=False)
     time: Mapped[time] = mapped_column(Time, nullable=False)
     location: Mapped[str] = mapped_column(String(500), nullable=False)
-    cover_image_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    cover_image_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     tier: Mapped[str] = mapped_column(String(50), nullable=False, default="friends")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
-    created_by_admin_id: Mapped[int | None] = mapped_column(
+    created_by_admin_id: Mapped[Optional[int]] = mapped_column(
         BigInteger, ForeignKey("users.user_id"), nullable=True
     )
 
-    created_by: Mapped["User | None"] = relationship(back_populates="created_events")
+    created_by: Mapped[Optional["User"]] = relationship(back_populates="created_events")
     registrations: Mapped[list["Registration"]] = relationship(
         back_populates="event", cascade="all, delete-orphan"
     )
