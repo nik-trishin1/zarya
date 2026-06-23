@@ -5,9 +5,16 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+BACKEND_ONLY=false
+if [ "${1:-}" = "--backend-only" ]; then
+  BACKEND_ONLY=true
+fi
+
 echo "==> zarya local dev (no Docker)"
 echo "    API:      http://localhost:8000"
-echo "    Mini App: http://localhost:5173"
+if [ "$BACKEND_ONLY" = false ]; then
+  echo "    Mini App: http://localhost:5173"
+fi
 echo ""
 
 MIN_PYTHON_MINOR=9
@@ -72,20 +79,94 @@ print_python_diagnostics() {
   echo "  ./scripts/dev-local.sh"
 }
 
-ensure_node() {
+add_dir_to_path_if_npm() {
+  local dir="$1"
+  if [ -x "$dir/npm" ]; then
+    export PATH="$dir:$PATH"
+    return 0
+  fi
+  return 1
+}
+
+load_node_env() {
   if command -v npm >/dev/null 2>&1; then
     return 0
   fi
+
+  # Homebrew (Apple Silicon + Intel)
+  add_dir_to_path_if_npm /opt/homebrew/bin || true
+  add_dir_to_path_if_npm /usr/local/bin || true
+  command -v npm >/dev/null 2>&1 && return 0
+
+  # Volta
+  add_dir_to_path_if_npm "$HOME/.volta/bin" || true
+  command -v npm >/dev/null 2>&1 && return 0
+
+  # nvm
   if [ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]; then
     # shellcheck disable=SC1091
     source "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
+    nvm use default >/dev/null 2>&1 || nvm use node >/dev/null 2>&1 || nvm use --lts >/dev/null 2>&1 || true
   fi
-  if command -v npm >/dev/null 2>&1; then
+  command -v npm >/dev/null 2>&1 && return 0
+
+  # fnm
+  if command -v fnm >/dev/null 2>&1; then
+    # shellcheck disable=SC2046
+    eval $(fnm env)
+  elif [ -x "$HOME/.local/share/fnm/fnm" ]; then
+    # shellcheck disable=SC2046
+    eval $($HOME/.local/share/fnm/fnm env)
+  fi
+  command -v npm >/dev/null 2>&1 && return 0
+
+  # asdf
+  if [ -s "$HOME/.asdf/asdf.sh" ]; then
+    # shellcheck disable=SC1091
+    source "$HOME/.asdf/asdf.sh"
+  fi
+  command -v npm >/dev/null 2>&1 && return 0
+
+  # Login shell profile (last resort — macOS often sets PATH only in .zprofile)
+  for profile in "$HOME/.zprofile" "$HOME/.zshrc" "$HOME/.bash_profile"; do
+    if [ -f "$profile" ]; then
+      # shellcheck disable=SC1090
+      source "$profile" 2>/dev/null || true
+      command -v npm >/dev/null 2>&1 && return 0
+    fi
+  done
+
+  return 1
+}
+
+print_node_diagnostics() {
+  echo "Node/npm not found in PATH."
+  echo ""
+  echo "Install Node.js 20+ on macOS (pick one):"
+  echo ""
+  echo "  Option A — Homebrew (simplest):"
+  echo "    brew install node"
+  echo "    echo 'export PATH=\"/opt/homebrew/bin:\$PATH\"' >> ~/.zshrc"
+  echo "    source ~/.zshrc"
+  echo ""
+  echo "  Option B — official installer:"
+  echo "    https://nodejs.org/en/download"
+  echo ""
+  echo "  Option C — run backend only (no Mini App UI):"
+  echo "    ./scripts/dev-local.sh --backend-only"
+  echo ""
+  echo "Verify after install:"
+  echo "    node -v"
+  echo "    npm -v"
+}
+
+ensure_node() {
+  if load_node_env; then
     return 0
   fi
   echo "ERROR: npm not found."
-  echo "Install Node.js 20+ from https://nodejs.org"
-  echo "Or on macOS: brew install node"
+  echo ""
+  print_node_diagnostics
   exit 1
 }
 
@@ -96,28 +177,30 @@ PYTHON_BIN=$(find_python) || {
   exit 1
 }
 
-ensure_node
+if [ "$BACKEND_ONLY" = false ]; then
+  ensure_node
+fi
 
 PY_VERSION=$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-NODE_VERSION=$(node -v)
-echo "==> Using Python $PY_VERSION ($PYTHON_BIN), Node $NODE_VERSION"
+echo "==> Using Python $PY_VERSION ($PYTHON_BIN)"
+if [ "$BACKEND_ONLY" = false ]; then
+  NODE_VERSION=$(node -v)
+  NPM_VERSION=$(npm -v)
+  echo "==> Using Node $NODE_VERSION, npm $NPM_VERSION"
+fi
 echo ""
 
 # --- Backend ---
 echo "==> Setting up backend..."
 cd "$ROOT/backend"
 
-# Recreate venv if it was built with an older Python
-if [ -d .venv ]; then
-  VENV_PY=$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo "")
-  if [ -f .venv/pyvenv.cfg ]; then
-    OLD_PY=$(grep '^version' .venv/pyvenv.cfg | cut -d= -f2 | tr -d ' ')
-    OLD_MINOR=${OLD_PY#*.}
-    OLD_MINOR=${OLD_MINOR%%.*}
-    if [ -n "$OLD_MINOR" ] && [ "$OLD_MINOR" -lt "$MIN_PYTHON_MINOR" ]; then
-      echo "    Removing old .venv (Python $OLD_PY)..."
-      rm -rf .venv
-    fi
+if [ -d .venv ] && [ -f .venv/pyvenv.cfg ]; then
+  OLD_PY=$(grep '^version' .venv/pyvenv.cfg | cut -d= -f2 | tr -d ' ')
+  OLD_MINOR=${OLD_PY#*.}
+  OLD_MINOR=${OLD_MINOR%%.*}
+  if [ -n "$OLD_MINOR" ] && [ "$OLD_MINOR" -lt "$MIN_PYTHON_MINOR" ]; then
+    echo "    Removing old .venv (Python $OLD_PY)..."
+    rm -rf .venv
   fi
 fi
 
@@ -139,6 +222,14 @@ mkdir -p uploads
 echo "==> Starting backend on :8000..."
 python run.py &
 BACKEND_PID=$!
+
+if [ "$BACKEND_ONLY" = true ]; then
+  echo ""
+  echo "==> Backend only. API: http://localhost:8000/health"
+  echo "==> Press Ctrl+C to stop."
+  wait "$BACKEND_PID"
+  exit 0
+fi
 
 # --- Frontend ---
 echo "==> Setting up frontend..."

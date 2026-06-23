@@ -13,7 +13,25 @@
 brew install python@3.11 node
 ```
 
-If you use **nvm**, open a regular terminal (not only via script) or ensure nvm is loaded — `dev-local.sh` tries to source `~/.nvm/nvm.sh` automatically.
+After install, make sure `npm` is in PATH:
+
+```bash
+node -v   # should print v20+
+npm -v
+```
+
+If `npm` is not found, add Homebrew to your shell:
+
+```bash
+echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+If you use **nvm** or **fnm**, open a regular terminal first — `dev-local.sh` tries to load them automatically. As a fallback:
+
+```bash
+./scripts/dev-local.sh --backend-only   # API only, no frontend
+```
 
 ---
 
