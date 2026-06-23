@@ -1,8 +1,18 @@
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_BOT_TOKEN_PLACEHOLDERS = {
+    "",
+    "your-telegram-bot-token",
+    "your-bot-token",
+    "changeme",
+    "change-me",
+}
+_BOT_TOKEN_PATTERN = re.compile(r"^\d+:[A-Za-z0-9_-]+$")
 
 
 class Settings(BaseSettings):
@@ -17,6 +27,13 @@ class Settings(BaseSettings):
     cors_origins: str = "*"
     secret_key: str = "change-me-in-production"
     dev_mode: bool = False
+
+    @property
+    def bot_token_configured(self) -> bool:
+        token = self.bot_token.strip()
+        if token.lower() in _BOT_TOKEN_PLACEHOLDERS:
+            return False
+        return bool(_BOT_TOKEN_PATTERN.match(token))
 
     @property
     def admin_ids(self) -> set[int]:

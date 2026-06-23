@@ -498,10 +498,10 @@ def create_dispatcher() -> Dispatcher:
 
 async def run_bot():
     settings = get_settings()
-    if not settings.bot_token:
-        logger.warning("BOT_TOKEN not set, bot will not start")
+    if not settings.bot_token_configured:
+        logger.warning("BOT_TOKEN not configured, bot will not start")
         return
 
-    bot = Bot(token=settings.bot_token)
+    bot = Bot(token=settings.bot_token.strip())
     dp = create_dispatcher()
     await dp.start_polling(bot)

@@ -18,10 +18,10 @@ async def main():
     config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
     server = uvicorn.Server(config)
 
-    if settings.bot_token:
+    if settings.bot_token_configured:
         await asyncio.gather(server.serve(), run_bot())
     else:
-        logger.warning("BOT_TOKEN not set — running API only")
+        logger.warning("BOT_TOKEN not configured — running API only (set a real token from @BotFather to enable bot)")
         await server.serve()
 
 
