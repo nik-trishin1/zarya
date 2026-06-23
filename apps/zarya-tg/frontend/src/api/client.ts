@@ -1,4 +1,4 @@
-import WebApp from "@twa-dev/sdk";
+import { getTelegramInitData, getTelegramWebApp, toAbsoluteUrl } from "../utils/telegram";
 
 export interface Event {
   event_id: number;
@@ -41,8 +41,7 @@ function networkErrorMessage(): string {
 }
 
 function getInitData(): string {
-  const tg = window.Telegram?.WebApp;
-  return tg?.initData || "";
+  return getTelegramInitData();
 }
 
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -131,15 +130,22 @@ export async function downloadCalendar(eventId: number, _eventName: string): Pro
   const file = new File([blob], fileName, { type: "text/calendar" });
 
   if (navigator.canShare?.({ files: [file] })) {
-    await navigator.share({ files: [file] });
-    return;
+    try {
+      await navigator.share({ files: [file] });
+      return;
+    } catch {
+      // User cancelled or share unavailable — try other methods
+    }
   }
 
+  const tg = getTelegramWebApp();
   const initData = getInitData();
-  if (initData && WebApp.isVersionAtLeast("8.0")) {
+
+  if (initData && typeof tg?.downloadFile === "function") {
+    const downloadFile = tg.downloadFile;
     try {
       await new Promise<void>((resolve, reject) => {
-        WebApp.downloadFile({ url: calendarUrl, file_name: fileName }, (accepted) => {
+        downloadFile({ url: calendarUrl, file_name: fileName }, (accepted: boolean) => {
           if (accepted) {
             resolve();
           } else {
@@ -149,15 +155,15 @@ export async function downloadCalendar(eventId: number, _eventName: string): Pro
       });
       return;
     } catch {
-      if (typeof WebApp.openLink === "function") {
-        WebApp.openLink(calendarUrl);
+      if (typeof tg.openLink === "function") {
+        tg.openLink(calendarUrl);
         return;
       }
     }
   }
 
-  if (initData && typeof WebApp.openLink === "function") {
-    WebApp.openLink(calendarUrl);
+  if (initData && typeof tg?.openLink === "function") {
+    tg.openLink(calendarUrl);
     return;
   }
 
@@ -171,27 +177,25 @@ export async function downloadCalendar(eventId: number, _eventName: string): Pro
   URL.revokeObjectURL(objectUrl);
 }
 
-export function getDefaultCoverUrl(): string {
-  return "/static/default-cover.svg";
-}
-
-/** Same-origin paths for covers — nginx proxies /uploads and /static to backend. */
-export function resolveCoverUrl(url: string | null | undefined): string {
-  if (!url) return getDefaultCoverUrl();
+/** Same-origin absolute URL for uploaded covers; null → gradient placeholder. */
+export function resolveCoverUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
 
   const trimmed = url.trim();
-  if (trimmed.startsWith("/uploads/") || trimmed.startsWith("/static/")) {
-    return trimmed;
-  }
+  let path: string | null = null;
 
-  try {
-    const parsed = new URL(trimmed);
-    if (parsed.pathname.startsWith("/uploads/") || parsed.pathname.startsWith("/static/")) {
-      return parsed.pathname;
+  if (trimmed.startsWith("/uploads/")) {
+    path = trimmed;
+  } else {
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.pathname.startsWith("/uploads/")) {
+        path = parsed.pathname;
+      }
+    } catch {
+      return null;
     }
-  } catch {
-    // Not an absolute URL — fall through to default
   }
 
-  return getDefaultCoverUrl();
+  return path ? toAbsoluteUrl(path) : null;
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getDefaultCoverUrl, resolveCoverUrl } from "../api/client";
+import { resolveCoverUrl } from "../api/client";
 import "./CoverImage.css";
 
 interface CoverImageProps {
@@ -8,26 +8,20 @@ interface CoverImageProps {
 }
 
 export function CoverImage({ url, className }: CoverImageProps) {
-  const [usePlaceholder, setUsePlaceholder] = useState(false);
-  const [src, setSrc] = useState(() => resolveCoverUrl(url));
+  const [failed, setFailed] = useState(false);
+  const coverSrc = resolveCoverUrl(url);
 
-  if (usePlaceholder) {
+  if (!coverSrc || failed) {
     return <div className={`cover-placeholder ${className ?? ""}`} aria-hidden="true" />;
   }
 
   return (
     <img
-      src={src}
+      src={coverSrc}
       alt=""
       className={className}
       loading="lazy"
-      onError={() => {
-        if (src !== getDefaultCoverUrl()) {
-          setSrc(getDefaultCoverUrl());
-          return;
-        }
-        setUsePlaceholder(true);
-      }}
+      onError={() => setFailed(true)}
     />
   );
 }
