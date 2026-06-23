@@ -80,9 +80,10 @@ PostgreSQL is added as a **Database** template (no GitHub build).
 
    | Variable | Value |
    |----------|--------|
-   | `API_UPSTREAM` | backend **public** URL from Step 2 (e.g. `https://zarya-api-production.up.railway.app`) |
+   | `API_UPSTREAM` | backend **public** URL from Step 2 (e.g. `https://zarya-api-production.up.railway.app` or `zarya-api-production.up.railway.app`) |
 
    Do **not** use `.railway.internal` URLs. Do **not** paste the frontend URL here — only the backend.
+   `https://` is optional — added automatically if missing.
 
 4. **Networking** → **Generate Domain** → copy frontend URL (Railway sets `PORT` automatically — do not hardcode port 80)
 5. **Deploy** → open frontend URL in browser (zarya UI should load)
