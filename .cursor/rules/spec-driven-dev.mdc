@@ -1,0 +1,16 @@
+---
+description: Spec-driven development workflow for zarya — plan before coding
+---
+# Spec-Driven Development
+
+Before writing any code, confirm that the relevant specification exists and is up to date.
+
+**Step 1 — Read the spec.** Check `apps/zarya-tg/docs/prd.md` for the relevant user story and its acceptance criteria. If the story does not exist or is ambiguous, stop and clarify with the user before proceeding.
+
+**Step 2 — Check decisions.** Check `apps/zarya-tg/docs/decisions/` for any ADR that constrains the implementation (stack choice, data model, navigation pattern, language). Do not contradict an existing ADR without creating a new one.
+
+**Step 3 — Plan before coding.** For any task that touches more than one file, write out the implementation plan as a short numbered list before writing code. Include: files to create or modify, the change to each file, and the order of operations. Ask the user to confirm the plan if it involves significant structural changes.
+
+**Step 4 — Update tasks.** After completing a task, update the relevant checkbox in `apps/zarya-tg/docs/tasks.md`.
+
+**Step 5 — Commit atomically.** Each commit should correspond to one logical unit of work. Reference the user story or task in the commit message when relevant.

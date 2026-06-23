@@ -6,6 +6,6 @@ alwaysApply: true
 
 Before finalizing any output — code, documentation, or configuration — verify the following.
 
-Confirm that the implementation matches the acceptance criteria in `docs/prd.md` for the relevant user story. Confirm that no features outside MVP scope have been added without a corresponding decision record in `docs/decisions/`. Confirm that user-facing text is in Russian and code comments are in English. Confirm that no secrets or credentials are included in the output. Confirm that the next step is clear and actionable.
+Confirm that the implementation matches the acceptance criteria in `apps/zarya-tg/docs/prd.md` for the relevant user story. Confirm that no features outside MVP scope have been added without a corresponding decision record in `apps/zarya-tg/docs/decisions/`. Confirm that user-facing text is in Russian and code comments are in English. Confirm that no secrets or credentials are included in the output. Confirm that the next step is clear and actionable.
 
 It is better to flag an uncertainty explicitly than to silently paper over it.

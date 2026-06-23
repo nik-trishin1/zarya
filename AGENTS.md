@@ -24,6 +24,7 @@ At the start of every session, read the following files before taking any action
 | `apps/zarya-tg/docs/deliverables/` | UI mockups and finalized artifacts |
 | `apps/zarya-tg/docs/research/` | UX analysis, benchmarks |
 | `.cursor/rules/` | AI agent behavior rules |
+| `apps/zarya-tg/docs/research/ai_community_knowledge_base.md` | Community AI best practices |
 
 ## Source of Truth
 
@@ -36,6 +37,19 @@ At the start of every session, read the following files before taking any action
 ## Language
 
 Code, comments, commit messages, and documentation are written in English. User-facing UI text and bot messages are in Russian.
+
+## Agent Rules Index
+
+| Rule file | Type | Purpose |
+|-----------|------|--------|
+| `zarya-context.mdc` | Always Apply | Monorepo context and MVP scope |
+| `clarify-before-action.mdc` | Always Apply | Ask before uncertain actions |
+| `self-check.mdc` | Always Apply | Verify output before finalizing |
+| `anti-bias.mdc` | Always Apply | Check for cognitive biases |
+| `git-hygiene.mdc` | Always Apply | Commit and branch conventions |
+| `handoff-summary.mdc` | Apply Intelligently | Produce session handoff notes |
+| `context-management.mdc` | Apply Intelligently | Manage context budget |
+| `spec-driven-dev.mdc` | Apply Intelligently | Plan before coding |
 
 ## Commit Convention
 

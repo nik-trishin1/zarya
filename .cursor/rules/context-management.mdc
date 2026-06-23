@@ -1,0 +1,16 @@
+---
+description: Guidelines for managing agent context efficiently during long sessions
+---
+# Context Management
+
+Long sessions accumulate context that degrades agent performance and increases token cost. Apply these practices.
+
+**Context budget.** Do not use more than 40% of the model's context window on a single task. If the conversation is approaching that threshold, ask the user to start a new session and produce a handoff summary first (see `handoff-summary.mdc`).
+
+**Exclude noise.** Never read or include `node_modules/`, `.env`, `__pycache__/`, `.git/`, `dist/`, or `build/` in context. These directories contain no useful signal for code generation or review.
+
+**Decompose before acting.** For tasks that span multiple files or systems, plan the full sequence of steps before writing any code. A clear plan reduces the number of back-and-forth corrections and saves context.
+
+**Compact when needed.** If the session is long and context is filling up, produce a compact summary of: current goal, completed steps, key decisions, open questions, and next step. This summary can be used to resume in a fresh session.
+
+**Parallel subtasks.** For homogeneous tasks (e.g., translating multiple files, generating multiple endpoints), decompose into independent subtasks that can be executed in parallel rather than sequentially in a single long chain.
