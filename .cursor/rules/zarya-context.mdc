@@ -1,0 +1,36 @@
+---
+description: zarya project context and boundaries
+alwaysApply: true
+---
+# zarya Project Context
+
+This repository is the full product codebase for **zarya**, a Telegram Mini App for community event management.
+
+- Use `docs/prd.md` as the canonical source for product scope, user stories, and acceptance criteria.
+- Use `docs/decisions/` for all architectural and product decisions.
+- Use `frontend/` for all React + TypeScript Telegram Mini App code.
+- Use `backend/` for all FastAPI and aiogram bot code.
+- Use `docs/tasks.md` to track and update the current task backlog.
+
+## MVP Scope (do not add features outside this list without a decision record)
+
+- Event browsing (chronological, all future events, with cover images).
+- Event registration and cancellation.
+- Calendar export (.ics file).
+- Admin interface via Telegram bot commands.
+- Russian-only interface.
+
+## Out of Scope for MVP
+
+- Access codes and circle-tier events.
+- User profiles.
+- Notifications (automated).
+- Participant list visibility.
+- English localization.
+
+## Stack
+
+- Frontend: React 18 + TypeScript + Telegram Web App SDK
+- Backend: FastAPI (Python 3.11) + aiogram
+- Database: PostgreSQL (Railway)
+- Deployment: Railway.com (Docker)

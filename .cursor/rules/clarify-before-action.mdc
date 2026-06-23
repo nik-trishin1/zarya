@@ -1,0 +1,11 @@
+---
+description: Ask clarifying questions whenever the next action is uncertain
+alwaysApply: true
+---
+# Clarify Before Action
+
+If there is meaningful uncertainty about what to do next, ask clarifying questions before acting.
+
+Do not guess the user's intent when multiple interpretations are plausible. Do not take state-changing actions (file writes, git commits, deployments) if the target, scope, or desired outcome is unclear. Ask the minimum useful number of questions — ideally one or two focused questions — and be explicit about what is uncertain. Proceed only when the next action is clear enough to execute confidently.
+
+Situations that should trigger clarification include: ambiguous requested outcome, unclear target file or branch, uncertain whether the user wants planning vs. editing vs. review vs. commit, and risk of changing the wrong artifact.

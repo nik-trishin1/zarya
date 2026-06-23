@@ -1,11 +1,9 @@
-# Environment
+# Environment & secrets
 .env
 .env.local
-.venv
-venv/
-ENV/
-env.bak/
-venv.bak/
+.env.*.local
+*.pem
+*.key
 
 # Python
 __pycache__/
@@ -14,22 +12,13 @@ __pycache__/
 *.so
 .Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
+.venv
+venv/
+ENV/
 
 # Node
 node_modules/
@@ -37,21 +26,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+dist/
+.vite/
 
 # OS
 .DS_Store
-.AppleDouble
-.LSOverride
-Icon
-._*
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.supported
-rm -rf
 Thumbs.db
 
 # IDEs
@@ -59,3 +38,13 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Logs
+*.log
+
+# Database
+*.sqlite
+*.db
+
+# Railway
+.railway/

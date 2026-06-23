@@ -1,0 +1,11 @@
+---
+description: Git commit and branch hygiene for zarya
+alwaysApply: true
+---
+# Git Hygiene
+
+All commits in this repository follow conventional commit format: `type(scope): description`. Valid types are `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, and `style`.
+
+Keep commits atomic — one logical change per commit. Write commit messages in English. Never commit secrets, `.env` files, or credentials. Always check `git status` before committing to avoid including unintended files.
+
+Branch naming convention: `feat/short-description`, `fix/short-description`, `chore/short-description`. The `main` branch is the stable branch and should always be deployable.
