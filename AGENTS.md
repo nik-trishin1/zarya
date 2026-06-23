@@ -1,44 +1,42 @@
 # zarya — Agent Instructions
 
-This repository contains the full source code, product documentation, and design assets for **zarya**, a Telegram Mini App for community event management.
+This repository is a monorepo for the **zarya** community platform. It currently contains one app and is structured to accommodate additional apps in the future.
 
 ## Session Startup
 
 At the start of every session, read the following files before taking any action:
 
-- `README.md` — project overview and architecture
-- `docs/prd.md` — Product Requirements Document (source of truth for features and scope)
-- `docs/decisions/` — all architectural and product decisions made so far
-- `docs/tasks.md` — current task backlog and status
+- `README.md` — repository overview and app index
+- `apps/zarya-tg/docs/prd.md` — Product Requirements Document (source of truth for zarya-tg features and scope)
+- `apps/zarya-tg/docs/tasks.md` — current task backlog and status
+- `apps/zarya-tg/docs/decisions/` — all architectural and product decisions
 
 ## Repository Structure
 
 | Path | Purpose |
 |------|---------|
-| `frontend/` | React + TypeScript Telegram Mini App |
-| `backend/` | FastAPI backend + aiogram Telegram bot |
-| `docs/prd.md` | Product Requirements Document v4.0 |
-| `docs/tasks.md` | Task backlog |
-| `docs/decisions/` | Decision records (ADRs) |
-| `docs/research/` | UX analysis, benchmarks, competitor research |
-| `docs/deliverables/` | Finalized artifacts (mockups, exports) |
-| `docs/assets/` | Images and design assets |
+| `apps/zarya-tg/` | Telegram Mini App (MVP) |
+| `apps/zarya-tg/frontend/` | React + TypeScript Telegram Mini App |
+| `apps/zarya-tg/backend/` | FastAPI backend + aiogram Telegram bot |
+| `apps/zarya-tg/docs/prd.md` | Product Requirements Document |
+| `apps/zarya-tg/docs/tasks.md` | Task backlog |
+| `apps/zarya-tg/docs/decisions/` | Architecture Decision Records (ADRs) |
+| `apps/zarya-tg/docs/deliverables/` | UI mockups and finalized artifacts |
+| `apps/zarya-tg/docs/research/` | UX analysis, benchmarks |
 | `.cursor/rules/` | AI agent behavior rules |
-| `.cursor/skills/` | Reusable agent skills for this project |
 
 ## Source of Truth
 
-- **Product scope:** `docs/prd.md` is the canonical source for what is in and out of MVP.
-- **Architecture decisions:** `docs/decisions/` contains all ADRs; do not contradict them without creating a new decision record.
-- **Tasks:** `docs/tasks.md` tracks current work; update it when completing or adding tasks.
+**Product scope:** `apps/zarya-tg/docs/prd.md` is the canonical source for what is in and out of MVP. Do not implement features outside this scope without creating a new decision record.
+
+**Architecture decisions:** `apps/zarya-tg/docs/decisions/` contains all ADRs. Do not contradict them without creating a new record.
+
+**Tasks:** `apps/zarya-tg/docs/tasks.md` tracks current work. Update it when completing or adding tasks.
 
 ## Language
 
-- Code: English (variable names, comments, commit messages).
-- User-facing content: Russian (UI text, bot messages).
-- Documentation: English.
+Code, comments, commit messages, and documentation are written in English. User-facing UI text and bot messages are in Russian.
 
 ## Commit Convention
 
-Follow conventional commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`.
-Keep commits atomic and descriptive.
+Follow conventional commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`. Keep commits atomic and descriptive. Scope the commit to the app when relevant, e.g. `feat(zarya-tg): add event registration endpoint`.
