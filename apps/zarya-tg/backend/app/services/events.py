@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from icalendar import Calendar, Event as ICalEvent
@@ -171,7 +171,7 @@ def generate_ics(event: Event) -> bytes:
 
     start_dt = datetime.combine(event.date, event.time, tzinfo=MOSCOW_TZ)
     ical_event.add("dtstart", start_dt)
-    ical_event.add("dtend", start_dt.replace(hour=(start_dt.hour + 2) % 24))
+    ical_event.add("dtend", start_dt + timedelta(hours=2))
     ical_event.add("uid", f"zarya-event-{event.event_id}@zarya.app")
 
     cal.add_component(ical_event)

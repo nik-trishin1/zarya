@@ -107,13 +107,24 @@ export async function cancelRegistration(eventId: number): Promise<RegistrationR
   return apiFetch<RegistrationResponse>(`/api/registrations/${eventId}`, { method: "DELETE" });
 }
 
-export async function downloadCalendar(eventId: number, eventName: string): Promise<void> {
+export async function downloadCalendar(eventId: number, _eventName: string): Promise<void> {
   const initData = getInitData();
-  const fileName = `zarya-${eventName.replace(/\s+/g, "-")}.ics`;
+  const fileName = `zarya-event-${eventId}.ics`;
   const calendarPath = `/api/events/${eventId}/calendar`;
 
+  let token: string;
+  try {
+    const tokenResponse = await apiFetch<{ token: string }>(
+      `/api/registrations/${eventId}/calendar-token`,
+    );
+    token = tokenResponse.token;
+  } catch (err) {
+    throw err instanceof Error ? err : new Error("Не удалось скачать календарь");
+  }
+
+  const calendarUrl = `${window.location.origin}${calendarPath}?calendar_token=${encodeURIComponent(token)}`;
+
   if (initData && WebApp.isVersionAtLeast("8.0")) {
-    const calendarUrl = `${window.location.origin}${calendarPath}?initData=${encodeURIComponent(initData)}`;
     await new Promise<void>((resolve, reject) => {
       try {
         WebApp.downloadFile({ url: calendarUrl, file_name: fileName }, (accepted) => {
@@ -124,7 +135,7 @@ export async function downloadCalendar(eventId: number, eventName: string): Prom
           }
         });
       } catch {
-        reject(new Error("Не удалось скачать календарь"));
+        reject(new Error("Не удалось скачать календарь. Обновите Telegram до последней версии."));
       }
     });
     return;
@@ -132,11 +143,7 @@ export async function downloadCalendar(eventId: number, eventName: string): Prom
 
   let response: Response;
   try {
-    const headers: Record<string, string> = {};
-    if (initData) {
-      headers["X-Telegram-Init-Data"] = initData;
-    }
-    response = await fetch(`${API_BASE}${calendarPath}`, { headers });
+    response = await fetch(calendarUrl);
   } catch {
     throw new Error(networkErrorMessage());
   }

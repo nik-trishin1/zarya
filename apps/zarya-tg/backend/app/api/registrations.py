@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from fastapi.responses import Response
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import get_current_user
+from app.config import get_settings
 from app.database import get_db
 from app.models.user import User
 from app.schemas.event import EventResponse
@@ -12,14 +14,53 @@ from app.schemas.registration import RegistrationResponse
 from app.services.events import (
     cancel_registration,
     generate_ics,
-    get_event_by_id,
     get_event_detail,
     get_upcoming_events,
     register_user,
 )
+from app.utils.calendar_tokens import create_calendar_token, verify_calendar_token
 from app.utils.formatting import event_to_response, format_event_date
 
 router = APIRouter(tags=["registrations"])
+
+
+async def _require_registered_event(
+    db: AsyncSession, event_id: int, user: User
+):
+    detail = await get_event_detail(db, event_id, user)
+    if detail is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Событие не найдено")
+    event, _, is_registered = detail
+    if not is_registered:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Календарь доступен только зарегистрированным участникам",
+        )
+    return event
+
+
+async def get_calendar_user(
+    event_id: int,
+    calendar_token: str | None = Query(None, alias="calendar_token"),
+    x_telegram_init_data: str | None = Header(None, alias="X-Telegram-Init-Data"),
+    init_data: str | None = Query(None, alias="initData"),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    if calendar_token:
+        settings = get_settings()
+        user_id = verify_calendar_token(calendar_token, event_id, settings.secret_key)
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Ссылка для календаря устарела, откройте событие и попробуйте снова",
+            )
+        result = await db.execute(select(User).where(User.user_id == user_id))
+        token_user = result.scalar_one_or_none()
+        if token_user is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Пользователь не найден")
+        return token_user
+
+    return await get_current_user(x_telegram_init_data, init_data, db)
 
 
 @router.get("/registrations/my", response_model=list[EventResponse])
@@ -74,27 +115,30 @@ async def cancel_event_registration(
     )
 
 
-@router.get("/events/{event_id}/calendar")
-async def download_calendar(
+@router.get("/registrations/{event_id}/calendar-token")
+async def get_calendar_download_token(
     event_id: int,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    detail = await get_event_detail(db, event_id, user)
-    if detail is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Событие не найдено")
+    await _require_registered_event(db, event_id, user)
+    settings = get_settings()
+    token = create_calendar_token(user.user_id, event_id, settings.secret_key)
+    return {"token": token}
 
-    event, _, is_registered = detail
-    if not is_registered:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Календарь доступен только зарегистрированным участникам",
-        )
+
+@router.get("/events/{event_id}/calendar")
+async def download_calendar(
+    event_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_calendar_user),
+):
+    event = await _require_registered_event(db, event_id, user)
 
     ics_content = generate_ics(event)
     filename = f"zarya-{event.event_id}.ics"
     return Response(
         content=ics_content,
-        media_type="text/calendar",
+        media_type="text/calendar; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
