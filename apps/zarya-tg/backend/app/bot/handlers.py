@@ -16,7 +16,6 @@ from app.bot.keyboards import (
     confirm_keyboard,
     delete_confirm_keyboard,
     event_manage_keyboard,
-    open_app_keyboard,
     skip_image_keyboard,
 )
 from app.bot.parsers import format_date_ru, format_time_ru, parse_date, parse_time
@@ -63,8 +62,7 @@ async def cmd_start(message: Message):
     await message.answer(
         "Привет! 🌅\n"
         "Мы ждем тебя на наших скорых встречах.\n"
-        "Нажми кнопку ниже, чтобы посмотреть предстоящие события!",
-        reply_markup=open_app_keyboard(),
+        "Нажми кнопку меню, чтобы посмотреть предстоящие события!",
     )
 
 
