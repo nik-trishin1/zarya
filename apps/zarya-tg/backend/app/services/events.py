@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time
 from zoneinfo import ZoneInfo
 
-from icalendar import Calendar, Event as ICalEvent
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -157,25 +156,6 @@ async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> tu
     detail = await get_event_detail(db, event_id, user)
     assert detail is not None
     return detail
-
-
-def generate_ics(event: Event) -> bytes:
-    cal = Calendar()
-    cal.add("prodid", "-//zarya//zarya-tg//RU")
-    cal.add("version", "2.0")
-
-    ical_event = ICalEvent()
-    ical_event.add("summary", event.name)
-    ical_event.add("location", event.location)
-    ical_event.add("description", event.description)
-
-    start_dt = datetime.combine(event.date, event.time, tzinfo=MOSCOW_TZ)
-    ical_event.add("dtstart", start_dt)
-    ical_event.add("dtend", start_dt + timedelta(hours=2))
-    ical_event.add("uid", f"zarya-event-{event.event_id}@zarya.app")
-
-    cal.add_component(ical_event)
-    return cal.to_ical()
 
 
 async def get_all_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:
