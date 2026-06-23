@@ -60,17 +60,12 @@ def _telegram_file_too_large(file_size: int | None) -> bool:
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
-    settings = get_settings()
-    text = (
-        "Привет! 🌅 Добро пожаловать в zarya — платформу для организации встреч с друзьями.\n\n"
-        "Нажми кнопку ниже, чтобы открыть приложение и посмотреть предстоящие события."
+    await message.answer(
+        "Привет! 🌅\n"
+        "Мы ждем тебя на наших скорых встречах.\n"
+        "Нажми кнопку ниже, чтобы посмотреть предстоящие события!",
+        reply_markup=open_app_keyboard(),
     )
-    if not settings.webapp_url.strip().lower().startswith("https://"):
-        text += (
-            "\n\n⚠️ Администратору: задайте `WEBAPP_URL` на Railway "
-            "(публичный HTTPS-URL frontend, не `.internal` и не localhost)."
-        )
-    await message.answer(text, reply_markup=open_app_keyboard())
 
 
 @router.message(Command("myid"))
