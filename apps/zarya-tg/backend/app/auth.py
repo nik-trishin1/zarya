@@ -5,7 +5,7 @@ import hmac
 import json
 from urllib.parse import parse_qsl
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -61,14 +61,16 @@ async def _get_or_create_user(db: AsyncSession, telegram_id: int, username: str 
 
 async def get_current_user(
     x_telegram_init_data: str | None = Header(None, alias="X-Telegram-Init-Data"),
+    init_data: str | None = Query(None, alias="initData"),
     db: AsyncSession = Depends(get_db),
 ) -> User:
     settings = get_settings()
+    telegram_init_data = x_telegram_init_data or init_data
 
-    if settings.allow_browser_dev and not x_telegram_init_data:
+    if settings.allow_browser_dev and not telegram_init_data:
         return await _get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
 
-    if not x_telegram_init_data:
+    if not telegram_init_data:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing Telegram init data")
 
     if not settings.bot_token_configured:
@@ -77,7 +79,7 @@ async def get_current_user(
             detail="Bot token not configured",
         )
 
-    tg_user = validate_telegram_init_data(x_telegram_init_data, settings.bot_token)
+    tg_user = validate_telegram_init_data(telegram_init_data, settings.bot_token)
     return await _get_or_create_user(
         db,
         telegram_id=int(tg_user["id"]),

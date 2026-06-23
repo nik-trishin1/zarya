@@ -9,7 +9,11 @@ declare global {
         expand: () => void;
         setHeaderColor: (color: string) => void;
         setBackgroundColor: (color: string) => void;
-        close: () => void;
+        downloadFile: (
+          params: { url: string; file_name: string },
+          callback?: (accepted: boolean) => void,
+        ) => void;
+        isVersionAtLeast: (version: string) => boolean;
       };
     };
   }

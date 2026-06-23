@@ -1,3 +1,5 @@
+import WebApp from "@twa-dev/sdk";
+
 export interface Event {
   event_id: number;
   name: string;
@@ -107,16 +109,44 @@ export async function cancelRegistration(eventId: number): Promise<RegistrationR
 
 export async function downloadCalendar(eventId: number, eventName: string): Promise<void> {
   const initData = getInitData();
+  const fileName = `zarya-${eventName.replace(/\s+/g, "-")}.ics`;
+  const calendarPath = `/api/events/${eventId}/calendar`;
+
+  if (initData && WebApp.isVersionAtLeast("8.0")) {
+    const calendarUrl = `${window.location.origin}${calendarPath}?initData=${encodeURIComponent(initData)}`;
+    await new Promise<void>((resolve, reject) => {
+      try {
+        WebApp.downloadFile({ url: calendarUrl, file_name: fileName }, (accepted) => {
+          if (accepted) {
+            resolve();
+          } else {
+            reject(new Error("Скачивание отменено"));
+          }
+        });
+      } catch {
+        reject(new Error("Не удалось скачать календарь"));
+      }
+    });
+    return;
+  }
+
   let response: Response;
   try {
-    response = await fetch(`${API_BASE}/api/events/${eventId}/calendar`, {
-      headers: { "X-Telegram-Init-Data": initData },
-    });
+    const headers: Record<string, string> = {};
+    if (initData) {
+      headers["X-Telegram-Init-Data"] = initData;
+    }
+    response = await fetch(`${API_BASE}${calendarPath}`, { headers });
   } catch {
     throw new Error(networkErrorMessage());
   }
 
   if (!response.ok) {
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const error = await response.json().catch(() => ({ detail: "Ошибка сервера" }));
+      throw new Error(parseErrorDetail(error.detail));
+    }
     throw new Error("Не удалось скачать календарь");
   }
 
@@ -124,7 +154,7 @@ export async function downloadCalendar(eventId: number, eventName: string): Prom
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `zarya-${eventName.replace(/\s+/g, "-")}.ics`;
+  a.download = fileName;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
