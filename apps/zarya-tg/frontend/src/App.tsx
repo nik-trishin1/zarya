@@ -45,7 +45,11 @@ function App() {
 
   return (
     <div className="app">
-      <Header showHomeIcon={screen === "registrations"} onNavClick={handleNavClick} />
+      <Header
+        title={screen === "home" ? "События" : "Мои регистрации"}
+        showHomeIcon={screen === "registrations"}
+        onNavClick={handleNavClick}
+      />
 
       <main className="app__main">
         {loading && <p className="app__status">Загрузка...</p>}

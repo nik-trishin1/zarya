@@ -134,3 +134,19 @@ export async function downloadCalendar(eventId: number, eventName: string): Prom
 export function getDefaultCoverUrl(): string {
   return `${API_BASE}/static/default-cover.svg`;
 }
+
+/** Use same-origin paths for covers so nginx proxies /uploads and /static. */
+export function resolveCoverUrl(url: string | null | undefined): string {
+  if (!url) return getDefaultCoverUrl();
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.startsWith("/uploads/") || parsed.pathname.startsWith("/static/")) {
+      return `${API_BASE}${parsed.pathname}`;
+    }
+  } catch {
+    if (url.startsWith("/uploads/") || url.startsWith("/static/")) {
+      return `${API_BASE}${url}`;
+    }
+  }
+  return url;
+}

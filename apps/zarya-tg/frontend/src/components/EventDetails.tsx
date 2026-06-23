@@ -5,8 +5,8 @@ import {
   downloadCalendar,
   fetchEvent,
   registerForEvent,
+  resolveCoverUrl,
 } from "../api/client";
-import { getDefaultCoverUrl } from "../api/client";
 import { formatEventDate } from "../utils/format";
 import "./EventDetails.css";
 
@@ -88,7 +88,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     );
   }
 
-  const coverUrl = event.cover_image_url || getDefaultCoverUrl();
+  const coverUrl = resolveCoverUrl(event.cover_image_url);
 
   return (
     <div className="event-details">

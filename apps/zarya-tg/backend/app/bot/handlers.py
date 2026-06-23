@@ -31,7 +31,7 @@ from app.services.events import (
     get_or_create_admin_user,
     update_event,
 )
-from app.services.storage import DEFAULT_COVER_URL, save_cover_image_bytes
+from app.services.storage import MAX_FILE_SIZE, image_too_large_message, save_cover_image_bytes
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -39,6 +39,23 @@ router = Router()
 
 def is_admin(telegram_id: int) -> bool:
     return telegram_id in get_settings().admin_ids
+
+
+_COVER_RETRY_HINT = (
+    "\n\nЗагрузите другое изображение (JPEG или PNG, до 5 МБ) или нажмите «Пропустить»."
+)
+
+
+async def _save_cover_from_message(message: Message, content: bytes, filename: str) -> str | None:
+    try:
+        return await save_cover_image_bytes(content, filename)
+    except ValueError as e:
+        await message.answer(f"{e}{_COVER_RETRY_HINT}")
+        return None
+
+
+def _telegram_file_too_large(file_size: int | None) -> bool:
+    return file_size is not None and file_size > MAX_FILE_SIZE
 
 
 @router.message(CommandStart())
@@ -168,13 +185,14 @@ async def create_description(message: Message, state: FSMContext):
 @router.message(AdminStates.CREATE_IMAGE, F.photo)
 async def create_image_photo(message: Message, state: FSMContext):
     photo = message.photo[-1]
+    if _telegram_file_too_large(photo.file_size):
+        await message.answer(f"{image_too_large_message()}{_COVER_RETRY_HINT}")
+        return
     file = await message.bot.get_file(photo.file_id)
     buffer = io.BytesIO()
     await message.bot.download_file(file.file_path, buffer)
-    try:
-        cover_url = await save_cover_image_bytes(buffer.getvalue(), "cover.jpg")
-    except ValueError as e:
-        await message.answer(f"Ошибка: {e}")
+    cover_url = await _save_cover_from_message(message, buffer.getvalue(), "cover.jpg")
+    if cover_url is None:
         return
     await state.update_data(cover_image_url=cover_url)
     await show_create_confirm(message, state)
@@ -186,13 +204,14 @@ async def create_image_document(message: Message, state: FSMContext):
     if not doc.mime_type or not doc.mime_type.startswith("image/"):
         await message.answer("Пожалуйста, загрузите изображение (JPEG или PNG).")
         return
+    if _telegram_file_too_large(doc.file_size):
+        await message.answer(f"{image_too_large_message()}{_COVER_RETRY_HINT}")
+        return
     file = await message.bot.get_file(doc.file_id)
     buffer = io.BytesIO()
     await message.bot.download_file(file.file_path, buffer)
-    try:
-        cover_url = await save_cover_image_bytes(buffer.getvalue(), doc.file_name or "cover.jpg")
-    except ValueError as e:
-        await message.answer(f"Ошибка: {e}")
+    cover_url = await _save_cover_from_message(message, buffer.getvalue(), doc.file_name or "cover.jpg")
+    if cover_url is None:
         return
     await state.update_data(cover_image_url=cover_url)
     await show_create_confirm(message, state)
@@ -403,7 +422,7 @@ async def edit_description(message: Message, state: FSMContext):
         await state.update_data(description=message.text.strip())
     await state.set_state(AdminStates.EDIT_IMAGE)
     await message.answer(
-        "Загрузите новую обложку или пропустите (оставить текущую):",
+        "Загрузите новую обложку (JPEG или PNG, до 5 МБ) или пропустите (оставить текущую):",
         reply_markup=skip_image_keyboard(),
     )
 
@@ -411,13 +430,33 @@ async def edit_description(message: Message, state: FSMContext):
 @router.message(AdminStates.EDIT_IMAGE, F.photo)
 async def edit_image_photo(message: Message, state: FSMContext):
     photo = message.photo[-1]
+    if _telegram_file_too_large(photo.file_size):
+        await message.answer(f"{image_too_large_message()}{_COVER_RETRY_HINT}")
+        return
     file = await message.bot.get_file(photo.file_id)
     buffer = io.BytesIO()
     await message.bot.download_file(file.file_path, buffer)
-    try:
-        cover_url = await save_cover_image_bytes(buffer.getvalue(), "cover.jpg")
-    except ValueError as e:
-        await message.answer(f"Ошибка: {e}")
+    cover_url = await _save_cover_from_message(message, buffer.getvalue(), "cover.jpg")
+    if cover_url is None:
+        return
+    await state.update_data(cover_image_url=cover_url)
+    await show_edit_confirm(message, state)
+
+
+@router.message(AdminStates.EDIT_IMAGE, F.document)
+async def edit_image_document(message: Message, state: FSMContext):
+    doc = message.document
+    if not doc.mime_type or not doc.mime_type.startswith("image/"):
+        await message.answer("Пожалуйста, загрузите изображение (JPEG или PNG).")
+        return
+    if _telegram_file_too_large(doc.file_size):
+        await message.answer(f"{image_too_large_message()}{_COVER_RETRY_HINT}")
+        return
+    file = await message.bot.get_file(doc.file_id)
+    buffer = io.BytesIO()
+    await message.bot.download_file(file.file_path, buffer)
+    cover_url = await _save_cover_from_message(message, buffer.getvalue(), doc.file_name or "cover.jpg")
+    if cover_url is None:
         return
     await state.update_data(cover_image_url=cover_url)
     await show_edit_confirm(message, state)

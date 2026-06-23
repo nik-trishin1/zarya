@@ -10,8 +10,24 @@ from fastapi import UploadFile
 from app.config import get_settings
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+MAX_FILE_SIZE_MB = 5
+MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024
 DEFAULT_COVER_URL = "/static/default-cover.svg"
+
+_IMAGE_TOO_LARGE = f"Изображение слишком большое. Максимальный размер — {MAX_FILE_SIZE_MB} МБ."
+_INVALID_FORMAT = "Допустимы только изображения JPEG и PNG."
+
+
+def image_too_large_message() -> str:
+    return _IMAGE_TOO_LARGE
+
+
+def validate_cover_image_bytes(content: bytes, filename: str) -> None:
+    ext = Path(filename).suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise ValueError(_INVALID_FORMAT)
+    if len(content) > MAX_FILE_SIZE:
+        raise ValueError(_IMAGE_TOO_LARGE)
 
 
 def ensure_upload_dir() -> Path:
@@ -22,14 +38,10 @@ def ensure_upload_dir() -> Path:
 
 
 async def save_cover_image(file: UploadFile) -> str:
-    ext = Path(file.filename or "").suffix.lower()
-    if ext not in ALLOWED_EXTENSIONS:
-        raise ValueError("Only JPEG and PNG images are allowed")
-
     content = await file.read()
-    if len(content) > MAX_FILE_SIZE:
-        raise ValueError("Image must be smaller than 5MB")
+    validate_cover_image_bytes(content, file.filename or "cover.jpg")
 
+    ext = Path(file.filename or "").suffix.lower()
     upload_path = ensure_upload_dir()
     filename = f"{uuid.uuid4().hex}{ext}"
     file_path = upload_path / filename
@@ -42,12 +54,9 @@ async def save_cover_image(file: UploadFile) -> str:
 
 
 async def save_cover_image_bytes(content: bytes, filename: str) -> str:
-    ext = Path(filename).suffix.lower()
-    if ext not in ALLOWED_EXTENSIONS:
-        raise ValueError("Only JPEG and PNG images are allowed")
-    if len(content) > MAX_FILE_SIZE:
-        raise ValueError("Image must be smaller than 5MB")
+    validate_cover_image_bytes(content, filename)
 
+    ext = Path(filename).suffix.lower()
     upload_path = ensure_upload_dir()
     new_filename = f"{uuid.uuid4().hex}{ext}"
     file_path = upload_path / new_filename
