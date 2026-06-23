@@ -16,7 +16,14 @@ export interface RegistrationResponse {
   is_registered: boolean;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE =
+  import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "" : "http://localhost:8000");
+
+function parseErrorDetail(detail: unknown): string {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg);
+  return "Ошибка сервера";
+}
 
 function getInitData(): string {
   const tg = window.Telegram?.WebApp;
@@ -37,7 +44,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: "Ошибка сервера" }));
-    throw new Error(error.detail || "Ошибка сервера");
+    throw new Error(parseErrorDetail(error.detail));
   }
 
   if (response.status === 204) {
