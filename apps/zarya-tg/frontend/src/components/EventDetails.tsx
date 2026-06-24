@@ -9,7 +9,7 @@ import {
 import { CoverImage } from "./CoverImage";
 import { buildEventShareLink } from "../utils/deepLink";
 import { formatEventDate, isEventPast } from "../utils/format";
-import { openTelegramShareLink } from "../utils/telegram";
+import { formatShareMessage, openTelegramShareLink } from "../utils/telegram";
 import "./EventDetails.css";
 
 interface EventDetailsProps {
@@ -76,12 +76,13 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
   const handleShare = async () => {
     if (!event) return;
     const link = buildEventShareLink(event.event_id);
-    if (openTelegramShareLink(link, event.name)) {
+    const message = formatShareMessage(event.name, link);
+    if (openTelegramShareLink(link, message)) {
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(message);
       setToast("Ссылка скопирована");
     } catch {
       setToast("Не удалось скопировать ссылку");
@@ -123,27 +124,11 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
         <p className="event-details__count">Зарегистрировано: {event.registration_count} человек</p>
 
         <div className="event-details__actions">
-          <button type="button" className="btn btn--secondary" onClick={handleShare}>
-            Поделиться
-          </button>
           {past && !event.is_registered && (
             <div className="event-details__past">Событие прошло. Stay tuned!</div>
           )}
           {event.is_registered ? (
-            <>
-              <div className="event-details__registered">Вы зарегистрированы ✅</div>
-              <button type="button" className="btn btn--secondary" onClick={handleCalendar}>
-                Открыть в календаре
-              </button>
-              <button
-                type="button"
-                className="btn btn--ghost"
-                onClick={handleCancel}
-                disabled={actionLoading}
-              >
-                Отменить регистрацию
-              </button>
-            </>
+            <div className="event-details__registered">Вы зарегистрированы ✅</div>
           ) : (
             <button
               type="button"
@@ -152,6 +137,31 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
               disabled={actionLoading || past}
             >
               Зарегистрироваться
+            </button>
+          )}
+
+          <div className="event-details__secondary-row">
+            <button
+              type="button"
+              className="btn btn--secondary btn--half"
+              onClick={handleCalendar}
+              disabled={!event.is_registered}
+            >
+              🗓️ В календарь
+            </button>
+            <button type="button" className="btn btn--secondary btn--half" onClick={handleShare}>
+              🔗 Поделиться
+            </button>
+          </div>
+
+          {event.is_registered && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={handleCancel}
+              disabled={actionLoading}
+            >
+              Отменить регистрацию
             </button>
           )}
         </div>
