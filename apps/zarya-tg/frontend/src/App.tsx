@@ -47,7 +47,8 @@ function App() {
     <div className="app">
       <Header
         title={screen === "home" ? "События" : "Мои регистрации"}
-        showHomeIcon={screen === "registrations"}
+        navIcon={screen === "home" ? "🎫" : "🏠"}
+        navLabel={screen === "home" ? "Мои регистрации" : "События"}
         onNavClick={handleNavClick}
       />
 
