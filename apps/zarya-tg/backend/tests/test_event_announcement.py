@@ -19,12 +19,11 @@ def _event() -> Event:
     )
 
 
-def test_build_event_startapp_link_includes_ios_params():
+def test_build_event_startapp_link_uses_startapp_only():
     link = build_event_startapp_link("zarya_friends_bot", 42)
-    assert link.startswith("https://t.me/zarya_friends_bot?")
-    assert "startapp=event_42" in link
-    assert "startApp=event_42" in link
-    assert "mode=fullscreen" in link
+    assert link == "https://t.me/zarya_friends_bot?startapp=event_42"
+    assert "startApp" not in link
+    assert "mode=" not in link
 
 
 def test_build_event_startapp_link_with_short_name():

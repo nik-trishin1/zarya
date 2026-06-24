@@ -16,13 +16,7 @@ def build_event_startapp_link(
     """Build a Mini App direct link compatible with iOS and Android."""
     username = bot_username.lstrip("@")
     start_param = build_event_start_param(event_id)
-    query = urlencode(
-        {
-            "startapp": start_param,
-            "startApp": start_param,
-            "mode": "fullscreen",
-        }
-    )
+    query = urlencode({"startapp": start_param})
     short_name = (app_short_name or "").strip().lstrip("@")
     if short_name:
         return f"https://t.me/{username}/{short_name}?{query}"
