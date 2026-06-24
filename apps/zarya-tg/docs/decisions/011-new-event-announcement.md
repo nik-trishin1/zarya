@@ -44,4 +44,4 @@ Recipients are all users who have ever `/start`ed the bot or opened the Mini App
 
 - Large user bases may take several seconds to fan out; acceptable for ~20-user MVP.
 - Users who blocked the bot are counted in `blocked`; delivery is skipped on retry until they unblock.
-- Bot username is resolved via `get_me()` at send time; no new env var required.
+- Bot username is resolved via `get_me()` at send time; no new env var required. Production bot: **@zarya_friends_bot** (`zarya_friends_bot`).

@@ -82,7 +82,7 @@ python run.py
 ```bash
 cd apps/zarya-tg/frontend
 npm install
-cp .env.example .env
+cp .env.example .env   # VITE_BOT_USERNAME=zarya_friends_bot for share links
 npm run dev
 ```
 

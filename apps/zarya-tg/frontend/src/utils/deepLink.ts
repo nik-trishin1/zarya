@@ -17,7 +17,7 @@ export function getTelegramStartParam(): string | null {
 export function getBotUsername(): string {
   const fromEnv = import.meta.env.VITE_BOT_USERNAME?.trim();
   if (fromEnv) return fromEnv.replace(/^@/, "");
-  return "zarya_bot";
+  return "zarya_friends_bot";
 }
 
 export function buildEventShareLink(eventId: number): string {

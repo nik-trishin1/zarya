@@ -11,6 +11,10 @@ COPY . .
 ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 
+# Bot username for share deep links (baked into JS at build time)
+ARG VITE_BOT_USERNAME=zarya_friends_bot
+ENV VITE_BOT_USERNAME=$VITE_BOT_USERNAME
+
 RUN npm run build
 
 FROM nginx:alpine

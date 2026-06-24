@@ -80,6 +80,7 @@ PostgreSQL is added as a **Database** template (no GitHub build).
    | Variable | Value |
    |----------|--------|
    | `API_UPSTREAM` | backend **public** URL from Step 2 (e.g. `https://zarya-api-production.up.railway.app` or `zarya-api-production.up.railway.app`) |
+   | `VITE_BOT_USERNAME` | `zarya_friends_bot` (production bot **@zarya_friends_bot**; used in share deep links, baked in at Docker build) |
 
    Do **not** use `.railway.internal` URLs. Do **not** paste the frontend URL here — only the backend.
    `https://` is optional — added automatically if missing.
@@ -88,6 +89,8 @@ PostgreSQL is added as a **Database** template (no GitHub build).
 5. **Deploy** → open frontend URL in browser (zarya UI should load)
 
 `VITE_API_URL` is optional — leave empty; nginx proxies `/api` to `API_UPSTREAM` at runtime.
+
+`VITE_BOT_USERNAME` must match your Telegram bot handle (without `@`). Share links use `https://t.me/{username}?startapp=event_{id}`. Default in code and Dockerfile: `zarya_friends_bot`.
 
 ### Step 4 — Link backend and frontend
 
