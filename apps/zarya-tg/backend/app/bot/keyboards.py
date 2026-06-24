@@ -45,8 +45,20 @@ def event_manage_keyboard(event_id: int) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [InlineKeyboardButton(text="Редактировать", callback_data=f"admin:edit:{event_id}")],
             [InlineKeyboardButton(text="Участники", callback_data=f"admin:registrations:{event_id}")],
+            [InlineKeyboardButton(text="Написать участникам", callback_data=f"admin:broadcast:{event_id}")],
             [InlineKeyboardButton(text="Удалить", callback_data=f"admin:delete:{event_id}")],
             [InlineKeyboardButton(text="◀️ Назад", callback_data="admin:manage")],
+        ]
+    )
+
+
+def broadcast_confirm_keyboard(event_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="✅ Отправить", callback_data="admin:broadcast:confirm"),
+                InlineKeyboardButton(text="❌ Отмена", callback_data=f"admin:detail:{event_id}"),
+            ],
         ]
     )
 

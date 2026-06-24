@@ -15,6 +15,7 @@ from app.bot.keyboards import (
     admin_menu_keyboard,
     back_to_event_keyboard,
     back_to_menu_keyboard,
+    broadcast_confirm_keyboard,
     confirm_keyboard,
     delete_confirm_keyboard,
     edit_keep_keyboard,
@@ -34,6 +35,11 @@ from app.services.events import (
     get_event_registered_users,
     get_or_create_admin_user,
     update_event,
+)
+from app.services.participant_broadcast import (
+    build_broadcast_preview,
+    send_participant_broadcast,
+    validate_broadcast_body,
 )
 from app.services.storage import (
     DEFAULT_COVER_URL,
@@ -478,6 +484,108 @@ async def admin_event_registrations(callback: CallbackQuery, state: FSMContext):
     text = format_participants_message(event.name, users)
     await callback.message.edit_text(text, reply_markup=back_to_event_keyboard(event_id))
     await callback.answer()
+
+
+# --- Broadcast to participants ---
+
+@router.callback_query(F.data == "admin:broadcast:confirm")
+async def admin_broadcast_confirm(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    data = await state.get_data()
+    event_id = data.get("event_id")
+    body = data.get("broadcast_text")
+    if event_id is None or not body:
+        await callback.answer("Сессия рассылки истекла", show_alert=True)
+        return
+
+    async with async_session() as db:
+        event = await get_event_by_id(db, event_id)
+        if event is None:
+            await callback.answer("Событие не найдено", show_alert=True)
+            return
+        users = await get_event_registered_users(db, event_id)
+
+    if not users:
+        await callback.answer("Нет зарегистрированных участников", show_alert=True)
+        return
+
+    sent, failed = await send_participant_broadcast(users, event, body)
+
+    await state.set_state(AdminStates.MANAGE_DETAIL)
+    await state.update_data(event_id=event_id, edit_mode=False)
+    result = f"Сообщение отправлено: {sent} из {len(users)}."
+    if failed:
+        result += f" Не доставлено: {failed} (возможно, бот заблокирован)."
+    await _finish_admin_callback(callback, result, reply_markup=back_to_event_keyboard(event_id))
+
+
+@router.callback_query(F.data.regexp(r"^admin:broadcast:\d+$"))
+async def admin_broadcast_start(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    event_id = int(callback.data.split(":")[-1])
+    async with async_session() as db:
+        event = await get_event_by_id(db, event_id)
+        if event is None:
+            await callback.answer("Событие не найдено", show_alert=True)
+            return
+        users = await get_event_registered_users(db, event_id)
+
+    if not users:
+        await callback.answer("Нет зарегистрированных участников", show_alert=True)
+        return
+
+    await state.set_state(AdminStates.BROADCAST_MESSAGE)
+    await state.update_data(event_id=event_id, edit_mode=False)
+    if callback.message is None:
+        await callback.answer()
+        return
+
+    await callback.message.edit_text(
+        f"Введите текст сообщения для участников события «{event.name}».\n"
+        f"Получателей: {len(users)}",
+        reply_markup=back_to_event_keyboard(event_id),
+    )
+    await callback.answer()
+
+
+@router.message(AdminStates.BROADCAST_MESSAGE)
+async def admin_broadcast_message(message: Message, state: FSMContext):
+    if not is_admin(message.from_user.id):
+        return
+
+    error = validate_broadcast_body(message.text or "")
+    if error:
+        await message.answer(error)
+        return
+
+    data = await state.get_data()
+    event_id = data.get("event_id")
+    if event_id is None:
+        await message.answer("Сессия рассылки истекла. Откройте событие и начните снова.")
+        return
+
+    body = (message.text or "").strip()
+    async with async_session() as db:
+        event = await get_event_by_id(db, event_id)
+        if event is None:
+            await message.answer("Событие не найдено")
+            return
+        users = await get_event_registered_users(db, event_id)
+
+    if not users:
+        await message.answer("Нет зарегистрированных участников")
+        return
+
+    await state.update_data(broadcast_text=body)
+    await state.set_state(AdminStates.BROADCAST_CONFIRM)
+    preview = build_broadcast_preview(event, body, len(users))
+    await message.answer(preview, reply_markup=broadcast_confirm_keyboard(event_id))
 
 
 # --- Edit event ---

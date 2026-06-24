@@ -22,3 +22,5 @@ class AdminStates(StatesGroup):
     EDIT_IMAGE = State()
     EDIT_CONFIRM = State()
     DELETE_CONFIRM = State()
+    BROADCAST_MESSAGE = State()
+    BROADCAST_CONFIRM = State()

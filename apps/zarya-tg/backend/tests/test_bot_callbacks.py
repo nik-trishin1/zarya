@@ -24,6 +24,10 @@ def test_edit_confirm_does_not_match_edit_start_pattern():
     assert pattern.match("admin:edit:keep") is None
     assert pattern.match("admin:edit:42") is not None
 
+    broadcast_pattern = re.compile(r"^admin:broadcast:\d+$")
+    assert broadcast_pattern.match("admin:broadcast:confirm") is None
+    assert broadcast_pattern.match("admin:broadcast:42") is not None
+
 
 def test_edit_confirm_handler_matches_without_fsm_state():
     router = Router()
