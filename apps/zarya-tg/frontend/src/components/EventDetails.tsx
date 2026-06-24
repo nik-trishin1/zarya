@@ -7,7 +7,9 @@ import {
   registerForEvent,
 } from "../api/client";
 import { CoverImage } from "./CoverImage";
+import { buildEventShareLink } from "../utils/deepLink";
 import { formatEventDate } from "../utils/format";
+import { openTelegramShareLink } from "../utils/telegram";
 import "./EventDetails.css";
 
 interface EventDetailsProps {
@@ -71,6 +73,21 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     }
   };
 
+  const handleShare = async () => {
+    if (!event) return;
+    const link = buildEventShareLink(event.event_id);
+    if (openTelegramShareLink(link, event.name)) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setToast("Ссылка скопирована");
+    } catch {
+      setToast("Не удалось скопировать ссылку");
+    }
+  };
+
   if (loading) {
     return (
       <div className="event-details">
@@ -104,6 +121,9 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
         <p className="event-details__count">Зарегистрировано: {event.registration_count} человек</p>
 
         <div className="event-details__actions">
+          <button type="button" className="btn btn--secondary" onClick={handleShare}>
+            Поделиться
+          </button>
           {event.is_registered ? (
             <>
               <div className="event-details__registered">Вы зарегистрированы ✅</div>

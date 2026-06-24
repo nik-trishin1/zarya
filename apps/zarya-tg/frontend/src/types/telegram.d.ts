@@ -5,12 +5,16 @@ declare global {
     Telegram?: {
       WebApp: {
         initData: string;
+        initDataUnsafe?: {
+          start_param?: string;
+        };
         colorScheme?: "light" | "dark";
         ready: () => void;
         expand: () => void;
         setHeaderColor: (color: string) => void;
         setBackgroundColor: (color: string) => void;
         openLink: (url: string) => void;
+        openTelegramLink?: (url: string) => void;
         downloadFile?: (
           params: { url: string; file_name: string },
           callback?: (accepted: boolean) => void,

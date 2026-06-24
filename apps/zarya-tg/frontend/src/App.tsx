@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Event } from "./api/client";
 import { fetchEvents, fetchMyRegistrations } from "./api/client";
 import { EventCard } from "./components/EventCard";
 import { EventDetails } from "./components/EventDetails";
 import { Header } from "./components/Header";
 import { useTelegram } from "./hooks/useTelegram";
+import { getTelegramStartParam, parseEventStartParam } from "./utils/deepLink";
 import "./App.css";
 
 type Screen = "home" | "registrations";
@@ -17,6 +18,16 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const deepLinkHandled = useRef(false);
+
+  useEffect(() => {
+    if (deepLinkHandled.current) return;
+    const eventId = parseEventStartParam(getTelegramStartParam());
+    if (eventId === null) return;
+    deepLinkHandled.current = true;
+    setScreen("home");
+    setSelectedEventId(eventId);
+  }, []);
 
   const refreshRegistrationCount = useCallback(async () => {
     try {
