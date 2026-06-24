@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date as date_type, time as time_type
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EventBase(BaseModel):
@@ -41,7 +41,7 @@ class EventResponse(BaseModel):
     is_registered: bool = False
     is_past: bool = False
     is_full: bool = False
-    max_participants: int | None = None
+    max_participants: int | None = Field(default=None)
 
 
 class EventDetailResponse(EventResponse):

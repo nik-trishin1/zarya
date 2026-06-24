@@ -39,8 +39,12 @@ export function isEventPast(dateStr: string): boolean {
   return dateStr < todayKey;
 }
 
-export function formatEventSeats(registrationCount: number, maxParticipants: number | null): string {
-  if (maxParticipants !== null) {
+export function hasGuestLimit(maxParticipants: number | null | undefined): boolean {
+  return typeof maxParticipants === "number" && Number.isFinite(maxParticipants) && maxParticipants > 0;
+}
+
+export function formatEventSeats(registrationCount: number, maxParticipants: number | null | undefined): string {
+  if (hasGuestLimit(maxParticipants)) {
     return `Гостей: ${registrationCount} из ${maxParticipants}`;
   }
   return `Гостей: ${registrationCount}`;

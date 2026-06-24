@@ -6,16 +6,15 @@ export function getTelegramInitData(): string {
   return getTelegramWebApp()?.initData || "";
 }
 
-export function openTelegramShareLink(url: string, message?: string): boolean {
+export function openTelegramShareLink(url: string, title: string): boolean {
   const tg = getTelegramWebApp();
   if (typeof tg?.openTelegramLink !== "function") {
     return false;
   }
 
-  const shareUrl = message
-    ? `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(message)}`
-    : url;
-  tg.openTelegramLink(shareUrl);
+  // Share text only to keep order «title → link» without a duplicate URL preview.
+  const message = formatShareMessage(title, url);
+  tg.openTelegramLink(`https://t.me/share/url?text=${encodeURIComponent(message)}`);
   return true;
 }
 

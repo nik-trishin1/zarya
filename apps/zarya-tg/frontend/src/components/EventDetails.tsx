@@ -8,7 +8,7 @@ import {
 } from "../api/client";
 import { CoverImage } from "./CoverImage";
 import { buildEventShareLink } from "../utils/deepLink";
-import { formatEventDate, formatEventSeats, isEventPast } from "../utils/format";
+import { formatEventDate, formatEventSeats, hasGuestLimit, isEventPast } from "../utils/format";
 import { formatShareMessage, openTelegramShareLink } from "../utils/telegram";
 import "./EventDetails.css";
 
@@ -77,7 +77,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     if (!event) return;
     const link = buildEventShareLink(event.event_id);
     const message = formatShareMessage(event.name, link);
-    if (openTelegramShareLink(link, message)) {
+    if (openTelegramShareLink(link, event.name)) {
       return;
     }
 
@@ -110,7 +110,8 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
   const full =
     !event.is_registered &&
     (event.is_full ??
-      (event.max_participants !== null && event.registration_count >= event.max_participants));
+      (hasGuestLimit(event.max_participants) &&
+        event.registration_count >= (event.max_participants as number)));
   const registrationBlocked = past || full;
 
   return (

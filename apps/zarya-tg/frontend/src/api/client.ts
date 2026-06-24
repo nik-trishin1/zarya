@@ -47,6 +47,28 @@ function getInitData(): string {
   return getTelegramInitData();
 }
 
+function normalizeEvent(event: Event): Event {
+  const record = event as Event & { maxParticipants?: unknown };
+  const rawLimit = record.max_participants ?? record.maxParticipants;
+
+  let maxParticipants: number | null = null;
+  if (typeof rawLimit === "number" && Number.isFinite(rawLimit)) {
+    maxParticipants = rawLimit;
+  } else if (typeof rawLimit === "string" && rawLimit.trim() !== "") {
+    const parsed = Number(rawLimit);
+    if (Number.isFinite(parsed)) {
+      maxParticipants = parsed;
+    }
+  }
+
+  return {
+    ...event,
+    max_participants: maxParticipants,
+    is_full: Boolean(event.is_full),
+    is_past: Boolean(event.is_past),
+  };
+}
+
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const initData = getInitData();
   const headers: Record<string, string> = {
@@ -90,15 +112,18 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 }
 
 export async function fetchEvents(): Promise<Event[]> {
-  return apiFetch<Event[]>("/api/events");
+  const events = await apiFetch<Event[]>("/api/events");
+  return events.map(normalizeEvent);
 }
 
 export async function fetchEvent(eventId: number): Promise<Event> {
-  return apiFetch<Event>(`/api/events/${eventId}`);
+  const event = await apiFetch<Event>(`/api/events/${eventId}`);
+  return normalizeEvent(event);
 }
 
 export async function fetchMyRegistrations(): Promise<Event[]> {
-  return apiFetch<Event[]>("/api/registrations/my");
+  const events = await apiFetch<Event[]>("/api/registrations/my");
+  return events.map(normalizeEvent);
 }
 
 export async function registerForEvent(eventId: number): Promise<RegistrationResponse> {
