@@ -21,10 +21,11 @@ from app.bot.keyboards import (
     delete_confirm_keyboard,
     edit_keep_keyboard,
     event_manage_keyboard,
+    skip_capacity_keyboard,
     skip_image_keyboard,
 )
 from app.bot.participants import format_participants_message
-from app.bot.parsers import format_date_ru, format_time_ru, parse_date, parse_time
+from app.bot.parsers import format_capacity_ru, format_date_ru, format_time_ru, parse_capacity, parse_date, parse_time
 from app.bot.states import AdminStates
 from app.config import get_settings
 from app.database import async_session
@@ -316,6 +317,34 @@ async def create_location(message: Message, state: FSMContext):
 @router.message(AdminStates.CREATE_DESCRIPTION)
 async def create_description(message: Message, state: FSMContext):
     await state.update_data(description=(message.text or "").strip())
+    await state.set_state(AdminStates.CREATE_CAPACITY)
+    await message.answer(
+        "Введите лимит мест (число) или выберите «Без лимита»:",
+        reply_markup=skip_capacity_keyboard(),
+    )
+
+
+@router.callback_query(F.data == "admin:skip_capacity", AdminStates.CREATE_CAPACITY)
+async def create_skip_capacity(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(max_participants=None)
+    await state.set_state(AdminStates.CREATE_IMAGE)
+    await callback.message.edit_text(
+        "Загрузите обложку (JPEG или PNG, до 5 МБ) или пропустите:",
+        reply_markup=skip_image_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.message(AdminStates.CREATE_CAPACITY)
+async def create_capacity(message: Message, state: FSMContext):
+    parsed = parse_capacity(message.text or "")
+    if parsed is None:
+        await message.answer(
+            "Введите целое число от 1 до 10000 или нажмите «Без лимита»:",
+            reply_markup=skip_capacity_keyboard(),
+        )
+        return
+    await state.update_data(max_participants=parsed)
     await state.set_state(AdminStates.CREATE_IMAGE)
     await message.answer(
         "Загрузите обложку (JPEG или PNG, до 5 МБ) или пропустите:",
@@ -378,7 +407,8 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
         f"📌 {data['name']}\n"
         f"📅 {format_date_ru(event_date)}, {format_time_ru(event_time)}\n"
         f"📍 {data['location']}\n"
-        f"📝 {data.get('description', '')}\n\n"
+        f"📝 {data.get('description', '')}\n"
+        f"👥 Лимит мест: {format_capacity_ru(data.get('max_participants'))}\n\n"
         f"Пользователей в боте: {user_count}"
     )
     await state.set_state(AdminStates.CREATE_CONFIRM)
@@ -411,6 +441,7 @@ async def _finish_event_create(
             location=data["location"],
             cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
             admin_user=admin_user,
+            max_participants=data.get("max_participants"),
         )
         users = await get_all_users(db)
 
@@ -481,7 +512,11 @@ async def admin_manage(callback: CallbackQuery, state: FSMContext):
 
     buttons = []
     for event, reg_count in events:
-        label = f"{event.name} | {format_date_ru(event.date)} | {reg_count} чел."
+        if event.max_participants is not None:
+            seats = f"{reg_count}/{event.max_participants}"
+        else:
+            seats = f"{reg_count}"
+        label = f"{event.name} | {format_date_ru(event.date)} | {seats}"
         buttons.append([InlineKeyboardButton(text=label, callback_data=f"admin:detail:{event.event_id}")])
     buttons.append([InlineKeyboardButton(text="◀️ В меню", callback_data="admin:menu")])
 
@@ -505,11 +540,15 @@ async def admin_event_detail(callback: CallbackQuery, state: FSMContext):
         return
 
     event, reg_count = event_data
+    if event.max_participants is not None:
+        seats_line = f"Занято мест: {reg_count} из {event.max_participants}"
+    else:
+        seats_line = f"Зарегистрировано: {reg_count}"
     text = (
         f"Событие: {event.name}\n"
         f"Дата: {format_date_ru(event.date)}, {format_time_ru(event.time)}\n"
         f"Место: {event.location}\n"
-        f"Зарегистрировано: {reg_count} человек\n\n"
+        f"{seats_line}\n\n"
         f"{event.description}"
     )
     await state.set_state(AdminStates.MANAGE_DETAIL)

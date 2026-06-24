@@ -38,3 +38,10 @@ export function isEventPast(dateStr: string): boolean {
   ].join("-");
   return dateStr < todayKey;
 }
+
+export function formatEventSeats(registrationCount: number, maxParticipants: number | null): string {
+  if (maxParticipants !== null) {
+    return `Занято мест: ${registrationCount} из ${maxParticipants}`;
+  }
+  return `Зарегистрировано: ${registrationCount}`;
+}

@@ -12,6 +12,14 @@ def admin_menu_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def skip_capacity_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Без лимита", callback_data="admin:skip_capacity")],
+        ]
+    )
+
+
 def skip_image_keyboard(*, keep_current: bool = False) -> InlineKeyboardMarkup:
     label = "Оставить текущую" if keep_current else "Пропустить (использовать заглушку)"
     return InlineKeyboardMarkup(

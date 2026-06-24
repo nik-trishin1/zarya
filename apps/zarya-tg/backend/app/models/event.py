@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime, time
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, String, Text, Time, func
+from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, Integer, String, Text, Time, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -23,6 +23,7 @@ class Event(Base):
     time: Mapped[time] = mapped_column(Time, nullable=False)
     location: Mapped[str] = mapped_column(String(500), nullable=False)
     cover_image_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    max_participants: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     tier: Mapped[str] = mapped_column(String(50), nullable=False, default="friends")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

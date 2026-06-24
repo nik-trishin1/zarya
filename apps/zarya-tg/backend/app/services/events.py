@@ -17,6 +17,12 @@ def is_event_past(event: Event) -> bool:
     return event.date < date.today()
 
 
+def is_event_full(event: Event, reg_count: int) -> bool:
+    if event.max_participants is None:
+        return False
+    return reg_count >= event.max_participants
+
+
 async def get_upcoming_events(
     db: AsyncSession,
     user: User | None = None,
@@ -128,9 +134,21 @@ async def register_user(db: AsyncSession, user: User, event_id: int) -> tuple[Ev
     )
     existing = result.scalar_one_or_none()
 
+    if existing and existing.status == RegistrationStatus.ACTIVE.value:
+        raise ValueError("Already registered")
+
+    if event.max_participants is not None:
+        count_result = await db.execute(
+            select(func.count(Registration.registration_id)).where(
+                Registration.event_id == event_id,
+                Registration.status == RegistrationStatus.ACTIVE.value,
+            )
+        )
+        reg_count = count_result.scalar() or 0
+        if reg_count >= event.max_participants:
+            raise ValueError("Event full")
+
     if existing:
-        if existing.status == RegistrationStatus.ACTIVE.value:
-            raise ValueError("Already registered")
         existing.status = RegistrationStatus.ACTIVE.value
         existing.registered_at = datetime.now(MOSCOW_TZ)
     else:
@@ -189,6 +207,7 @@ async def create_event(
     location: str,
     cover_image_url: str | None,
     admin_user: User,
+    max_participants: int | None = None,
 ) -> Event:
     event = Event(
         name=name,
@@ -197,6 +216,7 @@ async def create_event(
         time=event_time,
         location=location,
         cover_image_url=cover_image_url,
+        max_participants=max_participants,
         created_by_admin_id=admin_user.user_id,
     )
     db.add(event)

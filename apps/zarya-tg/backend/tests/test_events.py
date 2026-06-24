@@ -7,8 +7,9 @@ from sqlalchemy import select
 
 from app.database import async_session, engine, Base
 from app.models.event import Event
+from app.models.registration import Registration
 from app.models.user import User
-from app.services.events import is_event_past, register_user
+from app.services.events import is_event_full, is_event_past, register_user
 from app.services.users import get_or_create_user
 
 
@@ -66,3 +67,57 @@ async def test_register_user_rejects_past_event():
 
         with pytest.raises(ValueError, match="Event past"):
             await register_user(db, stored_user, past_event.event_id)
+
+
+def test_is_event_full_respects_capacity():
+    today = date.today()
+    event = Event(
+        name="Limited",
+        description="",
+        date=today + timedelta(days=1),
+        time=time(12, 0),
+        location="Moscow",
+        max_participants=2,
+    )
+    assert is_event_full(event, 1) is False
+    assert is_event_full(event, 2) is True
+
+
+def test_is_event_full_without_limit():
+    event = Event(
+        name="Open",
+        description="",
+        date=date.today(),
+        time=time(12, 0),
+        location="Moscow",
+        max_participants=None,
+    )
+    assert is_event_full(event, 999) is False
+
+
+@pytest.mark.asyncio
+async def test_register_user_rejects_full_event():
+    today = date.today()
+    event = Event(
+        name="Full",
+        description="",
+        date=today + timedelta(days=1),
+        time=time(12, 0),
+        location="Moscow",
+        max_participants=1,
+    )
+
+    async with async_session() as db:
+        host = await get_or_create_user(db, telegram_id=920_010, username="host", first_name="Host")
+        guest = await get_or_create_user(db, telegram_id=920_011, username="guest", first_name="Guest")
+        db.add(event)
+        await db.flush()
+        db.add(Registration(user_id=host.user_id, event_id=event.event_id))
+        await db.commit()
+        await db.refresh(event)
+
+        result = await db.execute(select(User).where(User.user_id == guest.user_id))
+        stored_guest = result.scalar_one()
+
+        with pytest.raises(ValueError, match="Event full"):
+            await register_user(db, stored_guest, event.event_id)

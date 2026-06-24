@@ -38,3 +38,19 @@ def format_date_ru(d: date) -> str:
 
 def format_time_ru(t: time) -> str:
     return t.strftime("%H:%M")
+
+
+def parse_capacity(text: str) -> int | None:
+    stripped = text.strip()
+    if not stripped.isdigit():
+        return None
+    value = int(stripped)
+    if value < 1 or value > 10_000:
+        return None
+    return value
+
+
+def format_capacity_ru(max_participants: int | None) -> str:
+    if max_participants is None:
+        return "Без лимита"
+    return str(max_participants)

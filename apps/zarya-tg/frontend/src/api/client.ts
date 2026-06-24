@@ -11,6 +11,8 @@ export interface Event {
   registration_count: number;
   is_registered: boolean;
   is_past: boolean;
+  is_full: boolean;
+  max_participants: number | null;
 }
 
 export interface RegistrationResponse {

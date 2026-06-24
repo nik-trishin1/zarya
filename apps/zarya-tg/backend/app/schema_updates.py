@@ -4,18 +4,35 @@ from sqlalchemy import inspect, text
 from sqlalchemy.engine import Connection
 
 
-def apply_schema_updates(connection: Connection) -> None:
+def _add_column_if_missing(
+    connection: Connection,
+    table: str,
+    column: str,
+    ddl_postgresql: str,
+    ddl_sqlite: str,
+) -> None:
     inspector = inspect(connection)
-    if "users" not in inspector.get_table_names():
+    if table not in inspector.get_table_names():
         return
-
-    columns = {column["name"] for column in inspector.get_columns("users")}
-    if "bot_blocked_at" in columns:
+    columns = {col["name"] for col in inspector.get_columns(table)}
+    if column in columns:
         return
-
-    if connection.dialect.name == "postgresql":
-        ddl = "ALTER TABLE users ADD COLUMN bot_blocked_at TIMESTAMPTZ"
-    else:
-        ddl = "ALTER TABLE users ADD COLUMN bot_blocked_at DATETIME"
-
+    ddl = ddl_postgresql if connection.dialect.name == "postgresql" else ddl_sqlite
     connection.execute(text(ddl))
+
+
+def apply_schema_updates(connection: Connection) -> None:
+    _add_column_if_missing(
+        connection,
+        "users",
+        "bot_blocked_at",
+        "ALTER TABLE users ADD COLUMN bot_blocked_at TIMESTAMPTZ",
+        "ALTER TABLE users ADD COLUMN bot_blocked_at DATETIME",
+    )
+    _add_column_if_missing(
+        connection,
+        "events",
+        "max_participants",
+        "ALTER TABLE events ADD COLUMN max_participants INTEGER",
+        "ALTER TABLE events ADD COLUMN max_participants INTEGER",
+    )

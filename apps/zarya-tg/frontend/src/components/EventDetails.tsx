@@ -8,7 +8,7 @@ import {
 } from "../api/client";
 import { CoverImage } from "./CoverImage";
 import { buildEventShareLink } from "../utils/deepLink";
-import { formatEventDate, isEventPast } from "../utils/format";
+import { formatEventDate, formatEventSeats, isEventPast } from "../utils/format";
 import { formatShareMessage, openTelegramShareLink } from "../utils/telegram";
 import "./EventDetails.css";
 
@@ -107,6 +107,11 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
   }
 
   const past = event.is_past ?? isEventPast(event.date);
+  const full =
+    !event.is_registered &&
+    (event.is_full ??
+      (event.max_participants !== null && event.registration_count >= event.max_participants));
+  const registrationBlocked = past || full;
 
   return (
     <div className="event-details">
@@ -121,11 +126,16 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
         <p className="event-details__meta">{formatEventDate(event.date, event.time)}</p>
         <p className="event-details__meta">📍 {event.location}</p>
         <p className="event-details__description">{event.description}</p>
-        <p className="event-details__count">Зарегистрировано: {event.registration_count} человек</p>
+        <p className="event-details__count">
+          {formatEventSeats(event.registration_count, event.max_participants)}
+        </p>
 
         <div className="event-details__actions">
           {past && !event.is_registered && (
             <div className="event-details__past">Событие прошло. Stay tuned!</div>
+          )}
+          {full && (
+            <div className="event-details__past">Fully booked. Stay tuned!</div>
           )}
           {event.is_registered ? (
             <div className="event-details__registered">Вы зарегистрированы ✅</div>
@@ -134,7 +144,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
               type="button"
               className="btn btn--primary"
               onClick={handleRegister}
-              disabled={actionLoading || past}
+              disabled={actionLoading || registrationBlocked}
             >
               Зарегистрироваться
             </button>

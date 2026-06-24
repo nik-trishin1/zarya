@@ -10,6 +10,7 @@ class AdminStates(StatesGroup):
     CREATE_TIME = State()
     CREATE_LOCATION = State()
     CREATE_DESCRIPTION = State()
+    CREATE_CAPACITY = State()
     CREATE_IMAGE = State()
     CREATE_CONFIRM = State()
     MANAGE_LIST = State()

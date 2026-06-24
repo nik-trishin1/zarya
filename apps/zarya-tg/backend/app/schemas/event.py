@@ -40,6 +40,8 @@ class EventResponse(BaseModel):
     registration_count: int = 0
     is_registered: bool = False
     is_past: bool = False
+    is_full: bool = False
+    max_participants: int | None = None
 
 
 class EventDetailResponse(EventResponse):
