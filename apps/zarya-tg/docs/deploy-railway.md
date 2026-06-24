@@ -58,6 +58,7 @@ PostgreSQL is added as a **Database** template (no GitHub build).
    |----------|--------|
    | `DATABASE_URL` | **Add Reference** → PostgreSQL → `DATABASE_URL` |
    | `BOT_TOKEN` | token from BotFather |
+   | `BOT_APP_SHORT_NAME` | Direct Link short name from BotFather (recommended for event deep links on iOS) |
    | `ADMIN_TELEGRAM_IDS` | your Telegram ID |
    | `API_BASE_URL` | backend URL from step 3 |
    | `WEBAPP_URL` | temporary: backend URL; update after frontend |
@@ -81,6 +82,7 @@ PostgreSQL is added as a **Database** template (no GitHub build).
    |----------|--------|
    | `API_UPSTREAM` | backend **public** URL from Step 2 (e.g. `https://zarya-api-production.up.railway.app` or `zarya-api-production.up.railway.app`) |
    | `VITE_BOT_USERNAME` | `zarya_friends_bot` (production bot **@zarya_friends_bot**; used in share deep links, baked in at Docker build) |
+   | `VITE_BOT_APP_SHORT_NAME` | Direct Link short name from BotFather (recommended; same as `BOT_APP_SHORT_NAME` on backend) |
 
    Do **not** use `.railway.internal` URLs. Do **not** paste the frontend URL here — only the backend.
    `https://` is optional — added automatically if missing.
@@ -90,9 +92,9 @@ PostgreSQL is added as a **Database** template (no GitHub build).
 
 `VITE_API_URL` is optional — leave empty; nginx proxies `/api` to `API_UPSTREAM` at runtime.
 
-`VITE_BOT_USERNAME` must match your Telegram bot handle (without `@`). Share links use `https://t.me/{username}?startApp=event_{id}&mode=fullsize`. Default: `zarya_friends_bot`.
+`VITE_BOT_USERNAME` must match your Telegram bot handle (without `@`). Share links use `https://t.me/{username}?startapp=event_{id}&startApp=event_{id}`. Default: `zarya_friends_bot`.
 
-Optional `VITE_BOT_APP_SHORT_NAME` — only if you configured a Direct Link Mini App in BotFather (helps some iOS clients open the app instead of Safari).
+`VITE_BOT_APP_SHORT_NAME` — Direct Link short name from BotFather (recommended for iOS). Set the same value as `BOT_APP_SHORT_NAME` on the backend for announcements.
 
 ### Step 4 — Link backend and frontend
 

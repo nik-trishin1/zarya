@@ -61,7 +61,7 @@ Small friend groups lack a centralized, low-friction way to organize recurring s
 **US-1: User Onboarding**
 - As a new user, I want to open the Telegram Mini App and immediately see upcoming events so that I can discover what's happening without extra steps.
 - Acceptance Criteria:
-  - User receives bot link (e.g., `t.me/zarya_friends_bot?startApp=event_5&mode=fullsize`) and taps it.
+  - User receives bot link (e.g., `t.me/zarya_friends_bot?startapp=event_5&startApp=event_5`) and taps it.
   - Telegram opens the Mini App (Web App).
   - App displays the home screen with all upcoming events in chronological order.
   - No welcome screen or extra steps; events are the primary content.

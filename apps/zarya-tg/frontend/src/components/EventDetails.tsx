@@ -7,9 +7,9 @@ import {
   registerForEvent,
 } from "../api/client";
 import { CoverImage } from "./CoverImage";
-import { buildEventShareLink } from "../utils/deepLink";
+import { buildEventShareLink, formatShareMessage } from "../utils/deepLink";
 import { formatEventDate, formatEventSeats, hasGuestLimit, isEventPast } from "../utils/format";
-import { formatShareMessage, openTelegramShareLink } from "../utils/telegram";
+import { openTelegramShareLink } from "../utils/telegram";
 import "./EventDetails.css";
 
 interface EventDetailsProps {
@@ -76,8 +76,8 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
   const handleShare = async () => {
     if (!event) return;
     const link = buildEventShareLink(event.event_id);
-    const message = formatShareMessage(event.name, link);
-    if (openTelegramShareLink(link, event.name)) {
+    const message = formatShareMessage(event.name, link, event.description);
+    if (openTelegramShareLink(link, message)) {
       return;
     }
 

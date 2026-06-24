@@ -33,13 +33,21 @@ export function buildEventStartParam(eventId: number): string {
 export function buildEventShareLink(eventId: number): string {
   const username = getBotUsername();
   const startParam = buildEventStartParam(eventId);
-  const params = new URLSearchParams({
-    startApp: startParam,
-    mode: "fullsize",
-  });
+  const params = new URLSearchParams();
+  params.set("startapp", startParam);
+  params.set("startApp", startParam);
   const shortName = getBotAppShortName();
   const base = shortName
     ? `https://t.me/${username}/${shortName}`
     : `https://t.me/${username}`;
   return `${base}?${params.toString()}`;
+}
+
+export function formatShareMessage(title: string, url: string, description?: string): string {
+  const lines = [title.trim(), url.trim()];
+  const desc = description?.trim();
+  if (desc) {
+    lines.push("", desc);
+  }
+  return lines.join("\n");
 }

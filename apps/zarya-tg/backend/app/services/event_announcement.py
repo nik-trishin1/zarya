@@ -7,7 +7,7 @@ from app.models.event import Event
 from app.models.user import User
 from app.services.telegram_delivery import deliver_bot_messages_to_users
 from app.utils.formatting import format_event_date
-from app.utils.telegram_links import build_event_startapp_link
+from app.utils.telegram_links import build_event_share_text, build_event_startapp_link
 
 MAX_DESCRIPTION_LENGTH = 500
 TELEGRAM_MESSAGE_LIMIT = 4096
@@ -18,18 +18,12 @@ def build_new_event_announcement(event: Event, bot_username: str) -> str:
     location_line = f"📍 {event.location}"
     parts = [header, location_line]
 
-    description = (event.description or "").strip()
-    if description:
-        if len(description) > MAX_DESCRIPTION_LENGTH:
-            description = description[: MAX_DESCRIPTION_LENGTH - 1] + "…"
-        parts.append(description)
-
     link = build_event_startapp_link(
         bot_username,
         event.event_id,
         app_short_name=get_settings().bot_app_short_name or None,
     )
-    parts.append(f"{event.name}\n{link}")
+    parts.append(build_event_share_text(event.name, link, event.description or ""))
 
     message = "\n\n".join(parts)
     if len(message) > TELEGRAM_MESSAGE_LIMIT:
