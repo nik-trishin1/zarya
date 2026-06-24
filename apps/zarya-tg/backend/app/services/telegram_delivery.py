@@ -10,6 +10,7 @@ from aiogram.exceptions import TelegramForbiddenError
 from aiogram.types import InlineKeyboardMarkup
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.database import async_session
 from app.models.user import User
 
 logger = logging.getLogger(__name__)

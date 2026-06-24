@@ -482,20 +482,24 @@ async def _finish_event_create(
         if not users:
             result += "\n\nУведомление не отправлено: в боте пока нет пользователей."
         else:
-            bot_user = await callback.bot.get_me()
-            if not bot_user.username:
-                result += "\n\nУведомление не отправлено: не удалось определить имя бота."
-            else:
-                sent, blocked, failed = await send_new_event_announcement(
-                    users,
-                    event,
-                    bot_user.username,
-                )
-                result += f"\n\nАнонс отправлен: {sent} из {len(users)}."
-                if blocked:
-                    result += f" Заблокировали бота: {blocked}."
-                if failed:
-                    result += " Есть недоставленные сообщения (см. логи сервера)."
+            try:
+                bot_user = await callback.bot.get_me()
+                if not bot_user.username:
+                    result += "\n\nУведомление не отправлено: не удалось определить имя бота."
+                else:
+                    sent, blocked, failed = await send_new_event_announcement(
+                        users,
+                        event,
+                        bot_user.username,
+                    )
+                    result += f"\n\nАнонс отправлен: {sent} из {len(users)}."
+                    if blocked:
+                        result += f" Заблокировали бота: {blocked}."
+                    if failed:
+                        result += " Есть недоставленные сообщения (см. логи сервера)."
+            except Exception:
+                logger.exception("Failed to send new event announcement for event_id=%s", event.event_id)
+                result += "\n\nУведомление не отправлено: ошибка при рассылке (см. логи сервера)."
 
     await state.clear()
     await state.set_state(AdminStates.MENU)
