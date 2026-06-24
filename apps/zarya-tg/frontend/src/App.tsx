@@ -13,9 +13,19 @@ function App() {
   useTelegram();
   const [screen, setScreen] = useState<Screen>("home");
   const [events, setEvents] = useState<Event[]>([]);
+  const [registrationCount, setRegistrationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+
+  const refreshRegistrationCount = useCallback(async () => {
+    try {
+      const data = await fetchMyRegistrations();
+      setRegistrationCount(data.length);
+    } catch {
+      // Keep previous count if the request fails silently in the background.
+    }
+  }, []);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -23,6 +33,9 @@ function App() {
     try {
       const data = screen === "home" ? await fetchEvents() : await fetchMyRegistrations();
       setEvents(data);
+      if (screen === "registrations") {
+        setRegistrationCount(data.length);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка загрузки");
     } finally {
@@ -33,6 +46,17 @@ function App() {
   useEffect(() => {
     loadEvents();
   }, [loadEvents]);
+
+  useEffect(() => {
+    if (screen === "home") {
+      refreshRegistrationCount();
+    }
+  }, [screen, refreshRegistrationCount]);
+
+  const handleRegistrationChange = useCallback(() => {
+    loadEvents();
+    refreshRegistrationCount();
+  }, [loadEvents, refreshRegistrationCount]);
 
   const handleNavClick = () => {
     setScreen((s) => (s === "home" ? "registrations" : "home"));
@@ -45,12 +69,7 @@ function App() {
 
   return (
     <div className="app">
-      <Header
-        title={screen === "home" ? "События" : "Мои регистрации"}
-        navIcon={screen === "home" ? "🎫" : "🏠"}
-        navLabel={screen === "home" ? "Мои регистрации" : "События"}
-        onNavClick={handleNavClick}
-      />
+      <Header screen={screen} registrationCount={registrationCount} onNavClick={handleNavClick} />
 
       <main className="app__main">
         {loading && <p className="app__status">Загрузка...</p>}
@@ -71,7 +90,7 @@ function App() {
         <EventDetails
           eventId={selectedEventId}
           onClose={() => setSelectedEventId(null)}
-          onRegistrationChange={loadEvents}
+          onRegistrationChange={handleRegistrationChange}
         />
       )}
     </div>

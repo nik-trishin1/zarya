@@ -231,6 +231,19 @@ nginx listening on 0.0.0.0:8080, 0.0.0.0:80, proxying API to: https://...
 
 **Legacy:** volume на `/app/uploads` нужен только для старых файлов в формате `/uploads/...`; для новых загрузок не требуется.
 
+### Mini App в Telegram показывает старую версию (в браузере уже новая)
+
+Telegram WebView **агрессивно кэширует** Mini App. Браузер и бот могут показывать разное, пока не обновлён frontend.
+
+1. **Redeploy frontend** с последним `main` (в nginx отключён кэш для `index.html`)
+2. Полностью **закройте** чат с ботом и откройте Mini App заново (или перезапустите Telegram)
+3. На iOS: иногда помогает «Потянуть вниз» для обновления внутри Mini App
+4. Проверка заголовков (после redeploy):
+   ```bash
+   curl -sI https://zarya-production-fe.up.railway.app/ | grep -i cache
+   ```
+   Ожидается `Cache-Control: no-cache` для `index.html`
+
 ### Mini App empty / `Unexpected token '<'` / «API вернул неверный ответ»
 
 nginx проксировал API с неверным заголовком `Host` (frontend вместо backend) — Railway зависал и отдавал HTML.
