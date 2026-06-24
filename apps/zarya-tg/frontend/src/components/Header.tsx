@@ -1,4 +1,3 @@
-import { HomeIcon, TicketIcon } from "./HeaderIcons";
 import "./Header.css";
 
 export type HeaderScreen = "home" | "registrations";
@@ -10,7 +9,7 @@ interface HeaderProps {
 }
 
 const TITLES: Record<HeaderScreen, string> = {
-  home: "Дом",
+  home: "События",
   registrations: "Мои регистрации",
 };
 
@@ -18,7 +17,7 @@ export function Header({ screen, registrationCount, onNavClick }: HeaderProps) {
   const isHome = screen === "home";
   const navLabel = isHome
     ? `Мои регистрации${registrationCount > 0 ? `, ${registrationCount}` : ""}`
-    : "Дом";
+    : "События";
 
   return (
     <header className="header">
@@ -26,11 +25,15 @@ export function Header({ screen, registrationCount, onNavClick }: HeaderProps) {
       <button type="button" className="header__pill" onClick={onNavClick} aria-label={navLabel}>
         {isHome ? (
           <>
-            <TicketIcon className="header__pill-icon" />
+            <span className="header__pill-emoji" aria-hidden="true">
+              🎫
+            </span>
             <span className="header__pill-count">{registrationCount}</span>
           </>
         ) : (
-          <HomeIcon className="header__pill-icon" />
+          <span className="header__pill-emoji" aria-hidden="true">
+            🏠
+          </span>
         )}
       </button>
     </header>

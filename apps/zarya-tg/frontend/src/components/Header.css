@@ -44,8 +44,9 @@
   opacity: 0.8;
 }
 
-.header__pill-icon {
-  display: block;
+.header__pill-emoji {
+  font-size: 18px;
+  line-height: 1;
   flex-shrink: 0;
 }
 
