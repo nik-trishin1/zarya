@@ -36,3 +36,16 @@ def apply_schema_updates(connection: Connection) -> None:
         "ALTER TABLE events ADD COLUMN max_participants INTEGER",
         "ALTER TABLE events ADD COLUMN max_participants INTEGER",
     )
+    _seed_event_capacity_limits(connection)
+
+
+def _seed_event_capacity_limits(connection: Connection) -> None:
+    inspector = inspect(connection)
+    if "events" not in inspector.get_table_names():
+        return
+    columns = {col["name"] for col in inspector.get_columns("events")}
+    if "max_participants" not in columns:
+        return
+    connection.execute(
+        text("UPDATE events SET max_participants = 20 WHERE event_id IN (4, 5)")
+    )

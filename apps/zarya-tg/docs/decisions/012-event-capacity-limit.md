@@ -14,8 +14,8 @@ Some events have a physical capacity. Admins need to cap registrations; particip
 - API responses include `max_participants`, `is_full` (when `registration_count >= max_participants`).
 - Registration endpoint rejects new sign-ups when full (HTTP 409).
 - Mini App UI:
-  - With limit: **«Занято мест: X из Y»**
-  - Without limit: **«Зарегистрировано: N»** (no Russian declension)
+  - With limit: **«Гостей: X из Y»**
+  - Without limit: **«Гостей: N»**
   - Full + not registered: **«Fully booked. Stay tuned!»** and disabled register button (same pattern as past events).
 
 ## Consequences

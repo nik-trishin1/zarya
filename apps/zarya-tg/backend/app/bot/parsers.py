@@ -54,3 +54,9 @@ def format_capacity_ru(max_participants: int | None) -> str:
     if max_participants is None:
         return "Без лимита"
     return str(max_participants)
+
+
+def format_guest_count(reg_count: int, max_participants: int | None) -> str:
+    if max_participants is not None:
+        return f"Гостей: {reg_count} из {max_participants}"
+    return f"Гостей: {reg_count}"

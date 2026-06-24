@@ -25,7 +25,7 @@ from app.bot.keyboards import (
     skip_image_keyboard,
 )
 from app.bot.participants import format_participants_message
-from app.bot.parsers import format_capacity_ru, format_date_ru, format_time_ru, parse_capacity, parse_date, parse_time
+from app.bot.parsers import format_capacity_ru, format_date_ru, format_guest_count, format_time_ru, parse_capacity, parse_date, parse_time
 from app.bot.states import AdminStates
 from app.config import get_settings
 from app.database import async_session
@@ -512,11 +512,7 @@ async def admin_manage(callback: CallbackQuery, state: FSMContext):
 
     buttons = []
     for event, reg_count in events:
-        if event.max_participants is not None:
-            seats = f"{reg_count}/{event.max_participants}"
-        else:
-            seats = f"{reg_count}"
-        label = f"{event.name} | {format_date_ru(event.date)} | {seats}"
+        label = f"{event.name} | {format_date_ru(event.date)} | {format_guest_count(reg_count, event.max_participants)}"
         buttons.append([InlineKeyboardButton(text=label, callback_data=f"admin:detail:{event.event_id}")])
     buttons.append([InlineKeyboardButton(text="◀️ В меню", callback_data="admin:menu")])
 
@@ -540,15 +536,11 @@ async def admin_event_detail(callback: CallbackQuery, state: FSMContext):
         return
 
     event, reg_count = event_data
-    if event.max_participants is not None:
-        seats_line = f"Занято мест: {reg_count} из {event.max_participants}"
-    else:
-        seats_line = f"Зарегистрировано: {reg_count}"
     text = (
         f"Событие: {event.name}\n"
         f"Дата: {format_date_ru(event.date)}, {format_time_ru(event.time)}\n"
         f"Место: {event.location}\n"
-        f"{seats_line}\n\n"
+        f"{format_guest_count(reg_count, event.max_participants)}\n\n"
         f"{event.description}"
     )
     await state.set_state(AdminStates.MANAGE_DETAIL)

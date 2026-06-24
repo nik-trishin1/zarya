@@ -41,7 +41,7 @@ export function isEventPast(dateStr: string): boolean {
 
 export function formatEventSeats(registrationCount: number, maxParticipants: number | null): string {
   if (maxParticipants !== null) {
-    return `Занято мест: ${registrationCount} из ${maxParticipants}`;
+    return `Гостей: ${registrationCount} из ${maxParticipants}`;
   }
-  return `Зарегистрировано: ${registrationCount}`;
+  return `Гостей: ${registrationCount}`;
 }
