@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api import events, media, registrations
 from app.config import get_settings
 from app.database import Base, engine
+from app.schema_updates import apply_schema_updates
 from app.services.storage import ensure_upload_dir
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ async def lifespan(app: FastAPI):
         try:
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
+                await conn.run_sync(apply_schema_updates)
             break
         except Exception as exc:
             last_error = exc

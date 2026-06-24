@@ -521,13 +521,15 @@ async def admin_broadcast_confirm(callback: CallbackQuery, state: FSMContext):
         await callback.answer("Нет зарегистрированных участников", show_alert=True)
         return
 
-    sent, failed = await send_participant_broadcast(users, event, body)
+    sent, blocked, failed = await send_participant_broadcast(users, event, body)
 
     await state.set_state(AdminStates.MANAGE_DETAIL)
     await state.update_data(event_id=event_id, edit_mode=False)
     result = f"Сообщение отправлено: {sent} из {len(users)}."
+    if blocked:
+        result += f" Заблокировали бота: {blocked}."
     if failed:
-        result += f" Не доставлено: {failed} (возможно, бот заблокирован)."
+        result += " Есть недоставленные сообщения (см. логи сервера)."
     await _finish_admin_callback(callback, result, reply_markup=back_to_event_keyboard(event_id))
 
 

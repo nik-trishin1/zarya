@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-import logging
-
 from aiogram import Bot
 
 from app.config import get_settings
+from app.database import async_session
 from app.models.event import Event
 from app.models.user import User
+from app.services.telegram_delivery import DeliveryOutcome, deliver_bot_message
 from app.utils.formatting import format_event_date
-
-logger = logging.getLogger(__name__)
 
 MAX_BROADCAST_BODY_LENGTH = 3500
 TELEGRAM_MESSAGE_LIMIT = 4096
@@ -41,10 +39,11 @@ async def send_participant_broadcast(
     users: list[User],
     event: Event,
     body: str,
-) -> tuple[int, int]:
+) -> tuple[int, int, int]:
+    """Returns (sent_count, blocked_count, other_failed_count)."""
     settings = get_settings()
     if not settings.bot_token_configured or not users:
-        return 0, 0
+        return 0, 0, 0
 
     message = build_participant_broadcast_message(event, body)
     if len(message) > TELEGRAM_MESSAGE_LIMIT:
@@ -52,20 +51,27 @@ async def send_participant_broadcast(
 
     bot = Bot(token=settings.bot_token.strip())
     sent = 0
+    blocked = 0
     failed = 0
+    context = f"participant_broadcast event_id={event.event_id}"
     try:
-        for user in users:
-            try:
-                await bot.send_message(user.telegram_id, message)
-                sent += 1
-            except Exception:
-                failed += 1
-                logger.exception(
-                    "Failed to send broadcast to telegram_id=%s for event_id=%s",
+        async with async_session() as db:
+            for user in users:
+                outcome = await deliver_bot_message(
+                    bot,
+                    db,
                     user.telegram_id,
-                    event.event_id,
+                    message,
+                    user=user,
+                    context=context,
                 )
+                if outcome == DeliveryOutcome.SENT:
+                    sent += 1
+                elif outcome == DeliveryOutcome.BLOCKED:
+                    blocked += 1
+                else:
+                    failed += 1
     finally:
         await bot.session.close()
 
-    return sent, failed
+    return sent, blocked, failed

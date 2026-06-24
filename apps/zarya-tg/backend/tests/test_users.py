@@ -11,9 +11,11 @@ from app.services.users import get_or_create_user
 @pytest.fixture(autouse=True)
 async def ensure_tables():
     import app.models  # noqa: F401
+    from app.schema_updates import apply_schema_updates
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(apply_schema_updates)
     yield
 
 

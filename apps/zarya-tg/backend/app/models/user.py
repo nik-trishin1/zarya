@@ -21,6 +21,7 @@ class User(Base):
     username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     first_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    bot_blocked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     registrations: Mapped[list["Registration"]] = relationship(back_populates="user")
     created_events: Mapped[list["Event"]] = relationship(back_populates="created_by")

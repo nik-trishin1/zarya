@@ -7,8 +7,11 @@ from aiogram import Bot
 from aiogram.enums import ParseMode
 
 from app.config import get_settings
+from app.database import async_session
 from app.models.event import Event
 from app.models.user import User
+from app.services.telegram_delivery import deliver_bot_message
+from app.services.users import get_user_by_telegram_id
 from app.utils.formatting import format_event_date
 
 logger = logging.getLogger(__name__)
@@ -58,16 +61,19 @@ async def notify_admins_registration_change(
 
     message = build_admin_registration_message(user, event, reg_count, registered=registered)
     bot = Bot(token=settings.bot_token.strip())
+    context = f"admin_registration_notify event_id={event.event_id}"
     try:
-        for admin_id in admin_ids:
-            try:
-                await bot.send_message(admin_id, message, parse_mode=ParseMode.MARKDOWN)
-            except Exception:
-                logger.exception(
-                    "Failed to notify admin %s about registration change (event_id=%s, user_id=%s)",
+        async with async_session() as db:
+            for admin_id in admin_ids:
+                admin_user = await get_user_by_telegram_id(db, admin_id)
+                await deliver_bot_message(
+                    bot,
+                    db,
                     admin_id,
-                    event.event_id,
-                    user.user_id,
+                    message,
+                    user=admin_user,
+                    context=context,
+                    parse_mode=ParseMode.MARKDOWN,
                 )
     finally:
         await bot.session.close()
