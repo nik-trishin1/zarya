@@ -45,7 +45,7 @@ export function hasGuestLimit(maxParticipants: number | null | undefined): boole
 
 export function formatEventSeats(registrationCount: number, maxParticipants: number | null | undefined): string {
   if (hasGuestLimit(maxParticipants)) {
-    return `Гостей: ${registrationCount} из ${maxParticipants}`;
+    return `Гостей: ${registrationCount} из ${maxParticipants} + Плюша`;
   }
-  return `Гостей: ${registrationCount}`;
+  return `Гостей: ${registrationCount} + Плюша`;
 }
