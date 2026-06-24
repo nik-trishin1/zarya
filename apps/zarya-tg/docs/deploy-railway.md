@@ -90,7 +90,7 @@ PostgreSQL is added as a **Database** template (no GitHub build).
 
 `VITE_API_URL` is optional — leave empty; nginx proxies `/api` to `API_UPSTREAM` at runtime.
 
-`VITE_BOT_USERNAME` must match your Telegram bot handle (without `@`). Share links use `https://t.me/{username}?startapp=event_{id}`. Default: `zarya_friends_bot`.
+`VITE_BOT_USERNAME` must match your Telegram bot handle (without `@`). Share links use `https://t.me/{username}?startApp=event_{id}&mode=fullsize`. Default: `zarya_friends_bot`.
 
 Optional `VITE_BOT_APP_SHORT_NAME` — only if you configured a Direct Link Mini App in BotFather (helps some iOS clients open the app instead of Safari).
 

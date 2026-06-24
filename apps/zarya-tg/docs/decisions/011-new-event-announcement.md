@@ -27,7 +27,7 @@ Announcement format:
 {description if present}
 
 {name}
-https://t.me/{bot_username}?startapp=event_{id}
+https://t.me/{bot_username}?startApp=event_{id}&mode=fullsize
 ```
 
 The confirmation screen shows how many users are registered in the bot. After send, the admin sees delivery stats (sent / blocked / failed), same as participant broadcast.

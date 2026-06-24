@@ -33,7 +33,10 @@ export function buildEventStartParam(eventId: number): string {
 export function buildEventShareLink(eventId: number): string {
   const username = getBotUsername();
   const startParam = buildEventStartParam(eventId);
-  const params = new URLSearchParams({ startapp: startParam });
+  const params = new URLSearchParams({
+    startApp: startParam,
+    mode: "fullsize",
+  });
   const shortName = getBotAppShortName();
   const base = shortName
     ? `https://t.me/${username}/${shortName}`

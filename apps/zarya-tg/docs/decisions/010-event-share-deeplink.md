@@ -12,13 +12,15 @@ Users need to share a specific event with friends in Telegram chats. Recipients 
 Use Telegram Mini App direct links with the `startapp` query parameter:
 
 ```
-https://t.me/{bot_username}?startapp=event_{event_id}
+https://t.me/{bot_username}?startApp=event_{event_id}&mode=fullsize
 ```
+
+`startApp` (camelCase) is used for iOS compatibility. `mode=fullsize` opens the Mini App (not the bot chat); matches BotFather **Fullsize** launch mode.
 
 If the bot has a **Direct Link** Mini App short name in BotFather, use:
 
 ```
-https://t.me/{bot_username}/{short_name}?startapp=event_{event_id}
+https://t.me/{bot_username}/{short_name}?startApp=event_{event_id}&mode=fullsize
 ```
 
 Configured via optional `VITE_BOT_APP_SHORT_NAME` (frontend) / `BOT_APP_SHORT_NAME` (backend announcements).

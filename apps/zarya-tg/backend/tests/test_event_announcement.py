@@ -19,17 +19,18 @@ def _event() -> Event:
     )
 
 
-def test_build_event_startapp_link_uses_startapp_only():
+def test_build_event_startapp_link_uses_start_app_and_fullsize_mode():
     link = build_event_startapp_link("zarya_friends_bot", 42)
-    assert link == "https://t.me/zarya_friends_bot?startapp=event_42"
-    assert "startApp" not in link
-    assert "mode=" not in link
+    assert link == "https://t.me/zarya_friends_bot?startApp=event_42&mode=fullsize"
+    assert "startapp=" not in link
+    assert "fullscreen" not in link
 
 
 def test_build_event_startapp_link_with_short_name():
     link = build_event_startapp_link("zarya_friends_bot", 42, app_short_name="zarya")
     assert link.startswith("https://t.me/zarya_friends_bot/zarya?")
-    assert "startapp=event_42" in link
+    assert "startApp=event_42" in link
+    assert "mode=fullsize" in link
 
 
 def test_build_new_event_announcement_puts_name_before_link():
@@ -47,4 +48,4 @@ def test_build_new_event_announcement_omits_empty_description():
     event.description = "   "
     message = build_new_event_announcement(event, "zarya_friends_bot")
     assert "Возьмите плед." not in message
-    assert "startapp=event_42" in message
+    assert "startApp=event_42" in message
