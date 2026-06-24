@@ -29,6 +29,23 @@ def edit_keep_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def create_confirm_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🔔 Создать и уведомить всех",
+                    callback_data="admin:create:confirm:notify",
+                ),
+            ],
+            [
+                InlineKeyboardButton(text="✅ Создать без уведомления", callback_data="admin:create:confirm"),
+                InlineKeyboardButton(text="❌ Отмена", callback_data="admin:cancel"),
+            ],
+        ]
+    )
+
+
 def confirm_keyboard(action: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[

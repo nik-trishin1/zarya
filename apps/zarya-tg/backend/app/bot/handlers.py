@@ -17,6 +17,7 @@ from app.bot.keyboards import (
     back_to_menu_keyboard,
     broadcast_confirm_keyboard,
     confirm_keyboard,
+    create_confirm_keyboard,
     delete_confirm_keyboard,
     edit_keep_keyboard,
     event_manage_keyboard,
@@ -27,7 +28,7 @@ from app.bot.parsers import format_date_ru, format_time_ru, parse_date, parse_ti
 from app.bot.states import AdminStates
 from app.config import get_settings
 from app.database import async_session
-from app.services.users import get_or_create_user
+from app.services.users import get_all_users, get_or_create_user
 from app.services.events import (
     create_event,
     delete_event,
@@ -36,6 +37,7 @@ from app.services.events import (
     get_event_registered_users,
     update_event,
 )
+from app.services.event_announcement import send_new_event_announcement
 from app.services.participant_broadcast import (
     build_broadcast_preview,
     send_participant_broadcast,
@@ -369,22 +371,29 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
     data = await state.get_data()
     event_date = date.fromisoformat(data["event_date"])
     event_time = time.fromisoformat(data["event_time"])
+    async with async_session() as db:
+        user_count = len(await get_all_users(db))
     text = (
         f"Проверьте данные:\n\n"
         f"📌 {data['name']}\n"
         f"📅 {format_date_ru(event_date)}, {format_time_ru(event_time)}\n"
         f"📍 {data['location']}\n"
-        f"📝 {data.get('description', '')}\n"
+        f"📝 {data.get('description', '')}\n\n"
+        f"Пользователей в боте: {user_count}"
     )
     await state.set_state(AdminStates.CREATE_CONFIRM)
     if edit:
-        await message.edit_text(text, reply_markup=confirm_keyboard("create"))
+        await message.edit_text(text, reply_markup=create_confirm_keyboard())
     else:
-        await message.answer(text, reply_markup=confirm_keyboard("create"))
+        await message.answer(text, reply_markup=create_confirm_keyboard())
 
 
-@router.callback_query(F.data == "admin:create:confirm")
-async def create_confirm(callback: CallbackQuery, state: FSMContext):
+async def _finish_event_create(
+    callback: CallbackQuery,
+    state: FSMContext,
+    *,
+    notify_all: bool,
+) -> None:
     data = await state.get_data()
     async with async_session() as db:
         admin_user = await get_or_create_user(
@@ -403,15 +412,50 @@ async def create_confirm(callback: CallbackQuery, state: FSMContext):
             cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
             admin_user=admin_user,
         )
+        users = await get_all_users(db)
 
     event_date = date.fromisoformat(data["event_date"])
+    result = f"Событие создано: {event.name} на {format_date_ru(event_date)} ✅"
+
+    if notify_all:
+        if not users:
+            result += "\n\nУведомление не отправлено: в боте пока нет пользователей."
+        else:
+            bot_user = await callback.bot.get_me()
+            if not bot_user.username:
+                result += "\n\nУведомление не отправлено: не удалось определить имя бота."
+            else:
+                sent, blocked, failed = await send_new_event_announcement(
+                    users,
+                    event,
+                    bot_user.username,
+                )
+                result += f"\n\nАнонс отправлен: {sent} из {len(users)}."
+                if blocked:
+                    result += f" Заблокировали бота: {blocked}."
+                if failed:
+                    result += " Есть недоставленные сообщения (см. логи сервера)."
+
     await state.clear()
     await state.set_state(AdminStates.MENU)
-    await callback.message.edit_text(
-        f"Событие создано: {event.name} на {format_date_ru(event_date)} ✅",
-        reply_markup=admin_menu_keyboard(),
-    )
+    await callback.message.edit_text(result, reply_markup=admin_menu_keyboard())
     await callback.answer()
+
+
+@router.callback_query(F.data == "admin:create:confirm")
+async def create_confirm(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+    await _finish_event_create(callback, state, notify_all=False)
+
+
+@router.callback_query(F.data == "admin:create:confirm:notify")
+async def create_confirm_notify(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+    await _finish_event_create(callback, state, notify_all=True)
 
 
 # --- Manage events ---

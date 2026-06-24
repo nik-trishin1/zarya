@@ -98,3 +98,35 @@ async def deliver_bot_message(
     if user is not None and db is not None:
         await clear_user_bot_blocked(db, user)
     return DeliveryOutcome.SENT
+
+
+async def deliver_bot_messages_to_users(
+    bot: Bot,
+    users: list[User],
+    text: str,
+    *,
+    context: str,
+    parse_mode: str | None = None,
+) -> tuple[int, int, int]:
+    """Returns (sent_count, blocked_count, other_failed_count)."""
+    sent = 0
+    blocked = 0
+    failed = 0
+    async with async_session() as db:
+        for user in users:
+            outcome = await deliver_bot_message(
+                bot,
+                db,
+                user.telegram_id,
+                text,
+                user=user,
+                context=context,
+                parse_mode=parse_mode,
+            )
+            if outcome == DeliveryOutcome.SENT:
+                sent += 1
+            elif outcome == DeliveryOutcome.BLOCKED:
+                blocked += 1
+            else:
+                failed += 1
+    return sent, blocked, failed

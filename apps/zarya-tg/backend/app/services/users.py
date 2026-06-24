@@ -39,3 +39,8 @@ async def get_or_create_user(
         await db.refresh(user)
 
     return user
+
+
+async def get_all_users(db: AsyncSession) -> list[User]:
+    result = await db.execute(select(User).order_by(User.user_id))
+    return list(result.scalars().all())
