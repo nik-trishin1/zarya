@@ -31,6 +31,7 @@ from app.config import get_settings
 from app.database import async_session
 from app.services.users import get_all_users, get_or_create_user
 from app.services.events import (
+    cancel_registration,
     create_event,
     delete_event,
     get_all_events_admin,
@@ -209,6 +210,35 @@ async def cmd_start(message: Message):
         "Мы ждем тебя на наших скорых встречах.\n"
         "Нажми кнопку меню, чтобы посмотреть предстоящие события!",
     )
+
+
+@router.callback_query(F.data.regexp(r"^reminder:cancel:\d+$"))
+async def reminder_cancel_registration(callback: CallbackQuery):
+    if callback.from_user is None:
+        await callback.answer()
+        return
+
+    event_id = int(callback.data.split(":")[-1])
+    async with async_session() as db:
+        user = await get_or_create_user(
+            db,
+            callback.from_user.id,
+            callback.from_user.username,
+            callback.from_user.first_name,
+        )
+        event = await get_event_by_id(db, event_id)
+        if event is None:
+            await callback.answer("Событие не найдено", show_alert=True)
+            return
+        try:
+            event, _, _ = await cancel_registration(db, user, event_id)
+        except ValueError as e:
+            if str(e) == "Not registered":
+                await callback.answer("Вы не зарегистрированы на это событие", show_alert=True)
+                return
+            raise
+
+    await callback.answer(f"Вы отменили регистрацию на «{event.name}»", show_alert=True)
 
 
 @router.message(Command("myid"))

@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
+from aiogram.types import InlineKeyboardMarkup
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
@@ -71,9 +72,15 @@ async def deliver_bot_message(
     user: User | None = None,
     context: str,
     parse_mode: str | None = None,
+    reply_markup: InlineKeyboardMarkup | None = None,
 ) -> DeliveryOutcome:
     try:
-        await bot.send_message(chat_id, text, parse_mode=parse_mode)
+        await bot.send_message(
+            chat_id,
+            text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
+        )
     except Exception as exc:
         if user is not None and db is not None and is_bot_blocked_error(exc):
             await mark_user_bot_blocked(db, user)

@@ -113,3 +113,16 @@ def back_to_menu_keyboard() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="◀️ В меню", callback_data="admin:menu")],
         ]
     )
+
+
+def reminder_cancel_keyboard(event_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Не смогу прийти",
+                    callback_data=f"reminder:cancel:{event_id}",
+                ),
+            ],
+        ]
+    )

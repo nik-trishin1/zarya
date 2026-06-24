@@ -28,6 +28,10 @@ def test_edit_confirm_does_not_match_edit_start_pattern():
     assert broadcast_pattern.match("admin:broadcast:confirm") is None
     assert broadcast_pattern.match("admin:broadcast:42") is not None
 
+    reminder_pattern = re.compile(r"^reminder:cancel:\d+$")
+    assert reminder_pattern.match("reminder:cancel:42") is not None
+    assert reminder_pattern.match("reminder:cancel:confirm") is None
+
 
 def test_edit_confirm_handler_matches_without_fsm_state():
     router = Router()

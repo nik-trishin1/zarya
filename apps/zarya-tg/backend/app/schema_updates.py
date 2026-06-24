@@ -36,6 +36,13 @@ def apply_schema_updates(connection: Connection) -> None:
         "ALTER TABLE events ADD COLUMN max_participants INTEGER",
         "ALTER TABLE events ADD COLUMN max_participants INTEGER",
     )
+    _add_column_if_missing(
+        connection,
+        "events",
+        "reminder_sent_at",
+        "ALTER TABLE events ADD COLUMN reminder_sent_at TIMESTAMPTZ",
+        "ALTER TABLE events ADD COLUMN reminder_sent_at DATETIME",
+    )
     _seed_event_capacity_limits(connection)
 
 

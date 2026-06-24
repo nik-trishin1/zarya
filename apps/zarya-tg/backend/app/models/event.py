@@ -32,6 +32,7 @@ class Event(Base):
     created_by_admin_id: Mapped[Optional[int]] = mapped_column(
         BigInteger, ForeignKey("users.user_id"), nullable=True
     )
+    reminder_sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     created_by: Mapped[Optional["User"]] = relationship(back_populates="created_events")
     registrations: Mapped[list["Registration"]] = relationship(
