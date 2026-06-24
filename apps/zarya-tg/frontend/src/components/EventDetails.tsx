@@ -8,7 +8,7 @@ import {
 } from "../api/client";
 import { CoverImage } from "./CoverImage";
 import { buildEventShareLink } from "../utils/deepLink";
-import { formatEventDate } from "../utils/format";
+import { formatEventDate, isEventPast } from "../utils/format";
 import { openTelegramShareLink } from "../utils/telegram";
 import "./EventDetails.css";
 
@@ -105,6 +105,8 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     );
   }
 
+  const past = event.is_past ?? isEventPast(event.date);
+
   return (
     <div className="event-details">
       <button type="button" className="event-details__back" onClick={onClose} aria-label="На главную">
@@ -124,6 +126,9 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
           <button type="button" className="btn btn--secondary" onClick={handleShare}>
             Поделиться
           </button>
+          {past && !event.is_registered && (
+            <div className="event-details__past">Событие прошло. Stay tuned!</div>
+          )}
           {event.is_registered ? (
             <>
               <div className="event-details__registered">Вы зарегистрированы ✅</div>
@@ -144,7 +149,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
               type="button"
               className="btn btn--primary"
               onClick={handleRegister}
-              disabled={actionLoading}
+              disabled={actionLoading || past}
             >
               Зарегистрироваться
             </button>

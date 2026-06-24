@@ -13,6 +13,10 @@ from app.models.user import User
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
 
+def is_event_past(event: Event) -> bool:
+    return event.date < date.today()
+
+
 async def get_upcoming_events(
     db: AsyncSession,
     user: User | None = None,
@@ -113,6 +117,8 @@ async def register_user(db: AsyncSession, user: User, event_id: int) -> tuple[Ev
     event = await get_event_by_id(db, event_id)
     if event is None:
         raise ValueError("Event not found")
+    if is_event_past(event):
+        raise ValueError("Event past")
 
     result = await db.execute(
         select(Registration).where(

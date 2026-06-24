@@ -27,3 +27,14 @@ export function formatEventDate(dateStr: string, timeStr: string): string {
 export function formatTime(timeStr: string): string {
   return timeStr.slice(0, 5);
 }
+
+/** Calendar date before today (same rule as backend list filter). */
+export function isEventPast(dateStr: string): boolean {
+  const today = new Date();
+  const todayKey = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, "0"),
+    String(today.getDate()).padStart(2, "0"),
+  ].join("-");
+  return dateStr < todayKey;
+}

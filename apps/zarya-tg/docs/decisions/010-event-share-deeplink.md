@@ -32,5 +32,7 @@ Admin bot does not expose share links — sharing is user-facing only from the M
 ## Consequences
 
 - Past or deleted events may still open via direct link (`GET /events/{id}` returns any event).
+- Past events show **«Событие прошло. Stay tuned!»** and a disabled register button; the API rejects new registrations with HTTP 410.
+- Registered users who open a past event via link still see their registration status and calendar actions.
 - `start_param` must match `event_{id}` with only digits after the underscore.
 - Production frontend must set `VITE_BOT_USERNAME` if the bot handle differs from `zarya_bot`.

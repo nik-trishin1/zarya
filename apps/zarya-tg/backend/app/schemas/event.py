@@ -39,6 +39,7 @@ class EventResponse(BaseModel):
     cover_image_url: str | None
     registration_count: int = 0
     is_registered: bool = False
+    is_past: bool = False
 
 
 class EventDetailResponse(EventResponse):

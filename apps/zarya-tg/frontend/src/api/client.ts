@@ -10,6 +10,7 @@ export interface Event {
   cover_image_url: string | null;
   registration_count: number;
   is_registered: boolean;
+  is_past: boolean;
 }
 
 export interface RegistrationResponse {

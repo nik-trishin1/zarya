@@ -91,6 +91,8 @@ async def register_for_event(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Событие не найдено")
         if str(e) == "Already registered":
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Вы уже зарегистрированы")
+        if str(e) == "Event past":
+            raise HTTPException(status_code=status.HTTP_410_GONE, detail="Событие уже прошло")
         raise
 
     date_str = format_event_date(event.date, event.time)

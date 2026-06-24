@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, time
 
 from app.schemas.event import EventDetailResponse, EventResponse
-from app.services.events import MOSCOW_TZ
+from app.services.events import MOSCOW_TZ, is_event_past
 from app.services.storage import normalize_cover_image_url
 
 
@@ -43,6 +43,7 @@ def event_to_response(event, reg_count: int, is_registered: bool) -> EventRespon
         cover_image_url=normalize_cover_image_url(event.cover_image_url),
         registration_count=reg_count,
         is_registered=is_registered,
+        is_past=is_event_past(event),
     )
 
 
@@ -57,4 +58,5 @@ def event_to_detail(event, reg_count: int, is_registered: bool) -> EventDetailRe
         cover_image_url=normalize_cover_image_url(event.cover_image_url),
         registration_count=reg_count,
         is_registered=is_registered,
+        is_past=is_event_past(event),
     )
