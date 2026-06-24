@@ -12,12 +12,22 @@ Users need to share a specific event with friends in Telegram chats. Recipients 
 Use Telegram Mini App direct links with the `startapp` query parameter:
 
 ```
-https://t.me/{bot_username}?startapp=event_{event_id}
+https://t.me/{bot_username}?startapp=event_{event_id}&startApp=event_{event_id}&mode=fullscreen
 ```
+
+`startApp` (camelCase) is duplicated for older iOS Telegram clients. `mode=fullscreen` opens the Mini App in full screen instead of a compact sheet.
+
+If the bot has a **Direct Link** Mini App short name in BotFather, use:
+
+```
+https://t.me/{bot_username}/{short_name}?startapp=event_{event_id}&startApp=event_{event_id}&mode=fullscreen
+```
+
+Configured via optional `VITE_BOT_APP_SHORT_NAME` (frontend) / `BOT_APP_SHORT_NAME` (backend announcements).
 
 On launch, the frontend reads `start_param` from `WebApp.initDataUnsafe` (or `tgWebAppStartParam` in the URL) and opens the event detail overlay for the matching ID.
 
-A **«Поделиться»** button on the event detail screen generates this link and opens Telegram's native share dialog via `t.me/share/url`. Outside Telegram, the link is copied to the clipboard.
+A **«Поделиться»** button on the event detail screen generates this link and opens Telegram's native share dialog via `t.me/share/url` with separate `url` and `text` parameters. Passing the deep link in the `url` field (not only as plain text) is required so iOS treats it as a native Telegram link instead of opening Safari. Outside Telegram, the link is copied to the clipboard.
 
 Bot username is configured via `VITE_BOT_USERNAME` (default: `zarya_friends_bot`, production bot **@zarya_friends_bot**).
 
@@ -36,3 +46,5 @@ Admin bot does not expose share links — sharing is user-facing only from the M
 - Registered users who open a past event via link still see their registration status and calendar actions.
 - `start_param` must match `event_{id}` with only digits after the underscore.
 - Production frontend must set `VITE_BOT_USERNAME` on Railway if the bot handle changes (current production: `zarya_friends_bot`).
+- On iOS, shared links that contain only plain-text URLs may open in Safari; always share via `t.me/share/url?url=...&text=...`.
+- If iOS still opens a web page instead of the Mini App, set `VITE_BOT_APP_SHORT_NAME` to the short name from BotFather → Bot Settings → Mini Apps → Direct Links.

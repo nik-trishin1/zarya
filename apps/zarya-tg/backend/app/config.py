@@ -23,6 +23,7 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite+aiosqlite:///./zarya.db"
     bot_token: str = ""
+    bot_app_short_name: str = ""
     admin_telegram_ids: str = ""
     webapp_url: str = "http://localhost:5173"
     api_base_url: str = "http://localhost:8000"

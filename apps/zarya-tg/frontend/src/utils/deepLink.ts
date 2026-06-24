@@ -20,6 +20,27 @@ export function getBotUsername(): string {
   return "zarya_friends_bot";
 }
 
+export function getBotAppShortName(): string | null {
+  const fromEnv = import.meta.env.VITE_BOT_APP_SHORT_NAME?.trim();
+  if (!fromEnv) return null;
+  return fromEnv.replace(/^@/, "");
+}
+
+export function buildEventStartParam(eventId: number): string {
+  return `event_${eventId}`;
+}
+
 export function buildEventShareLink(eventId: number): string {
-  return `https://t.me/${getBotUsername()}?startapp=event_${eventId}`;
+  const username = getBotUsername();
+  const startParam = buildEventStartParam(eventId);
+  const params = new URLSearchParams({
+    startapp: startParam,
+    startApp: startParam,
+    mode: "fullscreen",
+  });
+  const shortName = getBotAppShortName();
+  const base = shortName
+    ? `https://t.me/${username}/${shortName}`
+    : `https://t.me/${username}`;
+  return `${base}?${params.toString()}`;
 }

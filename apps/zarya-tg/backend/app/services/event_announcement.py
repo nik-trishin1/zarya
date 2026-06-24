@@ -7,14 +7,10 @@ from app.models.event import Event
 from app.models.user import User
 from app.services.telegram_delivery import deliver_bot_messages_to_users
 from app.utils.formatting import format_event_date
+from app.utils.telegram_links import build_event_startapp_link
 
 MAX_DESCRIPTION_LENGTH = 500
 TELEGRAM_MESSAGE_LIMIT = 4096
-
-
-def build_event_startapp_link(bot_username: str, event_id: int) -> str:
-    username = bot_username.lstrip("@")
-    return f"https://t.me/{username}?startapp=event_{event_id}"
 
 
 def build_new_event_announcement(event: Event, bot_username: str) -> str:
@@ -28,7 +24,11 @@ def build_new_event_announcement(event: Event, bot_username: str) -> str:
             description = description[: MAX_DESCRIPTION_LENGTH - 1] + "…"
         parts.append(description)
 
-    link = build_event_startapp_link(bot_username, event.event_id)
+    link = build_event_startapp_link(
+        bot_username,
+        event.event_id,
+        app_short_name=get_settings().bot_app_short_name or None,
+    )
     parts.append(f"{event.name}\n{link}")
 
     message = "\n\n".join(parts)

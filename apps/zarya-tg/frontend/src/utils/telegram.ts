@@ -12,9 +12,9 @@ export function openTelegramShareLink(url: string, title: string): boolean {
     return false;
   }
 
-  // Share text only to keep order «title → link» without a duplicate URL preview.
-  const message = formatShareMessage(title, url);
-  tg.openTelegramLink(`https://t.me/share/url?text=${encodeURIComponent(message)}`);
+  // Pass url separately so Telegram treats it as a native t.me deep link (important on iOS).
+  const params = new URLSearchParams({ url, text: title });
+  tg.openTelegramLink(`https://t.me/share/url?${params.toString()}`);
   return true;
 }
 

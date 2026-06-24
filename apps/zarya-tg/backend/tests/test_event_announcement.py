@@ -3,7 +3,8 @@ from __future__ import annotations
 from datetime import date, time
 
 from app.models.event import Event
-from app.services.event_announcement import build_event_startapp_link, build_new_event_announcement
+from app.services.event_announcement import build_new_event_announcement
+from app.utils.telegram_links import build_event_startapp_link
 
 
 def _event() -> Event:
@@ -18,10 +19,18 @@ def _event() -> Event:
     )
 
 
-def test_build_event_startapp_link():
-    assert build_event_startapp_link("zarya_friends_bot", 42) == (
-        "https://t.me/zarya_friends_bot?startapp=event_42"
-    )
+def test_build_event_startapp_link_includes_ios_params():
+    link = build_event_startapp_link("zarya_friends_bot", 42)
+    assert link.startswith("https://t.me/zarya_friends_bot?")
+    assert "startapp=event_42" in link
+    assert "startApp=event_42" in link
+    assert "mode=fullscreen" in link
+
+
+def test_build_event_startapp_link_with_short_name():
+    link = build_event_startapp_link("zarya_friends_bot", 42, app_short_name="zarya")
+    assert link.startswith("https://t.me/zarya_friends_bot/zarya?")
+    assert "startapp=event_42" in link
 
 
 def test_build_new_event_announcement_puts_name_before_link():
@@ -30,7 +39,7 @@ def test_build_new_event_announcement_puts_name_before_link():
     assert "📌 Встреча у озера ·" in message
     assert "📍 Москва" in message
     assert "Возьмите плед." in message
-    link = "https://t.me/zarya_friends_bot?startapp=event_42"
+    link = build_event_startapp_link("zarya_friends_bot", 42)
     assert message.endswith(f"Встреча у озера\n{link}")
 
 
