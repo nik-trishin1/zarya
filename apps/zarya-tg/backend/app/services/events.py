@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.models.event import Event
 from app.models.registration import Registration, RegistrationStatus
@@ -226,14 +225,3 @@ async def get_event_registered_users(db: AsyncSession, event_id: int) -> list[Us
         .order_by(Registration.registered_at.asc())
     )
     return list(result.scalars().all())
-
-
-async def get_or_create_admin_user(db: AsyncSession, telegram_id: int, username: str | None, first_name: str | None) -> User:
-    result = await db.execute(select(User).where(User.telegram_id == telegram_id))
-    user = result.scalar_one_or_none()
-    if user is None:
-        user = User(telegram_id=telegram_id, username=username, first_name=first_name)
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-    return user

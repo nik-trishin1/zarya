@@ -6,12 +6,12 @@ import json
 from urllib.parse import parse_qsl
 
 from fastapi import Depends, Header, HTTPException, Query, status
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.database import get_db
 from app.models.user import User
+from app.services.users import get_or_create_user
 
 
 def validate_telegram_init_data(init_data: str, bot_token: str) -> dict:
@@ -35,30 +35,6 @@ def validate_telegram_init_data(init_data: str, bot_token: str) -> dict:
     return json.loads(user_data)
 
 
-async def _get_or_create_user(db: AsyncSession, telegram_id: int, username: str | None, first_name: str | None) -> User:
-    result = await db.execute(select(User).where(User.telegram_id == telegram_id))
-    user = result.scalar_one_or_none()
-
-    if user is None:
-        user = User(telegram_id=telegram_id, username=username, first_name=first_name)
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-    else:
-        updated = False
-        if username and user.username != username:
-            user.username = username
-            updated = True
-        if first_name and user.first_name != first_name:
-            user.first_name = first_name
-            updated = True
-        if updated:
-            await db.commit()
-            await db.refresh(user)
-
-    return user
-
-
 async def get_current_user(
     x_telegram_init_data: str | None = Header(None, alias="X-Telegram-Init-Data"),
     init_data: str | None = Query(None, alias="initData"),
@@ -68,7 +44,7 @@ async def get_current_user(
     telegram_init_data = x_telegram_init_data or init_data
 
     if settings.allow_browser_dev and not telegram_init_data:
-        return await _get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
+        return await get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
 
     if not telegram_init_data:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing Telegram init data")
@@ -80,7 +56,7 @@ async def get_current_user(
         )
 
     tg_user = validate_telegram_init_data(telegram_init_data, settings.bot_token)
-    return await _get_or_create_user(
+    return await get_or_create_user(
         db,
         telegram_id=int(tg_user["id"]),
         username=tg_user.get("username"),
@@ -95,6 +71,6 @@ async def get_optional_user(
     settings = get_settings()
     if not x_telegram_init_data:
         if settings.allow_browser_dev:
-            return await _get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
+            return await get_or_create_user(db, telegram_id=1, username="dev_user", first_name="Dev")
         return None
     return await get_current_user(x_telegram_init_data, db)

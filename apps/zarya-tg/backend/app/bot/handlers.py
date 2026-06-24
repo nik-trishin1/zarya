@@ -27,13 +27,13 @@ from app.bot.parsers import format_date_ru, format_time_ru, parse_date, parse_ti
 from app.bot.states import AdminStates
 from app.config import get_settings
 from app.database import async_session
+from app.services.users import get_or_create_user
 from app.services.events import (
     create_event,
     delete_event,
     get_all_events_admin,
     get_event_by_id,
     get_event_registered_users,
-    get_or_create_admin_user,
     update_event,
 )
 from app.services.participant_broadcast import (
@@ -196,6 +196,11 @@ async def _goto_edit_image(message: Message, state: FSMContext, *, edit: bool = 
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
+    tg_user = message.from_user
+    if tg_user:
+        async with async_session() as db:
+            await get_or_create_user(db, tg_user.id, tg_user.username, tg_user.first_name)
+
     await message.answer(
         "Привет! 🌅\n"
         "Мы ждем тебя на наших скорых встречах.\n"
@@ -206,6 +211,10 @@ async def cmd_start(message: Message):
 @router.message(Command("myid"))
 async def cmd_myid(message: Message):
     user = message.from_user
+    if user:
+        async with async_session() as db:
+            await get_or_create_user(db, user.id, user.username, user.first_name)
+
     await message.answer(
         f"Ваш Telegram ID: `{user.id}`\n\n"
         "Добавьте его в `ADMIN_TELEGRAM_IDS` на сервере (Railway → Variables), "
@@ -378,7 +387,7 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
 async def create_confirm(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     async with async_session() as db:
-        admin_user = await get_or_create_admin_user(
+        admin_user = await get_or_create_user(
             db,
             callback.from_user.id,
             callback.from_user.username,
