@@ -31,6 +31,7 @@ async def get_upcoming_events(
                 & (Registration.user_id == user.user_id)
                 & (Registration.status == RegistrationStatus.ACTIVE.value),
             )
+            .where(Event.date >= today)
             .order_by(Event.date.asc(), Event.time.asc())
         )
         result = await db.execute(query)
