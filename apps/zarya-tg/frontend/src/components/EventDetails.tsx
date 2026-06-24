@@ -140,29 +140,25 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
             </button>
           )}
 
-          <div className="event-details__secondary-row">
-            <button
-              type="button"
-              className="btn btn--secondary btn--half"
-              onClick={handleCalendar}
-              disabled={!event.is_registered}
-            >
-              🗓️ В календарь
-            </button>
-            <button type="button" className="btn btn--secondary btn--half" onClick={handleShare}>
-              🔗 Поделиться
-            </button>
-          </div>
-
           {event.is_registered && (
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={handleCancel}
-              disabled={actionLoading}
-            >
-              Отменить регистрацию
-            </button>
+            <>
+              <div className="event-details__secondary-row">
+                <button type="button" className="btn btn--secondary btn--half" onClick={handleCalendar}>
+                  🗓️ В календарь
+                </button>
+                <button type="button" className="btn btn--secondary btn--half" onClick={handleShare}>
+                  🔗 Поделиться
+                </button>
+              </div>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={handleCancel}
+                disabled={actionLoading}
+              >
+                Отменить регистрацию
+              </button>
+            </>
           )}
         </div>
       </div>
