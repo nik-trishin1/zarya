@@ -81,6 +81,7 @@
 
 - [x] Event capacity limit (`max_participants` + `is_full` flag) — ADR-012
 - [x] New event announcement broadcast to all users — ADR-011
+- [x] Admin broadcast to all bot users from `/admin` — ADR-017
 - [x] 24-hour reminder to registered participants — ADR-013
 - [x] Shareable deep-link per event — ADR-010
 

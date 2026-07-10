@@ -25,3 +25,5 @@ class AdminStates(StatesGroup):
     DELETE_CONFIRM = State()
     BROADCAST_MESSAGE = State()
     BROADCAST_CONFIRM = State()
+    ALL_BROADCAST_MESSAGE = State()
+    ALL_BROADCAST_CONFIRM = State()

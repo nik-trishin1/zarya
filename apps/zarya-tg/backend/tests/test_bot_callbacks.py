@@ -27,6 +27,8 @@ def test_edit_confirm_does_not_match_edit_start_pattern():
     broadcast_pattern = re.compile(r"^admin:broadcast:\d+$")
     assert broadcast_pattern.match("admin:broadcast:confirm") is None
     assert broadcast_pattern.match("admin:broadcast:42") is not None
+    assert broadcast_pattern.match("admin:broadcast_all") is None
+    assert broadcast_pattern.match("admin:broadcast_all:confirm") is None
 
     reminder_pattern = re.compile(r"^reminder:cancel:\d+$")
     assert reminder_pattern.match("reminder:cancel:42") is not None

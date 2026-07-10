@@ -8,6 +8,7 @@ def admin_menu_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [InlineKeyboardButton(text="Создать событие", callback_data="admin:create")],
             [InlineKeyboardButton(text="Управлять событиями", callback_data="admin:manage")],
+            [InlineKeyboardButton(text="📢 Написать всем", callback_data="admin:broadcast_all")],
         ]
     )
 
@@ -83,6 +84,17 @@ def broadcast_confirm_keyboard(event_id: int) -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(text="✅ Отправить", callback_data="admin:broadcast:confirm"),
                 InlineKeyboardButton(text="❌ Отмена", callback_data=f"admin:detail:{event_id}"),
+            ],
+        ]
+    )
+
+
+def broadcast_all_confirm_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="✅ Отправить", callback_data="admin:broadcast_all:confirm"),
+                InlineKeyboardButton(text="❌ Отмена", callback_data="admin:menu"),
             ],
         ]
     )

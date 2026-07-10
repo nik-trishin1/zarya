@@ -16,6 +16,7 @@ from app.bot.keyboards import (
     back_to_event_keyboard,
     back_to_menu_keyboard,
     broadcast_confirm_keyboard,
+    broadcast_all_confirm_keyboard,
     confirm_keyboard,
     create_confirm_keyboard,
     delete_confirm_keyboard,
@@ -44,6 +45,10 @@ from app.services.participant_broadcast import (
     build_broadcast_preview,
     send_participant_broadcast,
     validate_broadcast_body,
+)
+from app.services.bot_user_broadcast import (
+    build_bot_user_broadcast_preview,
+    send_bot_user_broadcast,
 )
 from app.services.storage import (
     DEFAULT_COVER_URL,
@@ -706,6 +711,91 @@ async def admin_broadcast_message(message: Message, state: FSMContext):
     await state.set_state(AdminStates.BROADCAST_CONFIRM)
     preview = build_broadcast_preview(event, body, len(users))
     await message.answer(preview, reply_markup=broadcast_confirm_keyboard(event_id))
+
+
+# --- Broadcast to all bot users ---
+
+@router.callback_query(F.data == "admin:broadcast_all")
+async def admin_broadcast_all_start(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    async with async_session() as db:
+        users = await get_all_users(db)
+
+    if not users:
+        await callback.answer("В боте пока нет пользователей", show_alert=True)
+        return
+
+    await state.set_state(AdminStates.ALL_BROADCAST_MESSAGE)
+    await state.update_data(broadcast_scope="all", edit_mode=False)
+    if callback.message is None:
+        await callback.answer()
+        return
+
+    await callback.message.edit_text(
+        f"Введите текст сообщения для всех пользователей бота.\n"
+        f"Получателей: {len(users)}",
+        reply_markup=back_to_menu_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.message(AdminStates.ALL_BROADCAST_MESSAGE)
+async def admin_broadcast_all_message(message: Message, state: FSMContext):
+    if not is_admin(message.from_user.id):
+        return
+
+    error = validate_broadcast_body(message.text or "")
+    if error:
+        await message.answer(error)
+        return
+
+    body = (message.text or "").strip()
+    async with async_session() as db:
+        users = await get_all_users(db)
+
+    if not users:
+        await message.answer("В боте пока нет пользователей")
+        await state.set_state(AdminStates.MENU)
+        return
+
+    await state.update_data(broadcast_text=body, broadcast_scope="all")
+    await state.set_state(AdminStates.ALL_BROADCAST_CONFIRM)
+    preview = build_bot_user_broadcast_preview(body, len(users))
+    await message.answer(preview, reply_markup=broadcast_all_confirm_keyboard())
+
+
+@router.callback_query(F.data == "admin:broadcast_all:confirm")
+async def admin_broadcast_all_confirm(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    data = await state.get_data()
+    body = data.get("broadcast_text")
+    if not body:
+        await callback.answer("Сессия рассылки истекла", show_alert=True)
+        return
+
+    async with async_session() as db:
+        users = await get_all_users(db)
+
+    if not users:
+        await callback.answer("В боте пока нет пользователей", show_alert=True)
+        return
+
+    sent, blocked, failed = await send_bot_user_broadcast(users, body)
+
+    await state.set_state(AdminStates.MENU)
+    await state.update_data(edit_mode=False)
+    result = f"Сообщение отправлено: {sent} из {len(users)}."
+    if blocked:
+        result += f" Заблокировали бота: {blocked}."
+    if failed:
+        result += " Есть недоставленные сообщения (см. логи сервера)."
+    await _finish_admin_callback(callback, result, reply_markup=admin_menu_keyboard())
 
 
 # --- Edit event ---
