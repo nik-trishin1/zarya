@@ -1,0 +1,11 @@
+# Local dev artifacts
+.env
+.env.*
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+.railway/
+
+# Source maps and tests are not needed for production nginx image
+*.md

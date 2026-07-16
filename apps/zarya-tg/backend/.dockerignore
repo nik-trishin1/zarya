@@ -1,0 +1,16 @@
+# Local dev artifacts (not in git, but guard local docker builds)
+.env
+.env.*
+.venv
+venv/
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite
+uploads/
+.pytest_cache/
+.railway/
+
+# Tests and docs are not needed in the production image
+tests/
+pytest.ini

@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 REMINDER_INTERVAL_SECONDS = 3600
+REMINDER_STARTUP_DELAY_SECONDS = 60
 REMINDER_WINDOW_START = timedelta(hours=23)
 REMINDER_WINDOW_END = timedelta(hours=25)
 SCHEDULER_ACTIVE_HOUR_START = 8
@@ -140,12 +141,14 @@ async def run_reminder_scheduler() -> None:
 
     bot = Bot(token=settings.bot_token.strip())
     logger.info(
-        "Event reminder scheduler started (every %ss, active %s:00–%s:00 MSK)",
+        "Event reminder scheduler started (every %ss, active %s:00–%s:00 MSK, startup delay %ss)",
         REMINDER_INTERVAL_SECONDS,
         SCHEDULER_ACTIVE_HOUR_START,
         SCHEDULER_ACTIVE_HOUR_END,
+        REMINDER_STARTUP_DELAY_SECONDS,
     )
     try:
+        await asyncio.sleep(REMINDER_STARTUP_DELAY_SECONDS)
         while True:
             try:
                 count = await process_due_reminders(bot)

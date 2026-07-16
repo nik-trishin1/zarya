@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.api import events, media, registrations
+from app.background import start_background_tasks, stop_background_tasks
 from app.config import get_settings
 from app.database import Base, engine
 from app.schema_updates import apply_schema_updates
@@ -34,7 +35,12 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(2)
     else:
         raise RuntimeError("Could not connect to database") from last_error
-    yield
+
+    start_background_tasks()
+    try:
+        yield
+    finally:
+        await stop_background_tasks()
 
 
 def create_app() -> FastAPI:
