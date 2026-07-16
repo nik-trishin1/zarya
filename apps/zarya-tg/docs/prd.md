@@ -127,11 +127,12 @@ Small friend groups lack a centralized, low-friction way to organize recurring s
 - As a participant, I want to tap the navigation icon and see all events I'm registered for so that I don't forget upcoming plans.
 - Acceptance Criteria:
   - User taps the 🎫 icon in the top-left corner of the header (on the home screen).
-  - App displays a list of all events the user is registered for, sorted by date.
+  - App displays a list of upcoming events the user is registered for, sorted by date (past events are hidden, not deleted; see ADR-018).
+  - Ticket counter (🎫 badge) counts only upcoming registrations.
   - Each event card shows the same information as on the home screen (cover image, date, time, name, location, ✅ indicator).
   - Header now shows: [🏠] zarya + friends 🌅 (icon changes to 🏠 to return home).
   - User can tap an event to see full details or cancel registration.
-  - If no registrations exist, app shows: "Вы не зарегистрированы ни на какие события" (You're not registered for any events).
+  - If no upcoming registrations exist, app shows: "Вы не зарегистрированы ни на какие события" (You're not registered for any events).
 - Priority: MUST
 
 **US-7: Export Event to Calendar**
@@ -162,7 +163,7 @@ Small friend groups lack a centralized, low-friction way to organize recurring s
 - As the event organizer, I want to edit event details after creation so that I can fix mistakes or update information.
 - Acceptance Criteria:
   - Admin selects "Управлять событиями" (Manage Events) from admin menu.
-  - Bot displays a list of all events (past and upcoming).
+  - Bot displays a list of upcoming events only (past events stay in the database but are hidden; see ADR-018).
   - Admin selects an event and chooses "Редактировать" (Edit).
   - Admin is prompted to update: название, дата, время, место, описание, cover image (optional).
   - Admin confirms the changes.
@@ -182,10 +183,11 @@ Small friend groups lack a centralized, low-friction way to organize recurring s
 - Priority: MUST
 
 **US-11: Admin - View Event List**
-- As the event organizer, I want to see all events and their registration details so that I can manage attendance.
+- As the event organizer, I want to see upcoming events and their registration details so that I can manage attendance.
 - Acceptance Criteria:
   - Admin selects "Управлять событиями" (Manage Events) from admin menu.
-  - Bot displays a list of all events (past and upcoming) with: name, date, registration count.
+  - Bot displays a list of upcoming events with: name, date, registration count (past events hidden, not deleted; see ADR-018).
+  - If there are no upcoming events, bot shows: "Нет предстоящих событий."
   - Admin can select an event to see: full details, registration count, and options to edit or delete.
   - Bot shows: "Событие: [Name] | Дата: [Date] | Зарегистрировано: [Count] человек" (Event: [Name] | Date: [Date] | Registered: [Count] people).
 - Priority: MUST
@@ -234,7 +236,7 @@ The user experience is designed to minimize friction. When a user opens the app,
 
 1. **Tap Navigation Icon:** User taps the 🎫 icon in the top-left corner of the header.
 
-2. **View Registrations:** App displays a list of all events the user is registered for, sorted by date. Same card design as home screen. Header icon changes to 🏠.
+2. **View Registrations:** App displays a list of upcoming events the user is registered for, sorted by date (past events hidden; ADR-018). Same card design as home screen. Header icon changes to 🏠.
 
 3. **Return Home:** User taps the 🏠 icon in the top-left corner to return to the home screen.
 
@@ -248,7 +250,7 @@ The admin interface is accessed via Telegram commands and remains separate from 
 
 2. **Create Event:** Admin selects "Создать событие" (Create Event), fills in details via bot prompts (name, date, time, location, description), and uploads a cover image. Event is immediately live in the app.
 
-3. **Manage Events:** Admin selects "Управлять событиями" (Manage Events) to view all events and edit/delete as needed.
+3. **Manage Events:** Admin selects "Управлять событиями" (Manage Events) to view upcoming events and edit/delete as needed (past events hidden; ADR-018).
 
 4. **Edit Event:** Admin selects an event, chooses "Редактировать" (Edit), updates details and cover image, and confirms. Changes appear immediately in the app.
 
@@ -295,7 +297,7 @@ The admin interface is accessed via Telegram commands and remains separate from 
 | Event Creation with Cover Image | Real | Admin uploads image; stored in S3 or Railway. |
 | Event Editing | Real | Admin updates details and cover image. |
 | Event Deletion | Real | Admin deletes event; removed from database. |
-| Event Management (Admin) | Real | Admin views all events with registration counts. |
+| Event Management (Admin) | Real | Admin views upcoming events with registration counts (past hidden; ADR-018). |
 | Event Categorization | Not Implemented | Deferred to Iteration 2. |
 | Access Codes (Circle Tier) | Not Implemented | Deferred to Iteration 2. |
 | User Profiles | Not Implemented | Deferred to Iteration 2. |

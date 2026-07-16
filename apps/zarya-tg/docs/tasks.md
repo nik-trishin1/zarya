@@ -85,11 +85,15 @@
 - [x] 24-hour reminder to registered participants — ADR-013
 - [x] Shareable deep-link per event — ADR-010
 
+### Already shipped (post-planning)
+
+- [x] **Hide past events from active UI** — past calendar dates hidden from home list, «Мои регистрации», ticket counter, and admin manage list; rows kept in DB. See ADR-018.
+
 ### Backlog
 
 - [ ] **Access codes for zarya + circle events** — unique personal codes granting access to hidden-tier events; admin generates and shares manually; no expiry by default but codes can be revoked. See ADR-015 (to be written).
 - [ ] **Propose your own event** — any registered user can submit an event proposal (name, date, description); creates a `draft` event visible only to admin; admin approves → published with announcement, or rejects → draft deleted. See ADR-016 (to be written).
-- [ ] **Past events status** — events past their date/time are visually marked "Завершено" with grey overlay; hidden from main list after 48h; accessible via future Archive section.
+- [ ] **Past events status** — visual «Завершено» treatment, optional 48h grace, and Archive section for past events (builds on ADR-018 hide behavior).
 - [ ] **Event categories and filters** — categories: 🎉 Развлечения, ✈️ Путешествия, 📚 Образование, ☕ Встречи; filter chips in header; relevant when event count exceeds ~15.
 - [ ] **English localization** — i18n layer (react-i18next on frontend, locale param on backend); Russian remains default.
 - [ ] **Analytics dashboard** — admin-only view: total registrations per event, active users, monthly event count.

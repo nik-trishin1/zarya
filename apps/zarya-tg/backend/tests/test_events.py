@@ -9,7 +9,13 @@ from app.database import async_session, engine, Base
 from app.models.event import Event
 from app.models.registration import Registration
 from app.models.user import User
-from app.services.events import is_event_full, is_event_past, register_user
+from app.services.events import (
+    get_all_events_admin,
+    get_upcoming_events,
+    is_event_full,
+    is_event_past,
+    register_user,
+)
 from app.services.users import get_or_create_user
 
 
@@ -93,6 +99,77 @@ def test_is_event_full_without_limit():
         max_participants=None,
     )
     assert is_event_full(event, 999) is False
+
+
+@pytest.mark.asyncio
+async def test_my_registrations_hide_past_events():
+    today = date.today()
+    past_event = Event(
+        name="Past meetup",
+        description="",
+        date=today - timedelta(days=1),
+        time=time(19, 0),
+        location="Moscow",
+    )
+    upcoming_event = Event(
+        name="Upcoming meetup",
+        description="",
+        date=today + timedelta(days=2),
+        time=time(19, 0),
+        location="Moscow",
+    )
+
+    async with async_session() as db:
+        user = await get_or_create_user(db, telegram_id=920_020, username="guest", first_name="Guest")
+        db.add_all([past_event, upcoming_event])
+        await db.flush()
+        db.add_all(
+            [
+                Registration(user_id=user.user_id, event_id=past_event.event_id),
+                Registration(user_id=user.user_id, event_id=upcoming_event.event_id),
+            ]
+        )
+        await db.commit()
+        await db.refresh(upcoming_event)
+
+        rows = await get_upcoming_events(db, user=user, registered_only=True)
+        listed_ids = {event.event_id for event, _, _ in rows}
+        assert upcoming_event.event_id in listed_ids
+        assert past_event.event_id not in listed_ids
+
+
+@pytest.mark.asyncio
+async def test_admin_event_list_hides_past_events():
+    today = date.today()
+    past_event = Event(
+        name="Past admin",
+        description="",
+        date=today - timedelta(days=3),
+        time=time(12, 0),
+        location="Moscow",
+    )
+    upcoming_event = Event(
+        name="Upcoming admin",
+        description="",
+        date=today + timedelta(days=1),
+        time=time(12, 0),
+        location="Moscow",
+    )
+
+    async with async_session() as db:
+        db.add_all([past_event, upcoming_event])
+        await db.commit()
+        await db.refresh(past_event)
+        await db.refresh(upcoming_event)
+
+        rows = await get_all_events_admin(db)
+        listed_ids = {event.event_id for event, _ in rows}
+        assert upcoming_event.event_id in listed_ids
+        assert past_event.event_id not in listed_ids
+
+        # Past event remains stored; it is only hidden from the admin list.
+        stored = await db.execute(select(Event).where(Event.event_id == past_event.event_id))
+        assert stored.scalar_one_or_none() is not None
 
 
 @pytest.mark.asyncio

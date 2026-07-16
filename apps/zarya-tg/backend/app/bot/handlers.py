@@ -541,7 +541,7 @@ async def admin_manage(callback: CallbackQuery, state: FSMContext):
 
     if not events:
         await callback.message.edit_text(
-            "Событий пока нет.",
+            "Нет предстоящих событий.",
             reply_markup=back_to_menu_keyboard(),
         )
         await callback.answer()

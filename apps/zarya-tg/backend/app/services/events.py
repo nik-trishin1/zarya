@@ -41,6 +41,7 @@ async def get_upcoming_events(
                 & (Registration.user_id == user.user_id)
                 & (Registration.status == RegistrationStatus.ACTIVE.value),
             )
+            .where(Event.date >= today)
             .order_by(Event.date.asc(), Event.time.asc())
         )
         result = await db.execute(query)
@@ -182,6 +183,8 @@ async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> tu
 
 
 async def get_all_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:
+    """Return upcoming events for admin manage UI. Past events stay in DB but are hidden."""
+    today = date.today()
     result = await db.execute(
         select(
             Event,
@@ -192,8 +195,9 @@ async def get_all_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:
             (Registration.event_id == Event.event_id)
             & (Registration.status == RegistrationStatus.ACTIVE.value),
         )
+        .where(Event.date >= today)
         .group_by(Event.event_id)
-        .order_by(Event.date.desc(), Event.time.desc())
+        .order_by(Event.date.asc(), Event.time.asc())
     )
     return [(event, reg_count) for event, reg_count in result.all()]
 

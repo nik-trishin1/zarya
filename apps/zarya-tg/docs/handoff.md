@@ -12,6 +12,11 @@ This document captures key context and completed work so a new session/chat can 
 
 ## Recent Changes (Highlights)
 
+- Hide past events (ADR-018)
+  - Past calendar dates are filtered out of: home list, «Мои регистрации», ticket counter, admin «Управлять событиями».
+  - Events are not deleted from Postgres.
+  - Key code: `backend/app/services/events.py` (`get_upcoming_events` registered_only filter, `get_all_events_admin`).
+
 - Deep links and sharing
   - Event deep links now use both parameters for reliability across iOS/Android:
     - Format (Main Mini App): `https://t.me/{bot}?startapp=event_{id}&startApp=event_{id}`
