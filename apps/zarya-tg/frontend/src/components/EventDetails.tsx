@@ -77,7 +77,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     if (!event) return;
     const link = buildEventShareLink(event.event_id);
     const message = formatShareMessage(event.name, link, event.description);
-    if (openTelegramShareLink(link, message)) {
+    if (openTelegramShareLink(message)) {
       return;
     }
 

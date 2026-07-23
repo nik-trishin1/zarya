@@ -21,7 +21,7 @@ This document captures key context and completed work so a new session/chat can 
   - Event deep links now use both parameters for reliability across iOS/Android:
     - Format (Main Mini App): `https://t.me/{bot}?startapp=event_{id}&startApp=event_{id}`
     - Optional Direct Link (with short name): `https://t.me/{bot}/{short_name}?startapp=event_{id}&startApp=event_{id}`
-  - Frontend share opens native Telegram share sheet via `t.me/share/url?url=...&text=...` (prevents Safari on iOS).
+  - Frontend share opens native Telegram share sheet via `t.me/share/url?text=...` (text-only; omit `url` to avoid a leading duplicate link).
   - Production bot handle: `@zarya_friends_bot` (`VITE_BOT_USERNAME=zarya_friends_bot`).
   - Optional Direct Link short name supported via `VITE_BOT_APP_SHORT_NAME` / `BOT_APP_SHORT_NAME`.
 

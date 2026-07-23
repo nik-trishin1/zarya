@@ -27,7 +27,7 @@ Set `VITE_BOT_APP_SHORT_NAME` / `BOT_APP_SHORT_NAME` to that short name.
 
 On launch, the frontend reads `start_param` from `WebApp.initDataUnsafe` (or `tgWebAppStartParam` in the URL) and opens the event detail overlay for the matching ID.
 
-A **«Поделиться»** button on the event detail screen opens Telegram's native share dialog via `t.me/share/url` with separate `url` and `text` parameters. The share text format is:
+A **«Поделиться»** button on the event detail screen opens Telegram's native share dialog via `t.me/share/url` with a **text-only** payload (no `url` query param). The share text format is:
 
 ```
 {event name}
@@ -36,7 +36,7 @@ A **«Поделиться»** button on the event detail screen opens Telegram'
 {description if present}
 ```
 
-Passing the deep link in the `url` field (not only as plain text) is required so iOS treats it as a native Telegram link instead of opening Safari. Outside Telegram, the formatted text is copied to the clipboard.
+Do **not** pass the deep link in both `url` and `text`: Telegram prepends `url` before `text`, which produces a duplicate link (`link → title → link → description`). The deep link must appear once, after the title. Outside Telegram, the same formatted text is copied to the clipboard. Prefer Direct Link short names (`VITE_BOT_APP_SHORT_NAME`) so the in-text `t.me/...` URL opens the Mini App reliably on iOS.
 
 Bot username is configured via `VITE_BOT_USERNAME` (default: `zarya_friends_bot`, production bot **@zarya_friends_bot**).
 
@@ -55,5 +55,5 @@ Admin bot does not expose share links — sharing is user-facing only from the M
 - Registered users who open a past event via link still see their registration status and calendar actions.
 - `start_param` must match `event_{id}` with only digits after the underscore.
 - Production frontend must set `VITE_BOT_USERNAME` on Railway if the bot handle changes (current production: `zarya_friends_bot`).
-- On iOS, shared links that contain only plain-text URLs may open in Safari; always share via `t.me/share/url?url=...&text=...`.
-- If the link opens the bot chat instead of the Mini App, set `VITE_BOT_APP_SHORT_NAME` / `BOT_APP_SHORT_NAME` to the Direct Link short name from BotFather.
+- Share via `t.me/share/url?text=...` only (omit `url`) so the composed message keeps order title → link → description without a leading duplicate URL.
+- If the in-text link opens Safari or the bot chat instead of the Mini App, set `VITE_BOT_APP_SHORT_NAME` / `BOT_APP_SHORT_NAME` to the Direct Link short name from BotFather.

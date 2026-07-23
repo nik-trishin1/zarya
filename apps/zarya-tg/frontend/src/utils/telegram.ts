@@ -6,14 +6,15 @@ export function getTelegramInitData(): string {
   return getTelegramWebApp()?.initData || "";
 }
 
-export function openTelegramShareLink(url: string, message: string): boolean {
+export function openTelegramShareLink(message: string): boolean {
   const tg = getTelegramWebApp();
   if (typeof tg?.openTelegramLink !== "function") {
     return false;
   }
 
-  // url param keeps native t.me handling on tap (iOS). text carries title → link → description.
-  const params = new URLSearchParams({ url, text: message });
+  // Text-only: Telegram prepends `url` before `text`, which duplicated the deep link
+  // (link → title → link → description). Message already has title → link → description.
+  const params = new URLSearchParams({ text: message });
   tg.openTelegramLink(`https://t.me/share/url?${params.toString()}`);
   return true;
 }
