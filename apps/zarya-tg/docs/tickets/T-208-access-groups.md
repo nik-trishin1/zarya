@@ -67,7 +67,7 @@ Support closed group events and group-scoped messaging without breaking public M
 
 ## Verification
 
-1. [x] `PYTHONPATH=. pytest -q` in backend (75 passed)
+1. [x] `PYTHONPATH=. pytest -q` in backend (76 passed)
 2. [x] `npm run lint && npm run build` in frontend
 3. [ ] CI green
 4. [ ] Review pass against AC
