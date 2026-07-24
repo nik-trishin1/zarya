@@ -69,6 +69,6 @@ Users can take one or two seats under a single registration; +1 can be added or 
 
 ## Handoff (when done)
 
-- PR URL: (see PR for this branch)
+- PR URL: https://github.com/nik-trishin1/zarya/pull/10
 - Defaults: MVP max party_size = 2; +1 line label `Имя + 1` without @username on the guest line
 - Residual risks: concurrent register race near capacity (same as ADR-012)
