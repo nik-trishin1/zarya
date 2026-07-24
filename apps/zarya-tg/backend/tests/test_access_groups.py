@@ -243,7 +243,11 @@ async def test_add_user_to_group_sends_welcome_once():
     async with async_session() as db:
         group = await get_group_by_slug(db, CORE_GROUP_SLUG)
         assert group is not None
-        user = await get_or_create_user(db, telegram_id=970_501, username="w", first_name="W")
+        # Fresh telegram id each run — shared sqlite DB across pytest invocations.
+        import time as time_mod
+
+        telegram_id = 970_000_000 + int(time_mod.time() * 1000) % 1_000_000
+        user = await get_or_create_user(db, telegram_id=telegram_id, username="w", first_name="W")
         with patch("app.services.access_groups.send_group_welcome", return_value=True) as welcome:
             _, created = await add_user_to_group(db, user, group, notify=True)
             assert created is True
