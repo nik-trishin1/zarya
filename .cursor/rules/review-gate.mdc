@@ -1,0 +1,13 @@
+---
+description: Require a separate review pass after implementation
+alwaysApply: true
+---
+# Review Gate
+
+After implementing a ticket, do not treat self-check in the same session as final review.
+
+1. Mark the ticket `in_review`.
+2. Request a separate review using `process/ai-factory/REVIEW_PASS.md` (second agent, Bugbot, or human).
+3. Mark `done` only after PASS + green CI.
+
+When acting as the review agent: report PASS/FAIL and findings; do not implement fixes unless asked.

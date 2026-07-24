@@ -64,6 +64,8 @@
 
 ## Phase 4 — Testing & Deployment
 
+- [x] CI on PRs (pytest + frontend lint/build + Railway log scan) — see `process/ai-factory/CI.md`, ticket T-FACTORY-001
+- [ ] Configure GitHub secrets/vars for Railway log scan (`RAILWAY_TOKEN`, `RAILWAY_SERVICE_NAMES`, …)
 - [ ] End-to-end testing with real Telegram accounts
 - [ ] Deploy backend to Railway
 - [ ] Deploy frontend to Railway (static hosting)
@@ -73,9 +75,19 @@
 
 ---
 
+## AI-Factory process
+
+- [x] Portable process pack under `process/` — T-FACTORY-002 / S-FACTORY-001
+- [x] Human-summary requirement on specs and tickets
+- [x] Review gate + orchestrator docs
+- [ ] Operator: create Cursor Automation `factory-implement` (see `process/ai-factory/ORCHESTRATOR.md`)
+
+---
+
 ## Iteration 2
 
-> Scope finalised 2026-06-24. Items ordered by priority.
+> Scope finalised 2026-06-24. Items ordered by priority.  
+> Detailed tickets with Human summaries: [`docs/tickets/`](tickets/).
 
 ### Already shipped (confirmed during planning)
 
@@ -91,20 +103,21 @@
 
 ### Backlog
 
-- [ ] **Access codes for zarya + circle events** — unique personal codes granting access to hidden-tier events; admin generates and shares manually; no expiry by default but codes can be revoked. See ADR-015 (to be written).
-- [ ] **Propose your own event** — any registered user can submit an event proposal (name, date, description); creates a `draft` event visible only to admin; admin approves → published with announcement, or rejects → draft deleted. See ADR-016 (to be written).
-- [ ] **Past events status** — visual «Завершено» treatment, optional 48h grace, and Archive section for past events (builds on ADR-018 hide behavior).
-- [ ] **Event categories and filters** — categories: 🎉 Развлечения, ✈️ Путешествия, 📚 Образование, ☕ Встречи; filter chips in header; relevant when event count exceeds ~15.
-- [ ] **English localization** — i18n layer (react-i18next on frontend, locale param on backend); Russian remains default.
-- [ ] **Analytics dashboard** — admin-only view: total registrations per event, active users, monthly event count.
+- [ ] **T-201 Access codes** — blocked on ADR-015 — [ticket](tickets/T-201-access-codes.md)
+- [ ] **T-202 Propose your own event** — blocked on ADR-016 — [ticket](tickets/T-202-propose-event.md)
+- [ ] **T-203 Past events status / archive** — [ticket](tickets/T-203-past-events-archive.md)
+- [ ] **T-204 Event categories and filters** — needs ADR — [ticket](tickets/T-204-event-categories.md)
+- [ ] **T-205 English localization** — needs ADR — [ticket](tickets/T-205-english-i18n.md)
+- [ ] **T-206 Analytics dashboard** — needs ADR — [ticket](tickets/T-206-analytics-dashboard.md)
 
 ---
 
 ## Iteration 3
 
-> Detailed requirements in `docs/decisions/014-event-ownership-and-inline-editing.md`.
+> Detailed requirements in `docs/decisions/014-event-ownership-and-inline-editing.md`.  
+> Tickets: [`docs/tickets/`](tickets/).
 
-- [ ] **Event ownership & in-app admin editing** — introduce `proposed_by_user_id` and `status` fields on Event; permission matrix (admin full access, initiator can edit own event and cancel it); in-app edit sheet (pencil icon on event details, visible when `can_edit: true`); cancellation triggers broadcast to registrants and DM to admin; bot FSM flow remains as supplementary interface.
-- [ ] **Event duplication** — admin can copy an existing event as a template; all fields pre-filled except date/time.
-- [ ] **Invite system** — unique invite link per user; admin sees who invited whom.
-- [ ] **Web version** — public-facing zarya.org landing with upcoming events (read-only, no registration).
+- [ ] **T-301 Event ownership & in-app admin editing** — split before factory enqueue — [ticket](tickets/T-301-event-ownership-editing.md)
+- [ ] **T-302 Event duplication** — [ticket](tickets/T-302-event-duplication.md)
+- [ ] **T-303 Invite system** — blocked on ADR — [ticket](tickets/T-303-invite-system.md)
+- [ ] **T-304 Web version** — blocked on ADR — [ticket](tickets/T-304-web-version.md)

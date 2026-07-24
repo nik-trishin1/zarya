@@ -1,0 +1,20 @@
+---
+description: AI-Factory process — specs, tickets, DoR, CI, review
+alwaysApply: true
+---
+# AI-Factory
+
+Follow the portable standard in `process/ai-factory/` (project-agnostic).
+
+**Before implementing a feature ticket:**
+
+1. Confirm a linked spec/ADR exists and its **Human summary** is approved (or the ticket Human summary is approved).
+2. Confirm Definition of Ready (`process/ai-factory/DEFINITION_OF_READY.md`).
+3. Implement only that ticket; document safe defaults in the PR; do not expand scope.
+4. Run verification from the ticket and `process/ai-factory/CI.md`.
+5. Open/update a PR; set ticket to `in_review`; request a review pass (`process/ai-factory/REVIEW_PASS.md`).
+6. Do not mark `done` until review PASS and CI green (including Railway log scan when configured).
+
+**Human summary rule:** Specs and tickets must include a plain-language Human summary so a non-implementing reviewer can approve intent before coding.
+
+**Factory vs clarify:** When DoR is met and the ticket is factory-queued, prefer safe defaults over mid-flight questions unless the change would violate the approved summary/spec.

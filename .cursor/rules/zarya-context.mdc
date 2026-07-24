@@ -6,7 +6,7 @@ alwaysApply: true
 
 This is a monorepo for the **zarya** community platform. Apps live under `apps/`. The current MVP is `apps/zarya-tg/` — a Telegram Mini App for community event management.
 
-Use `apps/zarya-tg/docs/prd.md` as the canonical source for product scope, user stories, and acceptance criteria. Use `apps/zarya-tg/docs/decisions/` for all architectural and product decisions. Use `apps/zarya-tg/frontend/` for all React + TypeScript Telegram Mini App code. Use `apps/zarya-tg/backend/` for all FastAPI and aiogram bot code. Use `apps/zarya-tg/docs/tasks.md` to track and update the current task backlog.
+Use `apps/zarya-tg/docs/prd.md` as the canonical source for product scope, user stories, and acceptance criteria. Use `apps/zarya-tg/docs/decisions/` for all architectural and product decisions. Use `apps/zarya-tg/docs/tickets/` for AC tickets with Human summaries. Use `process/ai-factory/` for the portable AI-Factory playbook. Use `apps/zarya-tg/frontend/` for all React + TypeScript Telegram Mini App code. Use `apps/zarya-tg/backend/` for all FastAPI and aiogram bot code. Use `apps/zarya-tg/docs/tasks.md` to track and update the current task backlog.
 
 ## MVP Scope for zarya-tg (do not add features outside this list without a decision record)
 
