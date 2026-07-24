@@ -24,12 +24,22 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
+  // Parent remounts this component with key={eventId}; loading starts true.
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     fetchEvent(eventId)
-      .then(setEvent)
-      .catch(() => setToast("Не удалось загрузить событие"))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        if (!cancelled) setEvent(data);
+      })
+      .catch(() => {
+        if (!cancelled) setToast("Не удалось загрузить событие");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [eventId]);
 
   const handleRegister = async () => {
@@ -67,7 +77,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
   const handleCalendar = async () => {
     if (!event) return;
     try {
-      await downloadCalendar(event.event_id, event.name);
+      await downloadCalendar(event.event_id);
     } catch (err) {
       setToast(err instanceof Error ? err.message : "Не удалось открыть календарь");
     }

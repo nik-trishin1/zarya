@@ -13,12 +13,20 @@ A community platform for organizing and attending social events — built around
 ```
 zarya/
 ├── AGENTS.md          # AI agent instructions (read first)
+├── process/           # Portable AI-Factory standards (reuse in other repos)
 ├── apps/
 │   └── zarya-tg/      # Telegram Mini App
 ├── .cursor/
 │   └── rules/         # Cursor AI behavior rules
+├── .github/
+│   └── workflows/     # CI (pytest, lint/build, Railway log scan)
 └── .gitignore
 ```
+
+## AI-Factory process
+
+Cross-project playbook: [process/README.md](process/README.md).  
+zarya-tg tickets: [apps/zarya-tg/docs/tickets/](apps/zarya-tg/docs/tickets/).
 
 ## Contributing
 
