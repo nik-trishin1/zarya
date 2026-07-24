@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import app.models  # noqa: F401 — register ORM tables on Base.metadata
+
     ensure_upload_dir()
     last_error: Exception | None = None
     for attempt in range(1, 6):

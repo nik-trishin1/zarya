@@ -49,3 +49,6 @@ async def test_get_event_returns_max_participants(client: AsyncClient):
     payload = response.json()
     assert payload["max_participants"] == 20
     assert payload["is_full"] is False
+    assert payload["allows_plus_one"] is True
+    assert payload["allows_sharing"] is True
+    assert payload["audience_group_id"] is None

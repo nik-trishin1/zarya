@@ -87,6 +87,11 @@ def _registration_error(exc: ValueError) -> HTTPException:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Регистрация не найдена")
     if code == "Invalid party size":
         return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Некорректное число мест")
+    if code == "Plus one not allowed":
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Для закрытых событий +1 недоступен",
+        )
     return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
 

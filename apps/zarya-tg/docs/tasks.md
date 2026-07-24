@@ -102,9 +102,13 @@
 - [x] **Hide past events from active UI** — past calendar dates hidden from home list, «Мои регистрации», ticket counter, and admin manage list; rows kept in DB. See ADR-018.
 - [x] **T-207 Registration +1 (party_size)** — ADR-019 — [ticket](tickets/T-207-registration-plus-one.md)
 
+### Already shipped (post-planning, continued)
+
+- [x] **T-208 Access groups** — ADR-020 — [ticket](tickets/T-208-access-groups.md) (in review / shipping)
+
 ### Backlog
 
-- [ ] **T-201 Access codes** — blocked on ADR-015 — [ticket](tickets/T-201-access-codes.md)
+- [ ] **T-201 Access codes** — blocked; will join `group_memberships` after codes ADR (see ADR-020) — [ticket](tickets/T-201-access-codes.md)
 - [ ] **T-202 Propose your own event** — blocked on ADR-016 — [ticket](tickets/T-202-propose-event.md)
 - [ ] **T-203 Past events status / archive** — [ticket](tickets/T-203-past-events-archive.md)
 - [ ] **T-204 Event categories and filters** — needs ADR — [ticket](tickets/T-204-event-categories.md)

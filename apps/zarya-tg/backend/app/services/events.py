@@ -15,6 +15,13 @@ from app.models.registration import (
     RegistrationStatus,
 )
 from app.models.user import User
+from app.services.access_groups import (
+    can_register_for_event,
+    can_view_event,
+    event_allows_plus_one,
+    is_admin_telegram_id,
+    user_group_ids,
+)
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
@@ -37,8 +44,13 @@ def is_event_full(event: Event, reg_count: int) -> bool:
     return reg_count >= event.max_participants
 
 
-def validate_party_size(party_size: int) -> int:
-    if party_size < MIN_PARTY_SIZE or party_size > MAX_PARTY_SIZE_MVP:
+def validate_party_size(party_size: int, *, allows_plus_one: bool = True) -> int:
+    if party_size < MIN_PARTY_SIZE:
+        raise ValueError("Invalid party size")
+    max_allowed = MAX_PARTY_SIZE_MVP if allows_plus_one else MIN_PARTY_SIZE
+    if party_size > max_allowed:
+        if not allows_plus_one and party_size > MIN_PARTY_SIZE:
+            raise ValueError("Plus one not allowed")
         raise ValueError("Invalid party size")
     return party_size
 
@@ -69,6 +81,29 @@ async def _seat_counts_for_events(db: AsyncSession, event_ids: list[int]) -> dic
         .group_by(Registration.event_id)
     )
     return {event_id: int(seats or 0) for event_id, seats in count_result.all()}
+
+
+async def _filter_visible_events(
+    db: AsyncSession,
+    events: list[Event],
+    user: User | None,
+) -> list[Event]:
+    if not events:
+        return []
+    if user is not None and is_admin_telegram_id(user.telegram_id):
+        return events
+
+    member_ids: set[int] = set()
+    if user is not None:
+        member_ids = await user_group_ids(db, user.user_id)
+
+    visible: list[Event] = []
+    for event in events:
+        if event.audience_group_id is None:
+            visible.append(event)
+        elif event.audience_group_id in member_ids:
+            visible.append(event)
+    return visible
 
 
 async def get_upcoming_events(
@@ -103,6 +138,7 @@ async def get_upcoming_events(
         result = await db.execute(query)
         events = list(result.scalars().all())
 
+    events = await _filter_visible_events(db, events, user)
     if not events:
         return []
 
@@ -142,6 +178,8 @@ async def get_event_detail(
     event = await get_event_by_id(db, event_id)
     if event is None:
         return None
+    if not await can_view_event(db, event, user):
+        return None
 
     reg_count = await _seat_count_for_event(db, event_id)
 
@@ -172,10 +210,12 @@ async def register_user(
     event_id: int,
     party_size: int = MIN_PARTY_SIZE,
 ) -> EventAttendance:
-    party_size = validate_party_size(party_size)
     event = await get_event_by_id(db, event_id)
     if event is None:
         raise ValueError("Event not found")
+    if not await can_register_for_event(db, event, user):
+        raise ValueError("Event not found")
+    party_size = validate_party_size(party_size, allows_plus_one=event_allows_plus_one(event))
     if is_event_past(event):
         raise ValueError("Event past")
 
@@ -221,10 +261,14 @@ async def update_party_size(
     event_id: int,
     party_size: int,
 ) -> EventAttendance:
-    party_size = validate_party_size(party_size)
     event = await get_event_by_id(db, event_id)
     if event is None:
         raise ValueError("Event not found")
+    if not await can_register_for_event(db, event, user):
+        raise ValueError("Event not found")
+    if not event_allows_plus_one(event) and party_size > MIN_PARTY_SIZE:
+        raise ValueError("Plus one not allowed")
+    party_size = validate_party_size(party_size, allows_plus_one=event_allows_plus_one(event))
     if is_event_past(event):
         raise ValueError("Event past")
 
@@ -309,6 +353,7 @@ async def create_event(
     cover_image_url: str | None,
     admin_user: User,
     max_participants: int | None = None,
+    audience_group_id: int | None = None,
 ) -> Event:
     event = Event(
         name=name,
@@ -318,6 +363,7 @@ async def create_event(
         location=location,
         cover_image_url=cover_image_url,
         max_participants=max_participants,
+        audience_group_id=audience_group_id,
         created_by_admin_id=admin_user.user_id,
     )
     db.add(event)

@@ -145,11 +145,16 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
       (hasGuestLimit(event.max_participants) &&
         event.registration_count >= (event.max_participants as number)));
   const registrationBlocked = past || full;
+  const allowsPlusOne = event.allows_plus_one !== false;
+  const allowsSharing = event.allows_sharing !== false;
   const canRegisterAlone =
     !registrationBlocked && canTakeSeats(event.registration_count, event.max_participants, 1);
   const canRegisterPlusOne =
-    !registrationBlocked && canTakeSeats(event.registration_count, event.max_participants, 2);
+    allowsPlusOne &&
+    !registrationBlocked &&
+    canTakeSeats(event.registration_count, event.max_participants, 2);
   const canAddPlusOne =
+    allowsPlusOne &&
     event.is_registered &&
     event.party_size === 1 &&
     !past &&
@@ -186,7 +191,8 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
               {hasPlusOne ? "Вы зарегистрированы (+1) ✅" : "Вы зарегистрированы ✅"}
             </div>
           ) : (
-            !registrationBlocked && (
+            !registrationBlocked &&
+            (allowsPlusOne ? (
               <div className="event-details__register-row">
                 <button
                   type="button"
@@ -206,38 +212,54 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
                   +1
                 </button>
               </div>
-            )
+            ) : (
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => handleRegister(1)}
+                disabled={actionLoading || !canRegisterAlone}
+              >
+                Зарегистрироваться
+              </button>
+            ))
           )}
 
           {event.is_registered && (
             <>
-              {hasPlusOne ? (
-                <button
-                  type="button"
-                  className="btn btn--secondary"
-                  onClick={() => handlePartySizeChange(1)}
-                  disabled={actionLoading || past}
-                >
-                  Убрать +1
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn--secondary"
-                  onClick={() => handlePartySizeChange(2)}
-                  disabled={actionLoading || past || !canAddPlusOne}
-                  title={!canAddPlusOne ? "Недостаточно мест для +1" : undefined}
-                >
-                  Добавить +1
-                </button>
-              )}
+              {allowsPlusOne &&
+                (hasPlusOne ? (
+                  <button
+                    type="button"
+                    className="btn btn--secondary"
+                    onClick={() => handlePartySizeChange(1)}
+                    disabled={actionLoading || past}
+                  >
+                    Убрать +1
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn--secondary"
+                    onClick={() => handlePartySizeChange(2)}
+                    disabled={actionLoading || past || !canAddPlusOne}
+                    title={!canAddPlusOne ? "Недостаточно мест для +1" : undefined}
+                  >
+                    Добавить +1
+                  </button>
+                ))}
               <div className="event-details__secondary-row">
-                <button type="button" className="btn btn--secondary btn--half" onClick={handleCalendar}>
+                <button
+                  type="button"
+                  className={`btn btn--secondary${allowsSharing ? " btn--half" : ""}`}
+                  onClick={handleCalendar}
+                >
                   🗓️ В календарь
                 </button>
-                <button type="button" className="btn btn--secondary btn--half" onClick={handleShare}>
-                  🔗 Поделиться
-                </button>
+                {allowsSharing && (
+                  <button type="button" className="btn btn--secondary btn--half" onClick={handleShare}>
+                    🔗 Поделиться
+                  </button>
+                )}
               </div>
               <button
                 type="button"

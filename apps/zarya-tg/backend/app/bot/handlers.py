@@ -13,15 +13,18 @@ from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
 from app.bot.keyboards import (
     admin_menu_keyboard,
+    audience_keyboard,
     back_to_event_keyboard,
     back_to_menu_keyboard,
     broadcast_confirm_keyboard,
     broadcast_all_confirm_keyboard,
+    broadcast_group_confirm_keyboard,
     confirm_keyboard,
     create_confirm_keyboard,
     delete_confirm_keyboard,
     edit_keep_keyboard,
     event_manage_keyboard,
+    group_pick_keyboard,
     skip_capacity_keyboard,
     skip_image_keyboard,
 )
@@ -30,6 +33,12 @@ from app.bot.parsers import format_capacity_ru, format_date_ru, format_guest_cou
 from app.bot.states import AdminStates
 from app.config import get_settings
 from app.database import async_session
+from app.services.access_groups import (
+    audience_label,
+    get_announcement_recipients,
+    get_group_by_id,
+    list_access_groups,
+)
 from app.services.users import get_all_users, get_or_create_user
 from app.services.events import (
     cancel_registration,
@@ -364,11 +373,7 @@ async def create_description(message: Message, state: FSMContext):
 @router.callback_query(F.data == "admin:skip_capacity", AdminStates.CREATE_CAPACITY)
 async def create_skip_capacity(callback: CallbackQuery, state: FSMContext):
     await state.update_data(max_participants=None)
-    await state.set_state(AdminStates.CREATE_IMAGE)
-    await callback.message.edit_text(
-        "Загрузите обложку (JPEG или PNG, до 5 МБ) или пропустите:",
-        reply_markup=skip_image_keyboard(),
-    )
+    await _prompt_create_audience(callback.message, state, edit=True)
     await callback.answer()
 
 
@@ -382,11 +387,45 @@ async def create_capacity(message: Message, state: FSMContext):
         )
         return
     await state.update_data(max_participants=parsed)
+    await _prompt_create_audience(message, state, edit=False)
+
+
+async def _prompt_create_audience(message: Message, state: FSMContext, *, edit: bool) -> None:
+    async with async_session() as db:
+        groups = await list_access_groups(db)
+    await state.set_state(AdminStates.CREATE_AUDIENCE)
+    text = "Для кого это событие?"
+    markup = audience_keyboard(groups)
+    if edit:
+        await message.edit_text(text, reply_markup=markup)
+    else:
+        await message.answer(text, reply_markup=markup)
+
+
+@router.callback_query(F.data.startswith("admin:audience:"), AdminStates.CREATE_AUDIENCE)
+async def create_audience_chosen(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    token = callback.data.split(":")[-1]
+    if token == "all":
+        await state.update_data(audience_group_id=None, audience_label="Все участники")
+    else:
+        group_id = int(token)
+        async with async_session() as db:
+            group = await get_group_by_id(db, group_id)
+        if group is None:
+            await callback.answer("Группа не найдена", show_alert=True)
+            return
+        await state.update_data(audience_group_id=group.group_id, audience_label=group.name)
+
     await state.set_state(AdminStates.CREATE_IMAGE)
-    await message.answer(
+    await callback.message.edit_text(
         "Загрузите обложку (JPEG или PNG, до 5 МБ) или пропустите:",
         reply_markup=skip_image_keyboard(),
     )
+    await callback.answer()
 
 
 @router.message(AdminStates.CREATE_IMAGE, F.photo)
@@ -437,31 +476,37 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
     data = await state.get_data()
     event_date = date.fromisoformat(data["event_date"])
     event_time = time.fromisoformat(data["event_time"])
+    audience_group_id = data.get("audience_group_id")
+    audience_name = data.get("audience_label") or "Все участники"
     async with async_session() as db:
-        user_count = len(await get_all_users(db))
+        recipients = await get_announcement_recipients(db, audience_group_id)
+        recipient_count = len(recipients)
     text = (
         f"Проверьте данные:\n\n"
         f"📌 {data['name']}\n"
         f"📅 {format_date_ru(event_date)}, {format_time_ru(event_time)}\n"
         f"📍 {data['location']}\n"
         f"📝 {data.get('description', '')}\n"
-        f"👥 Лимит мест: {format_capacity_ru(data.get('max_participants'))}\n\n"
-        f"Пользователей в боте: {user_count}"
+        f"👥 Лимит мест: {format_capacity_ru(data.get('max_participants'))}\n"
+        f"🔐 Аудитория: {audience_name}\n\n"
+        f"Получателей уведомления: {recipient_count}"
     )
     await state.set_state(AdminStates.CREATE_CONFIRM)
+    markup = create_confirm_keyboard(audience_is_group=audience_group_id is not None)
     if edit:
-        await message.edit_text(text, reply_markup=create_confirm_keyboard())
+        await message.edit_text(text, reply_markup=markup)
     else:
-        await message.answer(text, reply_markup=create_confirm_keyboard())
+        await message.answer(text, reply_markup=markup)
 
 
 async def _finish_event_create(
     callback: CallbackQuery,
     state: FSMContext,
     *,
-    notify_all: bool,
+    notify: bool,
 ) -> None:
     data = await state.get_data()
+    audience_group_id = data.get("audience_group_id")
     async with async_session() as db:
         admin_user = await get_or_create_user(
             db,
@@ -479,15 +524,17 @@ async def _finish_event_create(
             cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
             admin_user=admin_user,
             max_participants=data.get("max_participants"),
+            audience_group_id=audience_group_id,
         )
-        users = await get_all_users(db)
+        users = await get_announcement_recipients(db, audience_group_id)
 
     event_date = date.fromisoformat(data["event_date"])
     result = f"Событие создано: {event.name} на {format_date_ru(event_date)} ✅"
 
-    if notify_all:
+    if notify:
+        audience_name = data.get("audience_label") or "Все участники"
         if not users:
-            result += "\n\nУведомление не отправлено: в боте пока нет пользователей."
+            result += f"\n\nУведомление не отправлено: в аудитории «{audience_name}» пока нет пользователей."
         else:
             try:
                 bot_user = await callback.bot.get_me()
@@ -499,7 +546,7 @@ async def _finish_event_create(
                         event,
                         bot_user.username,
                     )
-                    result += f"\n\nАнонс отправлен: {sent} из {len(users)}."
+                    result += f"\n\nАнонс отправлен: {sent} из {len(users)} ({audience_name})."
                     if blocked:
                         result += f" Заблокировали бота: {blocked}."
                     if failed:
@@ -519,7 +566,7 @@ async def create_confirm(callback: CallbackQuery, state: FSMContext):
     if not is_admin(callback.from_user.id):
         await callback.answer("Нет доступа", show_alert=True)
         return
-    await _finish_event_create(callback, state, notify_all=False)
+    await _finish_event_create(callback, state, notify=False)
 
 
 @router.callback_query(F.data == "admin:create:confirm:notify")
@@ -527,7 +574,7 @@ async def create_confirm_notify(callback: CallbackQuery, state: FSMContext):
     if not is_admin(callback.from_user.id):
         await callback.answer("Нет доступа", show_alert=True)
         return
-    await _finish_event_create(callback, state, notify_all=True)
+    await _finish_event_create(callback, state, notify=True)
 
 
 # --- Manage events ---
@@ -552,9 +599,15 @@ async def admin_manage(callback: CallbackQuery, state: FSMContext):
     from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
     buttons = []
+    async with async_session() as db:
+        groups = {g.group_id: g for g in await list_access_groups(db)}
     for event, reg_count in events:
-        label = f"{event.name} | {format_date_ru(event.date)} | {format_guest_count(reg_count, event.max_participants)}"
-        buttons.append([InlineKeyboardButton(text=label, callback_data=f"admin:detail:{event.event_id}")])
+        aud = audience_label(groups.get(event.audience_group_id) if event.audience_group_id else None)
+        label = (
+            f"{event.name} [{aud}] | {format_date_ru(event.date)} | "
+            f"{format_guest_count(reg_count, event.max_participants)}"
+        )
+        buttons.append([InlineKeyboardButton(text=label[:64], callback_data=f"admin:detail:{event.event_id}")])
     buttons.append([InlineKeyboardButton(text="◀️ В меню", callback_data="admin:menu")])
 
     await state.set_state(AdminStates.MANAGE_LIST)
@@ -577,10 +630,15 @@ async def admin_event_detail(callback: CallbackQuery, state: FSMContext):
         return
 
     event, reg_count = event_data
+    async with async_session() as db:
+        group = None
+        if event.audience_group_id is not None:
+            group = await get_group_by_id(db, event.audience_group_id)
     text = (
         f"Событие: {event.name}\n"
         f"Дата: {format_date_ru(event.date)}, {format_time_ru(event.time)}\n"
         f"Место: {event.location}\n"
+        f"Аудитория: {audience_label(group)}\n"
         f"{format_guest_count(reg_count, event.max_participants)}\n\n"
         f"{event.description}"
     )
@@ -786,6 +844,128 @@ async def admin_broadcast_all_confirm(callback: CallbackQuery, state: FSMContext
 
     if not users:
         await callback.answer("В боте пока нет пользователей", show_alert=True)
+        return
+
+    sent, blocked, failed = await send_bot_user_broadcast(users, body)
+
+    await state.set_state(AdminStates.MENU)
+    await state.update_data(edit_mode=False)
+    result = f"Сообщение отправлено: {sent} из {len(users)}."
+    if blocked:
+        result += f" Заблокировали бота: {blocked}."
+    if failed:
+        result += " Есть недоставленные сообщения (см. логи сервера)."
+    await _finish_admin_callback(callback, result, reply_markup=admin_menu_keyboard())
+
+
+# --- Broadcast to access group ---
+
+@router.callback_query(F.data == "admin:broadcast_group")
+async def admin_broadcast_group_pick(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    async with async_session() as db:
+        groups = await list_access_groups(db)
+
+    if not groups:
+        await callback.answer("Пока нет групп доступа", show_alert=True)
+        return
+
+    await state.set_state(AdminStates.GROUP_BROADCAST_PICK)
+    await callback.message.edit_text(
+        "Выберите группу для рассылки:",
+        reply_markup=group_pick_keyboard(groups),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data.regexp(r"^admin:broadcast_group:\d+$"))
+async def admin_broadcast_group_start(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    group_id = int(callback.data.split(":")[-1])
+    async with async_session() as db:
+        group = await get_group_by_id(db, group_id)
+        if group is None:
+            await callback.answer("Группа не найдена", show_alert=True)
+            return
+        users = await get_announcement_recipients(db, group_id)
+
+    if not users:
+        await callback.answer("В группе пока нет участников", show_alert=True)
+        return
+
+    await state.set_state(AdminStates.GROUP_BROADCAST_MESSAGE)
+    await state.update_data(
+        broadcast_group_id=group_id,
+        broadcast_group_name=group.name,
+        edit_mode=False,
+    )
+    await callback.message.edit_text(
+        f"Введите текст сообщения для группы «{group.name}».\n"
+        f"Получателей: {len(users)}",
+        reply_markup=back_to_menu_keyboard(),
+    )
+    await callback.answer()
+
+
+@router.message(AdminStates.GROUP_BROADCAST_MESSAGE)
+async def admin_broadcast_group_message(message: Message, state: FSMContext):
+    if not is_admin(message.from_user.id):
+        return
+
+    error = validate_broadcast_body(message.text or "")
+    if error:
+        await message.answer(error)
+        return
+
+    data = await state.get_data()
+    group_id = data.get("broadcast_group_id")
+    group_name = data.get("broadcast_group_name") or "группа"
+    if group_id is None:
+        await message.answer("Сессия рассылки истекла. Начните снова из меню.")
+        return
+
+    body = (message.text or "").strip()
+    async with async_session() as db:
+        users = await get_announcement_recipients(db, group_id)
+
+    if not users:
+        await message.answer("В группе пока нет участников")
+        await state.set_state(AdminStates.MENU)
+        return
+
+    await state.update_data(broadcast_text=body)
+    await state.set_state(AdminStates.GROUP_BROADCAST_CONFIRM)
+    preview = (
+        f"Проверьте сообщение для группы «{group_name}». "
+        f"Получателей: {len(users)}\n\n———\n{body}\n———"
+    )
+    await message.answer(preview, reply_markup=broadcast_group_confirm_keyboard())
+
+
+@router.callback_query(F.data == "admin:broadcast_group:confirm")
+async def admin_broadcast_group_confirm(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    data = await state.get_data()
+    body = data.get("broadcast_text")
+    group_id = data.get("broadcast_group_id")
+    if not body or group_id is None:
+        await callback.answer("Сессия рассылки истекла", show_alert=True)
+        return
+
+    async with async_session() as db:
+        users = await get_announcement_recipients(db, group_id)
+
+    if not users:
+        await callback.answer("В группе пока нет участников", show_alert=True)
         return
 
     sent, blocked, failed = await send_bot_user_broadcast(users, body)

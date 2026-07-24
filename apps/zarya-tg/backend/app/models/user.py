@@ -10,6 +10,7 @@ from app.database import Base
 
 if TYPE_CHECKING:
     from app.models.event import Event
+    from app.models.group_membership import GroupMembership
     from app.models.registration import Registration
 
 
@@ -25,3 +26,7 @@ class User(Base):
 
     registrations: Mapped[list["Registration"]] = relationship(back_populates="user")
     created_events: Mapped[list["Event"]] = relationship(back_populates="created_by")
+    group_memberships: Mapped[list["GroupMembership"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

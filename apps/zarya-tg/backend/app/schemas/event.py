@@ -43,6 +43,9 @@ class EventResponse(BaseModel):
     is_full: bool = False
     max_participants: int | None = Field(default=None)
     party_size: int = 0
+    audience_group_id: int | None = None
+    allows_plus_one: bool = True
+    allows_sharing: bool = True
 
 
 class EventDetailResponse(EventResponse):

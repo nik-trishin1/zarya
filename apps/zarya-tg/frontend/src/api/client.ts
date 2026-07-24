@@ -14,6 +14,9 @@ export interface Event {
   is_full: boolean;
   max_participants: number | null;
   party_size: number;
+  audience_group_id: number | null;
+  allows_plus_one: boolean;
+  allows_sharing: boolean;
 }
 
 export interface RegistrationResponse {
@@ -69,6 +72,10 @@ function normalizeEvent(event: Event): Event {
     is_full: Boolean(event.is_full),
     is_past: Boolean(event.is_past),
     party_size: typeof event.party_size === "number" ? event.party_size : 0,
+    audience_group_id:
+      typeof event.audience_group_id === "number" ? event.audience_group_id : null,
+    allows_plus_one: event.allows_plus_one !== false,
+    allows_sharing: event.allows_sharing !== false,
   };
 }
 

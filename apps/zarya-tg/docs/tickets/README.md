@@ -12,7 +12,8 @@ Project-specific tickets live here. **Templates and DoR are portable** — use:
 |----|-------|--------|-----|
 | [T-FACTORY-001](T-FACTORY-001-ci-gates.md) | CI gates + Railway log scan | `done` | yes |
 | [T-FACTORY-002](T-FACTORY-002-portable-process.md) | Portable AI-Factory process + human-readable specs | `done` | yes |
-| [T-201](T-201-access-codes.md) | Access codes | `blocked` | no (ADR-015 missing) |
+| [T-201](T-201-access-codes.md) | Access codes | `blocked` | no (codes ADR after ADR-020) |
+| [T-208](T-208-access-groups.md) | Access groups | `in_review` | yes (ADR-020) |
 | [T-202](T-202-propose-event.md) | Propose event | `blocked` | no (ADR-016 missing) |
 | [T-203](T-203-past-events-archive.md) | Past events archive | `todo` | partial |
 | [T-204](T-204-event-categories.md) | Categories / filters | `todo` | no (ADR missing) |

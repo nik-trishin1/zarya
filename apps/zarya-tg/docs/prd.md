@@ -515,9 +515,9 @@ Registrations
 
 ### Glossary
 
-- **zarya + friends:** Public tier; all users can see and register for these events (only tier in MVP).
-- **zarya + circle:** Restricted tier (Iteration 2); only users with a valid access code can see and register.
-- **zarya + core:** Ultra-restricted tier (future); for the innermost circle.
+- **zarya + friends / public audience:** Events with no group (`audience_group_id` null); all bot users can see and register (ADR-020).
+- **Access group (e.g. Core):** Named membership group; group events are visible only to members (admins bypass). Access codes (later) redeem into the same memberships.
+- **zarya + circle / access codes:** Deferred (T-201); will grant membership in an access group, not a separate tier ACL.
 - **Telegram Mini App (Web App):** A web-based interface embedded in Telegram; provides a modern, app-like UX.
 - **Admin:** The event organizer (creator) who can create, edit, and delete events.
 - **Participant:** A user registered for an event.

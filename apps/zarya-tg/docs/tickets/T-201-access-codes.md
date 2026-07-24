@@ -30,11 +30,11 @@
 
 ## Goal
 
-Allow admin-issued personal access codes to unlock hidden circle-tier events.
+Allow admin-issued personal access codes to unlock **group membership** (same `group_memberships` rows as ADR-020), not a parallel ACL.
 
 ## Acceptance Criteria
 
-- [ ] Draft ADR-015 covering: code generation, storage, revoke, redemption UX, which events are gated
+- [ ] Draft codes ADR extending ADR-020: code generation, storage, revoke, redemption UX → `group_memberships.source=access_code`
 - [ ] Only then: implement per ADR (split into follow-up tickets)
 
 ## Out of Scope

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from app.models.access_group import AccessGroup
+
 
 def admin_menu_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
@@ -9,6 +11,7 @@ def admin_menu_keyboard() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="Создать событие", callback_data="admin:create")],
             [InlineKeyboardButton(text="Управлять событиями", callback_data="admin:manage")],
             [InlineKeyboardButton(text="📢 Написать всем", callback_data="admin:broadcast_all")],
+            [InlineKeyboardButton(text="📢 Написать группе", callback_data="admin:broadcast_group")],
         ]
     )
 
@@ -38,12 +41,31 @@ def edit_keep_keyboard() -> InlineKeyboardMarkup:
     )
 
 
-def create_confirm_keyboard() -> InlineKeyboardMarkup:
+def audience_keyboard(groups: list[AccessGroup]) -> InlineKeyboardMarkup:
+    rows = [
+        [InlineKeyboardButton(text="Все участники", callback_data="admin:audience:all")],
+    ]
+    for group in groups:
+        rows.append(
+            [
+                InlineKeyboardButton(
+                    text=group.name,
+                    callback_data=f"admin:audience:{group.group_id}",
+                )
+            ]
+        )
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def create_confirm_keyboard(*, audience_is_group: bool) -> InlineKeyboardMarkup:
+    notify_label = (
+        "🔔 Создать и уведомить группу" if audience_is_group else "🔔 Создать и уведомить всех"
+    )
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🔔 Создать и уведомить всех",
+                    text=notify_label,
                     callback_data="admin:create:confirm:notify",
                 ),
             ],
@@ -94,6 +116,31 @@ def broadcast_all_confirm_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(text="✅ Отправить", callback_data="admin:broadcast_all:confirm"),
+                InlineKeyboardButton(text="❌ Отмена", callback_data="admin:menu"),
+            ],
+        ]
+    )
+
+
+def group_pick_keyboard(groups: list[AccessGroup]) -> InlineKeyboardMarkup:
+    rows = [
+        [
+            InlineKeyboardButton(
+                text=group.name,
+                callback_data=f"admin:broadcast_group:{group.group_id}",
+            )
+        ]
+        for group in groups
+    ]
+    rows.append([InlineKeyboardButton(text="◀️ В меню", callback_data="admin:menu")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def broadcast_group_confirm_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="✅ Отправить", callback_data="admin:broadcast_group:confirm"),
                 InlineKeyboardButton(text="❌ Отмена", callback_data="admin:menu"),
             ],
         ]
