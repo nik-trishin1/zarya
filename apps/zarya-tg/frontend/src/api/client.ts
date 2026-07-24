@@ -140,7 +140,7 @@ interface CalendarLinksResponse {
   yahoo_url: string;
 }
 
-export async function downloadCalendar(eventId: number, _eventName: string): Promise<void> {
+export async function downloadCalendar(eventId: number): Promise<void> {
   const links = await apiFetch<CalendarLinksResponse>(`/api/registrations/${eventId}/calendar-links`);
 
   const tg = getTelegramWebApp();

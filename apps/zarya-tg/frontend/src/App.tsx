@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Event } from "./api/client";
 import { fetchEvents, fetchMyRegistrations } from "./api/client";
 import { EventCard } from "./components/EventCard";
@@ -17,17 +17,9 @@ function App() {
   const [registrationCount, setRegistrationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-  const deepLinkHandled = useRef(false);
-
-  useEffect(() => {
-    if (deepLinkHandled.current) return;
-    const eventId = parseEventStartParam(getTelegramStartParam());
-    if (eventId === null) return;
-    deepLinkHandled.current = true;
-    setScreen("home");
-    setSelectedEventId(eventId);
-  }, []);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(() =>
+    parseEventStartParam(getTelegramStartParam()),
+  );
 
   const refreshRegistrationCount = useCallback(async () => {
     try {
@@ -38,38 +30,70 @@ function App() {
     }
   }, []);
 
-  const loadEvents = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = screen === "home" ? await fetchEvents() : await fetchMyRegistrations();
-      setEvents(data);
-      if (screen === "registrations") {
-        setRegistrationCount(data.length);
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = screen === "home" ? await fetchEvents() : await fetchMyRegistrations();
+        if (cancelled) return;
+        setEvents(data);
+        if (screen === "registrations") {
+          setRegistrationCount(data.length);
+        }
+        setError(null);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Ошибка загрузки");
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка загрузки");
-    } finally {
-      setLoading(false);
-    }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [screen]);
 
   useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
+    if (screen !== "home") return;
+    let cancelled = false;
 
-  useEffect(() => {
-    if (screen === "home") {
-      refreshRegistrationCount();
-    }
-  }, [screen, refreshRegistrationCount]);
+    (async () => {
+      try {
+        const data = await fetchMyRegistrations();
+        if (!cancelled) setRegistrationCount(data.length);
+      } catch {
+        // Keep previous count if the request fails silently in the background.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen]);
 
   const handleRegistrationChange = useCallback(() => {
-    loadEvents();
-    refreshRegistrationCount();
-  }, [loadEvents, refreshRegistrationCount]);
+    setLoading(true);
+    void (async () => {
+      try {
+        const data = screen === "home" ? await fetchEvents() : await fetchMyRegistrations();
+        setEvents(data);
+        if (screen === "registrations") {
+          setRegistrationCount(data.length);
+        }
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Ошибка загрузки");
+      } finally {
+        setLoading(false);
+      }
+    })();
+    void refreshRegistrationCount();
+  }, [screen, refreshRegistrationCount]);
 
   const handleNavClick = () => {
+    setLoading(true);
     setScreen((s) => (s === "home" ? "registrations" : "home"));
   };
 
@@ -99,6 +123,7 @@ function App() {
 
       {selectedEventId !== null && (
         <EventDetails
+          key={selectedEventId}
           eventId={selectedEventId}
           onClose={() => setSelectedEventId(null)}
           onRegistrationChange={handleRegistrationChange}

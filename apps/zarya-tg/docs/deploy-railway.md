@@ -286,3 +286,20 @@ Check `WEBAPP_URL`, `API_UPSTREAM`, `CORS_ORIGINS`; ensure `DEV_MODE=false` on p
 | Database | SQLite | PostgreSQL |
 | `DEV_MODE` | `true` | `false` |
 | Mini App URL | `http://localhost:5173` | Railway frontend domain |
+
+---
+
+## CI: Railway log scan
+
+GitHub Actions (`.github/workflows/ci.yml`) can pull recent Railway deploy/HTTP logs after tests pass. Portable script: `process/ai-factory/scripts/check-railway-logs.sh`. Details: `process/ai-factory/CI.md`.
+
+**Configure once in GitHub → Settings → Secrets and variables → Actions:**
+
+| Name | Type | Example |
+|------|------|---------|
+| `RAILWAY_TOKEN` | secret | Project token from Railway → Project → Settings → Tokens |
+| `RAILWAY_SERVICE_NAMES` | variable | Comma-separated Railway **service names** (backend and frontend) |
+| `RAILWAY_ENVIRONMENT` | variable | `production` (optional) |
+| `RAILWAY_PROJECT_ID` | variable | Optional project id if required by your token setup |
+
+If `RAILWAY_TOKEN` is unset, the CI job skips successfully (forks stay green).
