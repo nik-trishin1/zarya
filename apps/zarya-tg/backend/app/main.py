@@ -36,6 +36,17 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(2)
     else:
         raise RuntimeError("Could not connect to database") from last_error
+
+    # Apply Core roster after schema is ready. New members get welcome DMs (idempotent).
+    try:
+        from app.database import async_session
+        from app.services.access_groups import seed_core_roster
+
+        async with async_session() as db:
+            await seed_core_roster(db, notify=True)
+    except Exception:
+        logger.exception("Core roster seed failed — API keeps running")
+
     yield
 
 

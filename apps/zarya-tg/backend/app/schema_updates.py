@@ -6,6 +6,29 @@ from sqlalchemy.engine import Connection
 
 CORE_GROUP_SLUG = "core"
 CORE_GROUP_NAME = "Core"
+# Internal users.user_id values for Core (ops-provided). Membership is applied at
+# app startup via access_groups.seed_core_roster (welcome DM for newly added only).
+CORE_SEED_USER_IDS: tuple[int, ...] = (
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    15,
+    16,
+    18,
+    19,
+    20,
+    22,
+    26,
+)
+# Back-compat alias used by older tests/docs.
 OPERATOR_SEED_USER_ID = 1
 
 
@@ -79,7 +102,7 @@ def _seed_event_capacity_limits(connection: Connection) -> None:
 
 
 def _seed_core_access_group(connection: Connection) -> None:
-    """Ensure Core group exists; optionally silent-membership for users.user_id=1."""
+    """Ensure Core group row exists. Roster membership is applied at app startup."""
     inspector = inspect(connection)
     tables = set(inspector.get_table_names())
     if "access_groups" not in tables:
@@ -94,41 +117,3 @@ def _seed_core_access_group(connection: Connection) -> None:
             text("INSERT INTO access_groups (slug, name) VALUES (:slug, :name)"),
             {"slug": CORE_GROUP_SLUG, "name": CORE_GROUP_NAME},
         )
-        existing = connection.execute(
-            text("SELECT group_id FROM access_groups WHERE slug = :slug"),
-            {"slug": CORE_GROUP_SLUG},
-        ).fetchone()
-
-    if existing is None or "group_memberships" not in tables or "users" not in tables:
-        return
-
-    group_id = int(existing[0])
-    user_row = connection.execute(
-        text("SELECT user_id FROM users WHERE user_id = :user_id"),
-        {"user_id": OPERATOR_SEED_USER_ID},
-    ).fetchone()
-    if user_row is None:
-        return
-
-    membership = connection.execute(
-        text(
-            "SELECT membership_id FROM group_memberships "
-            "WHERE user_id = :user_id AND group_id = :group_id"
-        ),
-        {"user_id": OPERATOR_SEED_USER_ID, "group_id": group_id},
-    ).fetchone()
-    if membership is not None:
-        return
-
-    # Silent seed — no Telegram welcome (ADR-020 / operator post-release test).
-    connection.execute(
-        text(
-            "INSERT INTO group_memberships (user_id, group_id, source) "
-            "VALUES (:user_id, :group_id, :source)"
-        ),
-        {
-            "user_id": OPERATOR_SEED_USER_ID,
-            "group_id": group_id,
-            "source": "admin",
-        },
-    )

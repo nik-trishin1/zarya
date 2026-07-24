@@ -26,7 +26,7 @@ Requirements for this iteration:
 - Table `group_memberships`: `membership_id`, `user_id`, `group_id`, `joined_at`, `source` (`admin` now; later `access_code`), unique `(user_id, group_id)`.
 - Column `events.audience_group_id` (nullable FK → `access_groups`). `NULL` = public («Все участники»).
 - Seed group `slug=core`, `name=Core`.
-- Idempotent seed: if `users.user_id = 1` exists, add silent membership in Core (`source=admin`, **no** welcome Telegram message on schema seed) so the operator can post-release test without notifying the wider community.
+- Configured Core roster `CORE_SEED_USER_IDS` is applied at app startup (`seed_core_roster`); newly added members receive the welcome DM once (idempotent on restart).
 - Ignore / deprecate `events.tier` for ACL; do not write or read it for visibility.
 
 ### Visibility and registration

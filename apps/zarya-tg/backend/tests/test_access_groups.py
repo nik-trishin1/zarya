@@ -7,7 +7,7 @@ import pytest
 
 from app.database import async_session, engine, Base
 from app.models.event import Event
-from app.schema_updates import CORE_GROUP_SLUG, OPERATOR_SEED_USER_ID
+from app.schema_updates import CORE_GROUP_SLUG
 from app.services.access_groups import (
     add_user_to_group,
     build_group_welcome_message,
@@ -40,35 +40,29 @@ async def test_core_group_seeded():
 
 
 @pytest.mark.asyncio
-async def test_schema_seed_adds_user_id_1_when_present():
-    from app.schema_updates import apply_schema_updates
-    from sqlalchemy import select, text
-    from app.models.group_membership import GroupMembership
-    from app.models.user import User
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        # Ensure a user with PK = 1 exists for seed
-        await conn.execute(
-            text(
-                "INSERT OR IGNORE INTO users (user_id, telegram_id, username, first_name) "
-                "VALUES (1, 911001, 'seed_op', 'Seed')"
-            )
-        )
-        await conn.run_sync(apply_schema_updates)
-
+async def test_seed_core_roster_adds_configured_users():
     async with async_session() as db:
-        group = await get_group_by_slug(db, CORE_GROUP_SLUG)
-        assert group is not None
-        result = await db.execute(
-            select(GroupMembership).where(
-                GroupMembership.user_id == OPERATOR_SEED_USER_ID,
-                GroupMembership.group_id == group.group_id,
+        u1 = await get_or_create_user(db, telegram_id=911_101, username="a", first_name="A")
+        u2 = await get_or_create_user(db, telegram_id=911_102, username="b", first_name="B")
+        from app.services.access_groups import seed_core_roster
+
+        with patch("app.services.access_groups.send_group_welcome", return_value=True) as welcome:
+            added, already, missing = await seed_core_roster(
+                db, user_ids=(u1.user_id, u2.user_id, 999_999), notify=True
             )
-        )
-        assert result.scalar_one_or_none() is not None
-        user = await db.get(User, OPERATOR_SEED_USER_ID)
-        assert user is not None
+        assert added == 2
+        assert already == 0
+        assert missing == 1
+        assert welcome.call_count == 2
+
+        with patch("app.services.access_groups.send_group_welcome", return_value=True) as welcome2:
+            added2, already2, missing2 = await seed_core_roster(
+                db, user_ids=(u1.user_id, u2.user_id), notify=True
+            )
+        assert added2 == 0
+        assert already2 == 2
+        assert missing2 == 0
+        welcome2.assert_not_called()
 
 
 @pytest.mark.asyncio

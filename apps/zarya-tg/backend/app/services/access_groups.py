@@ -12,7 +12,7 @@ from app.models.event import Event
 from app.models.group_membership import GroupMembership
 from app.models.user import User
 from app.services.telegram_delivery import deliver_bot_message
-from app.schema_updates import CORE_GROUP_NAME, CORE_GROUP_SLUG
+from app.schema_updates import CORE_GROUP_NAME, CORE_GROUP_SLUG, CORE_SEED_USER_IDS
 
 logger = logging.getLogger(__name__)
 
@@ -213,3 +213,41 @@ def audience_label(group: AccessGroup | None) -> str:
     if group is None:
         return "Все участники"
     return group.name
+
+
+async def seed_core_roster(
+    db: AsyncSession,
+    *,
+    user_ids: tuple[int, ...] | list[int] | None = None,
+    notify: bool = True,
+) -> tuple[int, int, int]:
+    """Ensure Core membership for configured user_ids.
+
+    Returns (added, already_member, missing_user).
+    Welcome DMs are sent only for newly created memberships when notify=True.
+    """
+    group = await ensure_core_group(db)
+    ids = tuple(user_ids) if user_ids is not None else CORE_SEED_USER_IDS
+    added = 0
+    already = 0
+    missing = 0
+    for user_id in ids:
+        result = await db.execute(select(User).where(User.user_id == user_id))
+        user = result.scalar_one_or_none()
+        if user is None:
+            missing += 1
+            logger.warning("Core roster: user_id=%s not found, skipped", user_id)
+            continue
+        _, created = await add_user_to_group(db, user, group, source="admin", notify=notify)
+        if created:
+            added += 1
+        else:
+            already += 1
+    logger.info(
+        "Core roster seed: added=%s already=%s missing=%s notify=%s",
+        added,
+        already,
+        missing,
+        notify,
+    )
+    return added, already, missing
