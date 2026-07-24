@@ -43,7 +43,7 @@ def test_build_admin_registration_message_register():
     message = build_admin_registration_message(_user(), _event(), 5, registered=True)
     assert message == (
         "@anna будет на *Встреча* *Вс, 28 июня, 19:00*\n"
-        "Всего участников: 5"
+        "Всего гостей: 5"
     )
 
 
@@ -51,7 +51,17 @@ def test_build_admin_registration_message_cancel():
     message = build_admin_registration_message(_user(), _event(), 4, registered=False)
     assert message == (
         "@anna отменил(а) регистрацию на *Встреча* *Вс, 28 июня, 19:00*\n"
-        "Всего участников: 4"
+        "Всего гостей: 4"
+    )
+
+
+def test_build_admin_registration_message_with_plus_one():
+    message = build_admin_registration_message(
+        _user(), _event(), 6, registered=True, party_size=2
+    )
+    assert message == (
+        "@anna будет на (+1) *Встреча* *Вс, 28 июня, 19:00*\n"
+        "Всего гостей: 6"
     )
 
 

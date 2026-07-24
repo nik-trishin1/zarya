@@ -38,6 +38,7 @@ from app.services.events import (
     get_all_events_admin,
     get_event_by_id,
     get_event_registered_users,
+    get_event_registration_parties,
     update_event,
 )
 from app.services.event_announcement import send_new_event_announcement
@@ -236,7 +237,8 @@ async def reminder_cancel_registration(callback: CallbackQuery):
             await callback.answer("Событие не найдено", show_alert=True)
             return
         try:
-            event, _, _ = await cancel_registration(db, user, event_id)
+            attendance = await cancel_registration(db, user, event_id)
+            event = attendance.event
         except ValueError as e:
             if str(e) == "Not registered":
                 await callback.answer("Вы не зарегистрированы на это событие", show_alert=True)
@@ -600,11 +602,11 @@ async def admin_event_registrations(callback: CallbackQuery, state: FSMContext):
         if event is None:
             await callback.answer("Событие не найдено", show_alert=True)
             return
-        users = await get_event_registered_users(db, event_id)
+        parties = await get_event_registration_parties(db, event_id)
 
     await state.set_state(AdminStates.MANAGE_DETAIL)
     await state.update_data(event_id=event_id)
-    text = format_participants_message(event.name, users)
+    text = format_participants_message(event.name, parties)
     await callback.message.edit_text(text, reply_markup=back_to_event_keyboard(event_id))
     await callback.answer()
 

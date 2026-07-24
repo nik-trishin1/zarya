@@ -13,12 +13,14 @@ export interface Event {
   is_past: boolean;
   is_full: boolean;
   max_participants: number | null;
+  party_size: number;
 }
 
 export interface RegistrationResponse {
   message: string;
   registration_count: number;
   is_registered: boolean;
+  party_size: number;
 }
 
 function resolveApiBase(): string {
@@ -66,6 +68,7 @@ function normalizeEvent(event: Event): Event {
     max_participants: maxParticipants,
     is_full: Boolean(event.is_full),
     is_past: Boolean(event.is_past),
+    party_size: typeof event.party_size === "number" ? event.party_size : 0,
   };
 }
 
@@ -126,8 +129,24 @@ export async function fetchMyRegistrations(): Promise<Event[]> {
   return events.map(normalizeEvent);
 }
 
-export async function registerForEvent(eventId: number): Promise<RegistrationResponse> {
-  return apiFetch<RegistrationResponse>(`/api/registrations/${eventId}`, { method: "POST" });
+export async function registerForEvent(
+  eventId: number,
+  partySize: number = 1,
+): Promise<RegistrationResponse> {
+  return apiFetch<RegistrationResponse>(`/api/registrations/${eventId}`, {
+    method: "POST",
+    body: JSON.stringify({ party_size: partySize }),
+  });
+}
+
+export async function updateRegistrationPartySize(
+  eventId: number,
+  partySize: number,
+): Promise<RegistrationResponse> {
+  return apiFetch<RegistrationResponse>(`/api/registrations/${eventId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ party_size: partySize }),
+  });
 }
 
 export async function cancelRegistration(eventId: number): Promise<RegistrationResponse> {

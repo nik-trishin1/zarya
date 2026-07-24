@@ -43,6 +43,25 @@ export function hasGuestLimit(maxParticipants: number | null | undefined): boole
   return typeof maxParticipants === "number" && Number.isFinite(maxParticipants) && maxParticipants > 0;
 }
 
+/** Seats still available; unlimited events return Infinity. */
+export function remainingSeats(
+  registrationCount: number,
+  maxParticipants: number | null | undefined,
+): number {
+  if (!hasGuestLimit(maxParticipants)) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return Math.max(0, (maxParticipants as number) - registrationCount);
+}
+
+export function canTakeSeats(
+  registrationCount: number,
+  maxParticipants: number | null | undefined,
+  seatsNeeded: number,
+): boolean {
+  return remainingSeats(registrationCount, maxParticipants) >= seatsNeeded;
+}
+
 export function formatEventSeats(registrationCount: number, maxParticipants: number | null | undefined): string {
   if (hasGuestLimit(maxParticipants)) {
     return `Гостей: ${registrationCount} из ${maxParticipants} + Плюша`;

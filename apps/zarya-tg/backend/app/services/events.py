@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date, datetime, time
 from zoneinfo import ZoneInfo
 
@@ -7,10 +8,23 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.event import Event
-from app.models.registration import Registration, RegistrationStatus
+from app.models.registration import (
+    MAX_PARTY_SIZE_MVP,
+    MIN_PARTY_SIZE,
+    Registration,
+    RegistrationStatus,
+)
 from app.models.user import User
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
+
+
+@dataclass(frozen=True)
+class EventAttendance:
+    event: Event
+    registration_count: int
+    is_registered: bool
+    party_size: int = 0
 
 
 def is_event_past(event: Event) -> bool:
@@ -23,11 +37,45 @@ def is_event_full(event: Event, reg_count: int) -> bool:
     return reg_count >= event.max_participants
 
 
+def validate_party_size(party_size: int) -> int:
+    if party_size < MIN_PARTY_SIZE or party_size > MAX_PARTY_SIZE_MVP:
+        raise ValueError("Invalid party size")
+    return party_size
+
+
+def _active_seats_expr():
+    return func.coalesce(func.sum(Registration.party_size), 0)
+
+
+async def _seat_count_for_event(db: AsyncSession, event_id: int) -> int:
+    count_result = await db.execute(
+        select(_active_seats_expr()).where(
+            Registration.event_id == event_id,
+            Registration.status == RegistrationStatus.ACTIVE.value,
+        )
+    )
+    return int(count_result.scalar() or 0)
+
+
+async def _seat_counts_for_events(db: AsyncSession, event_ids: list[int]) -> dict[int, int]:
+    if not event_ids:
+        return {}
+    count_result = await db.execute(
+        select(Registration.event_id, _active_seats_expr())
+        .where(
+            Registration.event_id.in_(event_ids),
+            Registration.status == RegistrationStatus.ACTIVE.value,
+        )
+        .group_by(Registration.event_id)
+    )
+    return {event_id: int(seats or 0) for event_id, seats in count_result.all()}
+
+
 async def get_upcoming_events(
     db: AsyncSession,
     user: User | None = None,
     registered_only: bool = False,
-) -> list[tuple[Event, int, bool]]:
+) -> list[EventAttendance]:
     today = date.today()
 
     if registered_only:
@@ -59,29 +107,26 @@ async def get_upcoming_events(
         return []
 
     event_ids = [e.event_id for e in events]
-    count_result = await db.execute(
-        select(Registration.event_id, func.count(Registration.registration_id))
-        .where(
-            Registration.event_id.in_(event_ids),
-            Registration.status == RegistrationStatus.ACTIVE.value,
-        )
-        .group_by(Registration.event_id)
-    )
-    counts = dict(count_result.all())
+    counts = await _seat_counts_for_events(db, event_ids)
 
-    registered_event_ids: set[int] = set()
+    party_by_event: dict[int, int] = {}
     if user:
         reg_result = await db.execute(
-            select(Registration.event_id).where(
+            select(Registration.event_id, Registration.party_size).where(
                 Registration.user_id == user.user_id,
                 Registration.event_id.in_(event_ids),
                 Registration.status == RegistrationStatus.ACTIVE.value,
             )
         )
-        registered_event_ids = set(reg_result.scalars().all())
+        party_by_event = {event_id: int(party_size) for event_id, party_size in reg_result.all()}
 
     return [
-        (event, counts.get(event.event_id, 0), event.event_id in registered_event_ids)
+        EventAttendance(
+            event=event,
+            registration_count=counts.get(event.event_id, 0),
+            is_registered=event.event_id in party_by_event,
+            party_size=party_by_event.get(event.event_id, 0),
+        )
         for event in events
     ]
 
@@ -93,20 +138,14 @@ async def get_event_by_id(db: AsyncSession, event_id: int) -> Event | None:
 
 async def get_event_detail(
     db: AsyncSession, event_id: int, user: User | None = None
-) -> tuple[Event, int, bool] | None:
+) -> EventAttendance | None:
     event = await get_event_by_id(db, event_id)
     if event is None:
         return None
 
-    count_result = await db.execute(
-        select(func.count(Registration.registration_id)).where(
-            Registration.event_id == event_id,
-            Registration.status == RegistrationStatus.ACTIVE.value,
-        )
-    )
-    reg_count = count_result.scalar() or 0
+    reg_count = await _seat_count_for_event(db, event_id)
 
-    is_registered = False
+    party_size = 0
     if user:
         reg_result = await db.execute(
             select(Registration).where(
@@ -115,12 +154,25 @@ async def get_event_detail(
                 Registration.status == RegistrationStatus.ACTIVE.value,
             )
         )
-        is_registered = reg_result.scalar_one_or_none() is not None
+        registration = reg_result.scalar_one_or_none()
+        if registration is not None:
+            party_size = int(registration.party_size)
 
-    return event, reg_count, is_registered
+    return EventAttendance(
+        event=event,
+        registration_count=reg_count,
+        is_registered=party_size > 0,
+        party_size=party_size,
+    )
 
 
-async def register_user(db: AsyncSession, user: User, event_id: int) -> tuple[Event, int, bool]:
+async def register_user(
+    db: AsyncSession,
+    user: User,
+    event_id: int,
+    party_size: int = MIN_PARTY_SIZE,
+) -> EventAttendance:
+    party_size = validate_party_size(party_size)
     event = await get_event_by_id(db, event_id)
     if event is None:
         raise ValueError("Event not found")
@@ -139,21 +191,22 @@ async def register_user(db: AsyncSession, user: User, event_id: int) -> tuple[Ev
         raise ValueError("Already registered")
 
     if event.max_participants is not None:
-        count_result = await db.execute(
-            select(func.count(Registration.registration_id)).where(
-                Registration.event_id == event_id,
-                Registration.status == RegistrationStatus.ACTIVE.value,
-            )
-        )
-        reg_count = count_result.scalar() or 0
-        if reg_count >= event.max_participants:
+        reg_count = await _seat_count_for_event(db, event_id)
+        if reg_count + party_size > event.max_participants:
             raise ValueError("Event full")
 
     if existing:
         existing.status = RegistrationStatus.ACTIVE.value
         existing.registered_at = datetime.now(MOSCOW_TZ)
+        existing.party_size = party_size
     else:
-        db.add(Registration(user_id=user.user_id, event_id=event_id))
+        db.add(
+            Registration(
+                user_id=user.user_id,
+                event_id=event_id,
+                party_size=party_size,
+            )
+        )
 
     await db.commit()
 
@@ -162,7 +215,51 @@ async def register_user(db: AsyncSession, user: User, event_id: int) -> tuple[Ev
     return detail
 
 
-async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> tuple[Event, int, bool]:
+async def update_party_size(
+    db: AsyncSession,
+    user: User,
+    event_id: int,
+    party_size: int,
+) -> EventAttendance:
+    party_size = validate_party_size(party_size)
+    event = await get_event_by_id(db, event_id)
+    if event is None:
+        raise ValueError("Event not found")
+    if is_event_past(event):
+        raise ValueError("Event past")
+
+    result = await db.execute(
+        select(Registration).where(
+            Registration.user_id == user.user_id,
+            Registration.event_id == event_id,
+            Registration.status == RegistrationStatus.ACTIVE.value,
+        )
+    )
+    registration = result.scalar_one_or_none()
+    if registration is None:
+        raise ValueError("Not registered")
+
+    current = int(registration.party_size)
+    if party_size == current:
+        detail = await get_event_detail(db, event_id, user)
+        assert detail is not None
+        return detail
+
+    if party_size > current and event.max_participants is not None:
+        reg_count = await _seat_count_for_event(db, event_id)
+        extra = party_size - current
+        if reg_count + extra > event.max_participants:
+            raise ValueError("Event full")
+
+    registration.party_size = party_size
+    await db.commit()
+
+    detail = await get_event_detail(db, event_id, user)
+    assert detail is not None
+    return detail
+
+
+async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> EventAttendance:
     result = await db.execute(
         select(Registration).where(
             Registration.user_id == user.user_id,
@@ -188,7 +285,7 @@ async def get_all_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:
     result = await db.execute(
         select(
             Event,
-            func.count(Registration.registration_id).label("reg_count"),
+            _active_seats_expr().label("reg_count"),
         )
         .outerjoin(
             Registration,
@@ -199,7 +296,7 @@ async def get_all_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:
         .group_by(Event.event_id)
         .order_by(Event.date.asc(), Event.time.asc())
     )
-    return [(event, reg_count) for event, reg_count in result.all()]
+    return [(event, int(reg_count or 0)) for event, reg_count in result.all()]
 
 
 async def create_event(
@@ -244,6 +341,7 @@ async def delete_event(db: AsyncSession, event: Event) -> None:
 
 
 async def get_event_registered_users(db: AsyncSession, event_id: int) -> list[User]:
+    """Unique active registrants (one row per user) for broadcasts/reminders."""
     result = await db.execute(
         select(User)
         .join(
@@ -255,3 +353,20 @@ async def get_event_registered_users(db: AsyncSession, event_id: int) -> list[Us
         .order_by(Registration.registered_at.asc())
     )
     return list(result.scalars().all())
+
+
+async def get_event_registration_parties(
+    db: AsyncSession, event_id: int
+) -> list[tuple[User, int]]:
+    """Active registrations with party_size for admin seat-expanded lists."""
+    result = await db.execute(
+        select(User, Registration.party_size)
+        .join(
+            Registration,
+            (Registration.user_id == User.user_id)
+            & (Registration.event_id == event_id)
+            & (Registration.status == RegistrationStatus.ACTIVE.value),
+        )
+        .order_by(Registration.registered_at.asc())
+    )
+    return [(user, int(party_size)) for user, party_size in result.all()]

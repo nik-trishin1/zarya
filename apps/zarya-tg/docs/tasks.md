@@ -100,6 +100,7 @@
 ### Already shipped (post-planning)
 
 - [x] **Hide past events from active UI** — past calendar dates hidden from home list, «Мои регистрации», ticket counter, and admin manage list; rows kept in DB. See ADR-018.
+- [x] **T-207 Registration +1 (party_size)** — ADR-019 — [ticket](tickets/T-207-registration-plus-one.md)
 
 ### Backlog
 

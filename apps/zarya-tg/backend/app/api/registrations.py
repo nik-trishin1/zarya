@@ -10,12 +10,17 @@ from app.config import get_settings
 from app.database import get_db
 from app.models.user import User
 from app.schemas.event import EventResponse
-from app.schemas.registration import RegistrationResponse
+from app.schemas.registration import (
+    RegistrationCreate,
+    RegistrationPartyUpdate,
+    RegistrationResponse,
+)
 from app.services.events import (
     cancel_registration,
     get_event_detail,
     get_upcoming_events,
     register_user,
+    update_party_size,
 )
 from app.services.admin_notifications import notify_admins_registration_change
 from app.utils.calendar import (
@@ -25,7 +30,7 @@ from app.utils.calendar import (
     generate_ics,
 )
 from app.utils.calendar_tokens import create_calendar_token, verify_calendar_token
-from app.utils.formatting import event_to_response, format_event_date
+from app.utils.formatting import attendance_to_response, format_event_date
 
 router = APIRouter(tags=["registrations"])
 
@@ -36,13 +41,12 @@ async def _require_registered_event(
     detail = await get_event_detail(db, event_id, user)
     if detail is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Событие не найдено")
-    event, _, is_registered = detail
-    if not is_registered:
+    if not detail.is_registered:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Календарь доступен только зарегистрированным участникам",
         )
-    return event
+    return detail.event
 
 
 async def get_calendar_user(
@@ -69,40 +73,97 @@ async def get_calendar_user(
     return await get_current_user(x_telegram_init_data, init_data, db)
 
 
+def _registration_error(exc: ValueError) -> HTTPException:
+    code = str(exc)
+    if code == "Event not found":
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Событие не найдено")
+    if code == "Already registered":
+        return HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Вы уже зарегистрированы")
+    if code == "Event past":
+        return HTTPException(status_code=status.HTTP_410_GONE, detail="Событие уже прошло")
+    if code == "Event full":
+        return HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Мест нет")
+    if code == "Not registered":
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Регистрация не найдена")
+    if code == "Invalid party size":
+        return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Некорректное число мест")
+    return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
 @router.get("/registrations/my", response_model=list[EventResponse])
 async def my_registrations(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     rows = await get_upcoming_events(db, user=user, registered_only=True)
-    return [event_to_response(event, reg_count, is_reg) for event, reg_count, is_reg in rows]
+    return [attendance_to_response(row) for row in rows]
 
 
 @router.post("/registrations/{event_id}", response_model=RegistrationResponse)
 async def register_for_event(
     event_id: int,
+    body: RegistrationCreate | None = None,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    party_size = body.party_size if body is not None else 1
+    try:
+        attendance = await register_user(db, user, event_id, party_size=party_size)
+    except ValueError as e:
+        raise _registration_error(e) from e
+
+    date_str = format_event_date(attendance.event.date, attendance.event.time)
+    if attendance.party_size > 1:
+        message = (
+            f"Вы зарегистрированы на {attendance.event.name} на {date_str} "
+            f"(+{attendance.party_size - 1})"
+        )
+    else:
+        message = f"Вы зарегистрированы на {attendance.event.name} на {date_str}"
+    await notify_admins_registration_change(
+        user,
+        attendance.event,
+        attendance.registration_count,
+        registered=True,
+        party_size=attendance.party_size,
+    )
+    return RegistrationResponse(
+        message=message,
+        registration_count=attendance.registration_count,
+        is_registered=attendance.is_registered,
+        party_size=attendance.party_size,
+    )
+
+
+@router.patch("/registrations/{event_id}", response_model=RegistrationResponse)
+async def update_registration_party_size(
+    event_id: int,
+    body: RegistrationPartyUpdate,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     try:
-        event, reg_count, is_registered = await register_user(db, user, event_id)
+        attendance = await update_party_size(db, user, event_id, body.party_size)
     except ValueError as e:
-        if str(e) == "Event not found":
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Событие не найдено")
-        if str(e) == "Already registered":
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Вы уже зарегистрированы")
-        if str(e) == "Event past":
-            raise HTTPException(status_code=status.HTTP_410_GONE, detail="Событие уже прошло")
-        if str(e) == "Event full":
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Мест нет")
-        raise
+        raise _registration_error(e) from e
 
-    date_str = format_event_date(event.date, event.time)
-    await notify_admins_registration_change(user, event, reg_count, registered=True)
+    if attendance.party_size > 1:
+        message = f"Добавлен +{attendance.party_size - 1} к регистрации на {attendance.event.name}"
+    else:
+        message = f"+1 убран с регистрации на {attendance.event.name}"
+
+    await notify_admins_registration_change(
+        user,
+        attendance.event,
+        attendance.registration_count,
+        registered=True,
+        party_size=attendance.party_size,
+    )
     return RegistrationResponse(
-        message=f"Вы зарегистрированы на {event.name} на {date_str}",
-        registration_count=reg_count,
-        is_registered=is_registered,
+        message=message,
+        registration_count=attendance.registration_count,
+        is_registered=attendance.is_registered,
+        party_size=attendance.party_size,
     )
 
 
@@ -113,17 +174,22 @@ async def cancel_event_registration(
     user: User = Depends(get_current_user),
 ):
     try:
-        event, reg_count, is_registered = await cancel_registration(db, user, event_id)
+        attendance = await cancel_registration(db, user, event_id)
     except ValueError as e:
-        if str(e) == "Not registered":
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Регистрация не найдена")
-        raise
+        raise _registration_error(e) from e
 
-    await notify_admins_registration_change(user, event, reg_count, registered=False)
+    await notify_admins_registration_change(
+        user,
+        attendance.event,
+        attendance.registration_count,
+        registered=False,
+        party_size=0,
+    )
     return RegistrationResponse(
-        message=f"Вы отменили регистрацию на {event.name}",
-        registration_count=reg_count,
-        is_registered=is_registered,
+        message=f"Вы отменили регистрацию на {attendance.event.name}",
+        registration_count=attendance.registration_count,
+        is_registered=attendance.is_registered,
+        party_size=0,
     )
 
 

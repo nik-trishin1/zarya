@@ -42,6 +42,7 @@ class EventResponse(BaseModel):
     is_past: bool = False
     is_full: bool = False
     max_participants: int | None = Field(default=None)
+    party_size: int = 0
 
 
 class EventDetailResponse(EventResponse):

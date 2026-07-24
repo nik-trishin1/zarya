@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, time
 
 from app.schemas.event import EventDetailResponse, EventResponse
-from app.services.events import MOSCOW_TZ, is_event_full, is_event_past
+from app.services.events import EventAttendance, is_event_full, is_event_past
 from app.services.storage import normalize_cover_image_url
 
 
@@ -32,7 +32,12 @@ def format_event_date(event_date: date, event_time: time) -> str:
     return f"{weekday}, {event_date.day} {month}, {event_time.strftime('%H:%M')}"
 
 
-def event_to_response(event, reg_count: int, is_registered: bool) -> EventResponse:
+def event_to_response(
+    event,
+    reg_count: int,
+    is_registered: bool,
+    party_size: int = 0,
+) -> EventResponse:
     return EventResponse(
         event_id=event.event_id,
         name=event.name,
@@ -46,10 +51,16 @@ def event_to_response(event, reg_count: int, is_registered: bool) -> EventRespon
         is_past=is_event_past(event),
         is_full=is_event_full(event, reg_count),
         max_participants=event.max_participants,
+        party_size=party_size if is_registered else 0,
     )
 
 
-def event_to_detail(event, reg_count: int, is_registered: bool) -> EventDetailResponse:
+def event_to_detail(
+    event,
+    reg_count: int,
+    is_registered: bool,
+    party_size: int = 0,
+) -> EventDetailResponse:
     return EventDetailResponse(
         event_id=event.event_id,
         name=event.name,
@@ -63,4 +74,23 @@ def event_to_detail(event, reg_count: int, is_registered: bool) -> EventDetailRe
         is_past=is_event_past(event),
         is_full=is_event_full(event, reg_count),
         max_participants=event.max_participants,
+        party_size=party_size if is_registered else 0,
+    )
+
+
+def attendance_to_response(attendance: EventAttendance) -> EventResponse:
+    return event_to_response(
+        attendance.event,
+        attendance.registration_count,
+        attendance.is_registered,
+        attendance.party_size,
+    )
+
+
+def attendance_to_detail(attendance: EventAttendance) -> EventDetailResponse:
+    return event_to_detail(
+        attendance.event,
+        attendance.registration_count,
+        attendance.is_registered,
+        attendance.party_size,
     )

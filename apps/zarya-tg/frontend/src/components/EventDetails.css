@@ -72,6 +72,17 @@
   gap: 12px;
 }
 
+.event-details__register-row {
+  display: flex;
+  gap: 12px;
+}
+
+.event-details__register-row .btn--half {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
 .event-details__secondary-row {
   display: flex;
   gap: 12px;

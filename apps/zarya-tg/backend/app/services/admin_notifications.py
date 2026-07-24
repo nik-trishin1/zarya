@@ -36,14 +36,20 @@ def build_admin_registration_message(
     reg_count: int,
     *,
     registered: bool,
+    party_size: int = 1,
 ) -> str:
     mention = format_user_mention(user)
     event_name = escape_markdown(event.name)
     date_str = escape_markdown(format_event_date(event.date, event.time))
-    action = "будет на" if registered else "отменил(а) регистрацию на"
+    if not registered:
+        action = "отменил(а) регистрацию на"
+    elif party_size > 1:
+        action = f"будет на (+{party_size - 1})"
+    else:
+        action = "будет на"
     return (
         f"{mention} {action} *{event_name}* *{date_str}*\n"
-        f"Всего участников: {reg_count}"
+        f"Всего гостей: {reg_count}"
     )
 
 
@@ -53,13 +59,20 @@ async def notify_admins_registration_change(
     reg_count: int,
     *,
     registered: bool,
+    party_size: int = 1,
 ) -> None:
     settings = get_settings()
     admin_ids = settings.admin_ids
     if not admin_ids or not settings.bot_token_configured:
         return
 
-    message = build_admin_registration_message(user, event, reg_count, registered=registered)
+    message = build_admin_registration_message(
+        user,
+        event,
+        reg_count,
+        registered=registered,
+        party_size=party_size,
+    )
     bot = Bot(token=settings.bot_token.strip())
     context = f"admin_registration_notify event_id={event.event_id}"
     try:

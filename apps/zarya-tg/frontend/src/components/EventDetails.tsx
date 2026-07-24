@@ -5,10 +5,17 @@ import {
   downloadCalendar,
   fetchEvent,
   registerForEvent,
+  updateRegistrationPartySize,
 } from "../api/client";
 import { CoverImage } from "./CoverImage";
 import { buildEventShareLink, formatShareMessage } from "../utils/deepLink";
-import { formatEventDate, formatEventSeats, hasGuestLimit, isEventPast } from "../utils/format";
+import {
+  canTakeSeats,
+  formatEventDate,
+  formatEventSeats,
+  hasGuestLimit,
+  isEventPast,
+} from "../utils/format";
 import { openTelegramShareLink } from "../utils/telegram";
 import "./EventDetails.css";
 
@@ -42,17 +49,35 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     };
   }, [eventId]);
 
-  const handleRegister = async () => {
+  const refreshAfterChange = async (message: string) => {
+    if (!event) return;
+    setToast(message);
+    const updated = await fetchEvent(event.event_id);
+    setEvent(updated);
+    onRegistrationChange();
+  };
+
+  const handleRegister = async (partySize: number) => {
     if (!event) return;
     setActionLoading(true);
     try {
-      const result = await registerForEvent(event.event_id);
-      setToast(result.message);
-      const updated = await fetchEvent(event.event_id);
-      setEvent(updated);
-      onRegistrationChange();
+      const result = await registerForEvent(event.event_id, partySize);
+      await refreshAfterChange(result.message);
     } catch (err) {
       setToast(err instanceof Error ? err.message : "Ошибка регистрации");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePartySizeChange = async (partySize: number) => {
+    if (!event) return;
+    setActionLoading(true);
+    try {
+      const result = await updateRegistrationPartySize(event.event_id, partySize);
+      await refreshAfterChange(result.message);
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : "Не удалось изменить +1");
     } finally {
       setActionLoading(false);
     }
@@ -63,10 +88,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     setActionLoading(true);
     try {
       const result = await cancelRegistration(event.event_id);
-      setToast(result.message);
-      const updated = await fetchEvent(event.event_id);
-      setEvent(updated);
-      onRegistrationChange();
+      await refreshAfterChange(result.message);
     } catch (err) {
       setToast(err instanceof Error ? err.message : "Ошибка отмены");
     } finally {
@@ -123,6 +145,16 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
       (hasGuestLimit(event.max_participants) &&
         event.registration_count >= (event.max_participants as number)));
   const registrationBlocked = past || full;
+  const canRegisterAlone =
+    !registrationBlocked && canTakeSeats(event.registration_count, event.max_participants, 1);
+  const canRegisterPlusOne =
+    !registrationBlocked && canTakeSeats(event.registration_count, event.max_participants, 2);
+  const canAddPlusOne =
+    event.is_registered &&
+    event.party_size === 1 &&
+    !past &&
+    canTakeSeats(event.registration_count, event.max_participants, 1);
+  const hasPlusOne = event.is_registered && event.party_size > 1;
 
   return (
     <div className="event-details">
@@ -148,21 +180,57 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
           {full && (
             <div className="event-details__past">Fully booked. Stay tuned!</div>
           )}
+
           {event.is_registered ? (
-            <div className="event-details__registered">Вы зарегистрированы ✅</div>
+            <div className="event-details__registered">
+              {hasPlusOne ? "Вы зарегистрированы (+1) ✅" : "Вы зарегистрированы ✅"}
+            </div>
           ) : (
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={handleRegister}
-              disabled={actionLoading || registrationBlocked}
-            >
-              Зарегистрироваться
-            </button>
+            !registrationBlocked && (
+              <div className="event-details__register-row">
+                <button
+                  type="button"
+                  className="btn btn--primary btn--half"
+                  onClick={() => handleRegister(1)}
+                  disabled={actionLoading || !canRegisterAlone}
+                >
+                  Один
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--secondary btn--half"
+                  onClick={() => handleRegister(2)}
+                  disabled={actionLoading || !canRegisterPlusOne}
+                  title={!canRegisterPlusOne ? "Недостаточно мест для +1" : undefined}
+                >
+                  +1
+                </button>
+              </div>
+            )
           )}
 
           {event.is_registered && (
             <>
+              {hasPlusOne ? (
+                <button
+                  type="button"
+                  className="btn btn--secondary"
+                  onClick={() => handlePartySizeChange(1)}
+                  disabled={actionLoading || past}
+                >
+                  Убрать +1
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn--secondary"
+                  onClick={() => handlePartySizeChange(2)}
+                  disabled={actionLoading || past || !canAddPlusOne}
+                  title={!canAddPlusOne ? "Недостаточно мест для +1" : undefined}
+                >
+                  Добавить +1
+                </button>
+              )}
               <div className="event-details__secondary-row">
                 <button type="button" className="btn btn--secondary btn--half" onClick={handleCalendar}>
                   🗓️ В календарь
