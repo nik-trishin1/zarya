@@ -104,7 +104,7 @@
 
 ### Already shipped (post-planning, continued)
 
-- [x] **T-208 Access groups** — ADR-020 — [ticket](tickets/T-208-access-groups.md) (in review / shipping)
+- [x] **T-208 Access groups** — ADR-020 — [ticket](tickets/T-208-access-groups.md)
 
 ### Backlog
 
