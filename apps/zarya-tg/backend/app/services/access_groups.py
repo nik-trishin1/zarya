@@ -89,6 +89,30 @@ async def can_view_event(db: AsyncSession, event: Event, user: User | None) -> b
     return await is_group_member(db, user.user_id, event.audience_group_id)
 
 
+async def user_has_active_registration(
+    db: AsyncSession, user_id: int, event_id: int
+) -> bool:
+    from app.models.registration import Registration, RegistrationStatus
+
+    result = await db.execute(
+        select(Registration.registration_id).where(
+            Registration.user_id == user_id,
+            Registration.event_id == event_id,
+            Registration.status == RegistrationStatus.ACTIVE.value,
+        )
+    )
+    return result.scalar_one_or_none() is not None
+
+
+async def can_access_event_detail(db: AsyncSession, event: Event, user: User | None) -> bool:
+    """Members/admins, or anyone with an active registration (cancel / my list)."""
+    if await can_view_event(db, event, user):
+        return True
+    if user is None:
+        return False
+    return await user_has_active_registration(db, user.user_id, event.event_id)
+
+
 async def can_register_for_event(db: AsyncSession, event: Event, user: User) -> bool:
     return await can_view_event(db, event, user)
 

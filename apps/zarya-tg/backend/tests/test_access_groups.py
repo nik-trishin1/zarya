@@ -195,11 +195,55 @@ def test_welcome_message_mentions_group_name():
 
 
 @pytest.mark.asyncio
+async def test_former_member_can_cancel_registration():
+    today = date.today()
+    async with async_session() as db:
+        group = await get_group_by_slug(db, CORE_GROUP_SLUG)
+        assert group is not None
+        user = await get_or_create_user(db, telegram_id=980_001, username="ex", first_name="Ex")
+        await add_user_to_group(db, user, group, notify=False)
+        event = Event(
+            name="Leave later",
+            description="",
+            date=today + timedelta(days=5),
+            time=time(20, 0),
+            location="Moscow",
+            audience_group_id=group.group_id,
+        )
+        db.add(event)
+        await db.commit()
+        await db.refresh(event)
+
+        await register_user(db, user, event.event_id, party_size=1)
+
+        from sqlalchemy import delete
+        from app.models.group_membership import GroupMembership
+
+        await db.execute(
+            delete(GroupMembership).where(
+                GroupMembership.user_id == user.user_id,
+                GroupMembership.group_id == group.group_id,
+            )
+        )
+        await db.commit()
+
+        # Still visible via active registration / my list
+        assert await get_event_detail(db, event.event_id, user) is not None
+        my = await get_upcoming_events(db, user=user, registered_only=True)
+        assert event.event_id in {row.event.event_id for row in my}
+
+        from app.services.events import cancel_registration
+
+        attendance = await cancel_registration(db, user, event.event_id)
+        assert attendance.is_registered is False
+
+
+@pytest.mark.asyncio
 async def test_add_user_to_group_sends_welcome_once():
     async with async_session() as db:
         group = await get_group_by_slug(db, CORE_GROUP_SLUG)
         assert group is not None
-        user = await get_or_create_user(db, telegram_id=970_001, username="w", first_name="W")
+        user = await get_or_create_user(db, telegram_id=970_501, username="w", first_name="W")
         with patch("app.services.access_groups.send_group_welcome", return_value=True) as welcome:
             _, created = await add_user_to_group(db, user, group, notify=True)
             assert created is True

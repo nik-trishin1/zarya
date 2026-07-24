@@ -16,8 +16,8 @@ from app.models.registration import (
 )
 from app.models.user import User
 from app.services.access_groups import (
+    can_access_event_detail,
     can_register_for_event,
-    can_view_event,
     event_allows_plus_one,
     is_admin_telegram_id,
     user_group_ids,
@@ -87,6 +87,8 @@ async def _filter_visible_events(
     db: AsyncSession,
     events: list[Event],
     user: User | None,
+    *,
+    keep_registered: bool = False,
 ) -> list[Event]:
     if not events:
         return []
@@ -96,6 +98,10 @@ async def _filter_visible_events(
     member_ids: set[int] = set()
     if user is not None:
         member_ids = await user_group_ids(db, user.user_id)
+
+    # registered_only lists already joined on active registration — keep those rows.
+    if keep_registered:
+        return events
 
     visible: list[Event] = []
     for event in events:
@@ -138,7 +144,9 @@ async def get_upcoming_events(
         result = await db.execute(query)
         events = list(result.scalars().all())
 
-    events = await _filter_visible_events(db, events, user)
+    events = await _filter_visible_events(
+        db, events, user, keep_registered=registered_only
+    )
     if not events:
         return []
 
@@ -178,7 +186,7 @@ async def get_event_detail(
     event = await get_event_by_id(db, event_id)
     if event is None:
         return None
-    if not await can_view_event(db, event, user):
+    if not await can_access_event_detail(db, event, user):
         return None
 
     reg_count = await _seat_count_for_event(db, event_id)
@@ -196,6 +204,30 @@ async def get_event_detail(
         if registration is not None:
             party_size = int(registration.party_size)
 
+    return EventAttendance(
+        event=event,
+        registration_count=reg_count,
+        is_registered=party_size > 0,
+        party_size=party_size,
+    )
+
+
+async def _attendance_after_mutation(
+    db: AsyncSession, event_id: int, user: User
+) -> EventAttendance:
+    """Build attendance without ACL hide — used after register/cancel mutations."""
+    event = await get_event_by_id(db, event_id)
+    assert event is not None
+    reg_count = await _seat_count_for_event(db, event_id)
+    reg_result = await db.execute(
+        select(Registration).where(
+            Registration.event_id == event_id,
+            Registration.user_id == user.user_id,
+            Registration.status == RegistrationStatus.ACTIVE.value,
+        )
+    )
+    registration = reg_result.scalar_one_or_none()
+    party_size = int(registration.party_size) if registration is not None else 0
     return EventAttendance(
         event=event,
         registration_count=reg_count,
@@ -250,9 +282,7 @@ async def register_user(
 
     await db.commit()
 
-    detail = await get_event_detail(db, event_id, user)
-    assert detail is not None
-    return detail
+    return await _attendance_after_mutation(db, event_id, user)
 
 
 async def update_party_size(
@@ -285,9 +315,7 @@ async def update_party_size(
 
     current = int(registration.party_size)
     if party_size == current:
-        detail = await get_event_detail(db, event_id, user)
-        assert detail is not None
-        return detail
+        return await _attendance_after_mutation(db, event_id, user)
 
     if party_size > current and event.max_participants is not None:
         reg_count = await _seat_count_for_event(db, event_id)
@@ -298,9 +326,7 @@ async def update_party_size(
     registration.party_size = party_size
     await db.commit()
 
-    detail = await get_event_detail(db, event_id, user)
-    assert detail is not None
-    return detail
+    return await _attendance_after_mutation(db, event_id, user)
 
 
 async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> EventAttendance:
@@ -318,9 +344,7 @@ async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> Ev
     registration.status = RegistrationStatus.CANCELLED.value
     await db.commit()
 
-    detail = await get_event_detail(db, event_id, user)
-    assert detail is not None
-    return detail
+    return await _attendance_after_mutation(db, event_id, user)
 
 
 async def get_all_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:

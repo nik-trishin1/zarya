@@ -75,6 +75,6 @@ Support closed group events and group-scoped messaging without breaking public M
 
 ## Handoff (when done)
 
-- PR URL: (fill)
+- PR URL: https://github.com/nik-trishin1/zarya/pull/11
 - Defaults: admin bypass via `ADMIN_TELEGRAM_IDS`; Core seed + optional `user_id=1` membership; access codes deferred
 - Residual risks: concurrent capacity races unchanged; wrong audience selection in create FSM if admin mis-taps
