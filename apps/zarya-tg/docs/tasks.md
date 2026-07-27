@@ -108,6 +108,7 @@
 
 ### Backlog
 
+- [ ] **T-209 Soft registration deadline reminder** — ADR-021 / S-209 — [ticket](tickets/T-209-registration-deadline-reminder.md)
 - [ ] **T-201 Access codes** — blocked; will join `group_memberships` after codes ADR (see ADR-020) — [ticket](tickets/T-201-access-codes.md)
 - [ ] **T-202 Propose your own event** — blocked on ADR-016 — [ticket](tickets/T-202-propose-event.md)
 - [ ] **T-203 Past events status / archive** — [ticket](tickets/T-203-past-events-archive.md)
