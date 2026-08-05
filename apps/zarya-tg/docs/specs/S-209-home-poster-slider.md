@@ -117,14 +117,14 @@ With few upcoming events, the list-only home underuses cover images. Users shoul
 
 ## Acceptance criteria (spec-level)
 
-- [ ] ADR-021 documented and linked from tickets
-- [ ] Backend persists and returns `is_featured`; default false
-- [ ] Admin create and edit can set featured; confirm shows status
-- [ ] Home shows slider only for ACL-visible featured upcoming events
-- [ ] Poster shows date-time + name; tap opens details
-- [ ] Event list under slider unchanged; registrations unchanged
-- [ ] Group visibility matches list (member / public / admin)
-- [ ] Tests cover persist + visibility; frontend lint/build pass when T-210 lands
+- [x] ADR-021 documented and linked from tickets
+- [x] Backend persists and returns `is_featured`; default false
+- [x] Admin create and edit can set featured; confirm shows status
+- [x] Home shows slider only for ACL-visible featured upcoming events
+- [x] Poster shows date-time + name; tap opens details
+- [x] Event list under slider unchanged; registrations unchanged
+- [x] Group visibility matches list (member / public / admin)
+- [x] Tests cover persist + visibility; frontend lint/build pass when T-210 lands
 
 ## Rollout / migration
 
