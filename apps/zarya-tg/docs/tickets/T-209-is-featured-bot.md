@@ -32,7 +32,7 @@
 |-------|-------|
 | ID | T-209 |
 | Title | Backend is_featured + bot create/edit |
-| Status | `in_review` |
+| Status | `done` |
 | Spec / ADR | [S-209](../specs/S-209-home-poster-slider.md), [ADR-021](../decisions/021-home-featured-slider.md), [ADR-020](../decisions/020-access-groups.md) |
 | App | `zarya-tg` |
 | Estimate | S |
@@ -69,8 +69,8 @@ Persist and expose an admin-controlled `is_featured` flag so the Mini App can bu
 
 1. [x] `PYTHONPATH=. pytest -q` in `apps/zarya-tg/backend` (featured tests pass; full suite 79 passed, 1 pre-existing flake on shared sqlite `test_seed_core_roster_adds_configured_users`)
 2. [x] Lint/typecheck for touched Python as required by CI
-3. [ ] CI green on the PR
-4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
+3. [x] CI green on the PR
+4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 

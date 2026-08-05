@@ -32,7 +32,7 @@
 |-------|-------|
 | ID | T-210 |
 | Title | Frontend home poster slider |
-| Status | `in_review` |
+| Status | `done` |
 | Spec / ADR | [S-209](../specs/S-209-home-poster-slider.md), [ADR-021](../decisions/021-home-featured-slider.md), [ADR-002](../decisions/002-ux-navigation.md) |
 | App | `zarya-tg` |
 | Estimate | S |
@@ -70,8 +70,8 @@ Render ACL-visible featured events as a large poster slider above the existing h
 
 1. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 2. [x] Manual or component smoke: 0 / 1 / N featured layouts (implemented; needs device smoke on deploy)
-3. [ ] CI green on the PR
-4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
+3. [x] CI green on the PR
+4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 
