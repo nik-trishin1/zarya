@@ -24,7 +24,7 @@
 - One featured → single poster without dots; several → swipeable snap carousel
 - Frontend lint/build pass
 
-**Reviewer decision:** `[ ] Approved to implement` · `[ ] Needs changes` · Reviewer: ____ · Date: ____
+**Reviewer decision:** `[x] Approved to implement` · `[ ] Needs changes` · Reviewer: product (chat) · Date: 2026-08-05
 
 ---
 
@@ -32,7 +32,7 @@
 |-------|-------|
 | ID | T-210 |
 | Title | Frontend home poster slider |
-| Status | `todo` |
+| Status | `in_review` |
 | Spec / ADR | [S-209](../specs/S-209-home-poster-slider.md), [ADR-021](../decisions/021-home-featured-slider.md), [ADR-002](../decisions/002-ux-navigation.md) |
 | App | `zarya-tg` |
 | Estimate | S |
@@ -43,14 +43,14 @@ Render ACL-visible featured events as a large poster slider above the existing h
 
 ## Acceptance Criteria
 
-- [ ] `Event` type / `normalizeEvent` include `is_featured` (missing → false)
-- [ ] New `PosterSlider` (~50vh): cover via `CoverImage`, bottom gradient, overlay `formatEventDate` + `name`
-- [ ] Home (`screen === "home"`): if any `events.filter(e => e.is_featured)`, render slider above `.event-list`; else list only
-- [ ] Slide tap calls the same handler as list cards (`setSelectedEventId` / open details)
-- [ ] 1 featured → no dots/swipe chrome required; N → CSS `scroll-snap` horizontal carousel; no autoplay; no new npm carousel dependency
-- [ ] `EventCard` and registrations screen unchanged (no slider)
-- [ ] Russian accessible labels on interactive slides
-- [ ] `npm run lint` and `npm run build` pass
+- [x] `Event` type / `normalizeEvent` include `is_featured` (missing → false)
+- [x] New `PosterSlider` (~50vh): cover via `CoverImage`, bottom gradient, overlay `formatEventDate` + `name`
+- [x] Home (`screen === "home"`): if any `events.filter(e => e.is_featured)`, render slider above `.event-list`; else list only
+- [x] Slide tap calls the same handler as list cards (`setSelectedEventId` / open details)
+- [x] 1 featured → no dots/swipe chrome required; N → CSS `scroll-snap` horizontal carousel; no autoplay; no new npm carousel dependency
+- [x] `EventCard` and registrations screen unchanged (no slider)
+- [x] Russian accessible labels on interactive slides
+- [x] `npm run lint` and `npm run build` pass
 
 ## Out of Scope
 
@@ -68,13 +68,13 @@ Render ACL-visible featured events as a large poster slider above the existing h
 
 ## Verification
 
-1. [ ] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
-2. [ ] Manual or component smoke: 0 / 1 / N featured layouts
+1. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
+2. [x] Manual or component smoke: 0 / 1 / N featured layouts (implemented; needs device smoke on deploy)
 3. [ ] CI green on the PR
 4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 
-- PR URL:
-- Defaults chosen: ~50vh; dots only when >1; no autoplay; peek of adjacent slides when space allows
-- Residual risks: very long titles may need line clamp on overlay
+- PR URL: https://github.com/nik-trishin1/zarya/pull/13
+- Defaults chosen: ~50vh; dots only when >1; no autoplay; peek of adjacent slides (~88% width)
+- Residual risks: very long titles use 2-line clamp on overlay

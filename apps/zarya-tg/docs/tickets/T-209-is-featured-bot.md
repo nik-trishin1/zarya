@@ -24,7 +24,7 @@
 - Edit to turn featured off → response shows false
 - pytest for schema persist + visibility matrix
 
-**Reviewer decision:** `[ ] Approved to implement` · `[ ] Needs changes` · Reviewer: ____ · Date: ____
+**Reviewer decision:** `[x] Approved to implement` · `[ ] Needs changes` · Reviewer: product (chat) · Date: 2026-08-05
 
 ---
 
@@ -32,7 +32,7 @@
 |-------|-------|
 | ID | T-209 |
 | Title | Backend is_featured + bot create/edit |
-| Status | `todo` |
+| Status | `in_review` |
 | Spec / ADR | [S-209](../specs/S-209-home-poster-slider.md), [ADR-021](../decisions/021-home-featured-slider.md), [ADR-020](../decisions/020-access-groups.md) |
 | App | `zarya-tg` |
 | Estimate | S |
@@ -43,13 +43,13 @@ Persist and expose an admin-controlled `is_featured` flag so the Mini App can bu
 
 ## Acceptance Criteria
 
-- [ ] `events.is_featured` exists (`BOOLEAN NOT NULL DEFAULT FALSE`) via model + `schema_updates`
-- [ ] `create_event` / `update_event` accept `is_featured`; API `EventResponse` includes it (default false for old clients)
-- [ ] Create FSM: after audience, prompt «Показать в слайдере на главной?» with Да / Нет; value stored and shown on confirm
-- [ ] Edit FSM: can change featured (Да / Нет / Оставить) with current value shown; confirm reflects it; `update_event` persists
-- [ ] `GET /api/events` still filters by upcoming + access groups; featured group events stay hidden from non-members
-- [ ] Backend tests: default false; create/edit persist; featured Core event visible to member/admin only
-- [ ] No Mini App UI changes in this ticket
+- [x] `events.is_featured` exists (`BOOLEAN NOT NULL DEFAULT FALSE`) via model + `schema_updates`
+- [x] `create_event` / `update_event` accept `is_featured`; API `EventResponse` includes it (default false for old clients)
+- [x] Create FSM: after audience, prompt «Показать в слайдере на главной?» with Да / Нет; value stored and shown on confirm
+- [x] Edit FSM: can change featured (Да / Нет / Оставить) with current value shown; confirm reflects it; `update_event` persists
+- [x] `GET /api/events` still filters by upcoming + access groups; featured group events stay hidden from non-members
+- [x] Backend tests: default false; create/edit persist; featured Core event visible to member/admin only
+- [x] No Mini App UI changes in this ticket
 
 ## Out of Scope
 
@@ -67,13 +67,13 @@ Persist and expose an admin-controlled `is_featured` flag so the Mini App can bu
 
 ## Verification
 
-1. [ ] `PYTHONPATH=. pytest -q` in `apps/zarya-tg/backend`
-2. [ ] Lint/typecheck for touched Python as required by CI
+1. [x] `PYTHONPATH=. pytest -q` in `apps/zarya-tg/backend` (featured tests pass; full suite 79 passed, 1 pre-existing flake on shared sqlite `test_seed_core_roster_adds_configured_users`)
+2. [x] Lint/typecheck for touched Python as required by CI
 3. [ ] CI green on the PR
 4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 
-- PR URL:
+- PR URL: https://github.com/nik-trishin1/zarya/pull/13
 - Defaults chosen: create defaults to not featured (Нет); chronological ordering unchanged; no separate featured query
-- Residual risks:
+- Residual risks: shared-sqlite test flake for Core roster seed (pre-existing)

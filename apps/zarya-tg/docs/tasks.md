@@ -108,8 +108,8 @@
 
 ### Backlog
 
-- [ ] **T-209 Backend `is_featured` + bot create/edit** — blocked on S-209 / ticket Human summary approve — [ticket](tickets/T-209-is-featured-bot.md) · [spec](specs/S-209-home-poster-slider.md) · [ADR-021](decisions/021-home-featured-slider.md)
-- [ ] **T-210 Home poster slider (frontend)** — blocked on T-209 + Human summary approve — [ticket](tickets/T-210-home-poster-slider.md)
+- [~] **T-209 Backend `is_featured` + bot create/edit** — `in_review` — [ticket](tickets/T-209-is-featured-bot.md) · [spec](specs/S-209-home-poster-slider.md) · [ADR-021](decisions/021-home-featured-slider.md)
+- [~] **T-210 Home poster slider (frontend)** — `in_review` — [ticket](tickets/T-210-home-poster-slider.md)
 - [ ] **T-201 Access codes** — blocked; will join `group_memberships` after codes ADR (see ADR-020) — [ticket](tickets/T-201-access-codes.md)
 - [ ] **T-202 Propose your own event** — blocked on ADR-016 — [ticket](tickets/T-202-propose-event.md)
 - [ ] **T-203 Past events status / archive** — [ticket](tickets/T-203-past-events-archive.md)

@@ -56,6 +56,7 @@ def event_to_response(
         audience_group_id=event.audience_group_id,
         allows_plus_one=event_allows_plus_one(event),
         allows_sharing=event_allows_sharing(event),
+        is_featured=bool(getattr(event, "is_featured", False)),
     )
 
 
@@ -82,6 +83,7 @@ def event_to_detail(
         audience_group_id=event.audience_group_id,
         allows_plus_one=event_allows_plus_one(event),
         allows_sharing=event_allows_sharing(event),
+        is_featured=bool(getattr(event, "is_featured", False)),
     )
 
 

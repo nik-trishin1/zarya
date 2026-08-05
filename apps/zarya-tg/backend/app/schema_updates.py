@@ -85,6 +85,13 @@ def apply_schema_updates(connection: Connection) -> None:
         "ALTER TABLE events ADD COLUMN audience_group_id INTEGER",
         "ALTER TABLE events ADD COLUMN audience_group_id INTEGER",
     )
+    _add_column_if_missing(
+        connection,
+        "events",
+        "is_featured",
+        "ALTER TABLE events ADD COLUMN is_featured BOOLEAN NOT NULL DEFAULT FALSE",
+        "ALTER TABLE events ADD COLUMN is_featured BOOLEAN NOT NULL DEFAULT 0",
+    )
     _seed_event_capacity_limits(connection)
     _seed_core_access_group(connection)
 

@@ -30,7 +30,7 @@
 - Clear featured on edit → slider hides when none remain; list still shows the event
 - Zero featured → home is list-only as today
 
-**Reviewer decision:** `[ ] Approved for ticket split` · `[ ] Needs changes` · Reviewer: ____ · Date: ____
+**Reviewer decision:** `[x] Approved for ticket split` · `[ ] Needs changes` · Reviewer: product (chat) · Date: 2026-08-05
 
 ---
 
@@ -40,7 +40,7 @@
 |-------|-------|
 | Spec ID | S-209 |
 | Title | Home poster slider (featured events) |
-| Status | `draft` |
+| Status | `approved` |
 | Related ADR / PRD | [ADR-021](../decisions/021-home-featured-slider.md), [ADR-020](../decisions/020-access-groups.md), [ADR-002](../decisions/002-ux-navigation.md), [ADR-018](../decisions/018-hide-past-events.md), PRD US-2 |
 | Owner | zarya maintainers |
 

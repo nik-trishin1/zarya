@@ -12,8 +12,8 @@ Project-specific tickets live here. **Templates and DoR are portable** — use:
 |----|-------|--------|-----|
 | [T-FACTORY-001](T-FACTORY-001-ci-gates.md) | CI gates + Railway log scan | `done` | yes |
 | [T-FACTORY-002](T-FACTORY-002-portable-process.md) | Portable AI-Factory process + human-readable specs | `done` | yes |
-| [T-209](T-209-is-featured-bot.md) | Backend `is_featured` + bot create/edit | `todo` | partial (await S-209 + ticket approve) |
-| [T-210](T-210-home-poster-slider.md) | Frontend home poster slider | `todo` | partial (await T-209 + ticket approve) |
+| [T-209](T-209-is-featured-bot.md) | Backend `is_featured` + bot create/edit | `in_review` | yes |
+| [T-210](T-210-home-poster-slider.md) | Frontend home poster slider | `in_review` | yes |
 | [T-201](T-201-access-codes.md) | Access codes | `blocked` | no (codes ADR after ADR-020) |
 | [T-208](T-208-access-groups.md) | Access groups | `done` | yes (ADR-020) |
 | [T-202](T-202-propose-event.md) | Propose event | `blocked` | no (ADR-016 missing) |

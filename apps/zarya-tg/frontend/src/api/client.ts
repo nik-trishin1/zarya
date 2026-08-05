@@ -17,6 +17,7 @@ export interface Event {
   audience_group_id: number | null;
   allows_plus_one: boolean;
   allows_sharing: boolean;
+  is_featured: boolean;
 }
 
 export interface RegistrationResponse {
@@ -76,6 +77,7 @@ function normalizeEvent(event: Event): Event {
       typeof event.audience_group_id === "number" ? event.audience_group_id : null,
     allows_plus_one: event.allows_plus_one !== false,
     allows_sharing: event.allows_sharing !== false,
+    is_featured: event.is_featured === true,
   };
 }
 

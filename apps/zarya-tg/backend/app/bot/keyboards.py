@@ -41,6 +41,18 @@ def edit_keep_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def featured_keyboard(*, keep_current: bool = False) -> InlineKeyboardMarkup:
+    rows = [
+        [
+            InlineKeyboardButton(text="Да", callback_data="admin:featured:yes"),
+            InlineKeyboardButton(text="Нет", callback_data="admin:featured:no"),
+        ],
+    ]
+    if keep_current:
+        rows.append([InlineKeyboardButton(text="Оставить", callback_data="admin:edit:keep")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
 def audience_keyboard(groups: list[AccessGroup]) -> InlineKeyboardMarkup:
     rows = [
         [InlineKeyboardButton(text="Все участники", callback_data="admin:audience:all")],
