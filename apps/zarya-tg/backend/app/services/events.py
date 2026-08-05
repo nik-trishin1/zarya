@@ -378,6 +378,7 @@ async def create_event(
     admin_user: User,
     max_participants: int | None = None,
     audience_group_id: int | None = None,
+    is_featured: bool = False,
 ) -> Event:
     event = Event(
         name=name,
@@ -388,6 +389,7 @@ async def create_event(
         cover_image_url=cover_image_url,
         max_participants=max_participants,
         audience_group_id=audience_group_id,
+        is_featured=is_featured,
         created_by_admin_id=admin_user.user_id,
     )
     db.add(event)

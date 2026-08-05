@@ -4,6 +4,7 @@ import { fetchEvents, fetchMyRegistrations } from "./api/client";
 import { EventCard } from "./components/EventCard";
 import { EventDetails } from "./components/EventDetails";
 import { Header } from "./components/Header";
+import { PosterSlider } from "./components/PosterSlider";
 import { useTelegram } from "./hooks/useTelegram";
 import { getTelegramStartParam, parseEventStartParam } from "./utils/deepLink";
 import "./App.css";
@@ -102,6 +103,9 @@ function App() {
       ? "Нет предстоящих событий"
       : "Вы не зарегистрированы ни на какие события";
 
+  const featuredEvents =
+    screen === "home" ? events.filter((event) => event.is_featured) : [];
+
   return (
     <div className="app">
       <Header screen={screen} registrationCount={registrationCount} onNavClick={handleNavClick} />
@@ -113,11 +117,19 @@ function App() {
           <p className="app__status">{emptyMessage}</p>
         )}
         {!loading && !error && events.length > 0 && (
-          <div className="event-list">
-            {events.map((event) => (
-              <EventCard key={event.event_id} event={event} onClick={(e) => setSelectedEventId(e.event_id)} />
-            ))}
-          </div>
+          <>
+            {featuredEvents.length > 0 && (
+              <PosterSlider
+                events={featuredEvents}
+                onSelect={(e) => setSelectedEventId(e.event_id)}
+              />
+            )}
+            <div className="event-list">
+              {events.map((event) => (
+                <EventCard key={event.event_id} event={event} onClick={(e) => setSelectedEventId(e.event_id)} />
+              ))}
+            </div>
+          </>
         )}
       </main>
 

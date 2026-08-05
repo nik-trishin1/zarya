@@ -46,6 +46,7 @@ class EventResponse(BaseModel):
     audience_group_id: int | None = None
     allows_plus_one: bool = True
     allows_sharing: bool = True
+    is_featured: bool = False
 
 
 class EventDetailResponse(EventResponse):

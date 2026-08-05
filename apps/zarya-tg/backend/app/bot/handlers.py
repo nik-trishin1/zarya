@@ -24,6 +24,7 @@ from app.bot.keyboards import (
     delete_confirm_keyboard,
     edit_keep_keyboard,
     event_manage_keyboard,
+    featured_keyboard,
     group_pick_keyboard,
     skip_capacity_keyboard,
     skip_image_keyboard,
@@ -200,6 +201,28 @@ async def _goto_edit_description(message: Message, state: FSMContext, *, edit: b
         reply_markup=edit_keep_keyboard(),
         edit=edit,
     )
+
+
+async def _prompt_create_featured(message: Message, state: FSMContext, *, edit: bool) -> None:
+    await state.set_state(AdminStates.CREATE_FEATURED)
+    text = "Показать в слайдере на главной?"
+    markup = featured_keyboard()
+    if edit:
+        await message.edit_text(text, reply_markup=markup)
+    else:
+        await message.answer(text, reply_markup=markup)
+
+
+async def _prompt_edit_featured(message: Message, state: FSMContext, *, edit: bool = False) -> None:
+    data = await state.get_data()
+    current = "да" if data.get("is_featured") else "нет"
+    await state.set_state(AdminStates.EDIT_FEATURED)
+    text = f"Показать в слайдере на главной?\nСейчас: {current}"
+    markup = featured_keyboard(keep_current=True)
+    if edit:
+        await message.edit_text(text, reply_markup=markup)
+    else:
+        await message.answer(text, reply_markup=markup)
 
 
 async def _goto_edit_image(message: Message, state: FSMContext, *, edit: bool = False) -> None:
@@ -420,11 +443,51 @@ async def create_audience_chosen(callback: CallbackQuery, state: FSMContext):
             return
         await state.update_data(audience_group_id=group.group_id, audience_label=group.name)
 
+    await _prompt_create_featured(callback.message, state, edit=True)
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("admin:featured:"), AdminStates.CREATE_FEATURED)
+async def create_featured_chosen(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    token = callback.data.split(":")[-1]
+    if token not in {"yes", "no"}:
+        await callback.answer("Некорректный выбор", show_alert=True)
+        return
+
+    await state.update_data(is_featured=token == "yes")
     await state.set_state(AdminStates.CREATE_IMAGE)
     await callback.message.edit_text(
         "Загрузите обложку (JPEG или PNG, до 5 МБ) или пропустите:",
         reply_markup=skip_image_keyboard(),
     )
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("admin:featured:"), AdminStates.EDIT_FEATURED)
+async def edit_featured_chosen(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+
+    data = await state.get_data()
+    if not data.get("edit_mode"):
+        await callback.answer("Сессия редактирования истекла", show_alert=True)
+        return
+
+    token = callback.data.split(":")[-1]
+    if token not in {"yes", "no"}:
+        await callback.answer("Некорректный выбор", show_alert=True)
+        return
+
+    await state.update_data(is_featured=token == "yes")
+    if callback.message is None:
+        await callback.answer()
+        return
+    await _goto_edit_image(callback.message, state, edit=True)
     await callback.answer()
 
 
@@ -478,6 +541,7 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
     event_time = time.fromisoformat(data["event_time"])
     audience_group_id = data.get("audience_group_id")
     audience_name = data.get("audience_label") or "Все участники"
+    featured_label = "да" if data.get("is_featured") else "нет"
     async with async_session() as db:
         recipients = await get_announcement_recipients(db, audience_group_id)
         recipient_count = len(recipients)
@@ -488,7 +552,8 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
         f"📍 {data['location']}\n"
         f"📝 {data.get('description', '')}\n"
         f"👥 Лимит мест: {format_capacity_ru(data.get('max_participants'))}\n"
-        f"🔐 Аудитория: {audience_name}\n\n"
+        f"🔐 Аудитория: {audience_name}\n"
+        f"🖼️ Слайдер: {featured_label}\n\n"
         f"Получателей уведомления: {recipient_count}"
     )
     await state.set_state(AdminStates.CREATE_CONFIRM)
@@ -525,6 +590,7 @@ async def _finish_event_create(
             admin_user=admin_user,
             max_participants=data.get("max_participants"),
             audience_group_id=audience_group_id,
+            is_featured=bool(data.get("is_featured")),
         )
         users = await get_announcement_recipients(db, audience_group_id)
 
@@ -1012,6 +1078,7 @@ async def edit_confirm(callback: CallbackQuery, state: FSMContext):
                 time=time.fromisoformat(data["event_time"]),
                 location=data["location"],
                 cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
+                is_featured=bool(data.get("is_featured")),
             )
     except Exception:
         logger.exception("Failed to confirm event edit for event_id=%s", event_id)
@@ -1048,6 +1115,7 @@ async def admin_edit_start(callback: CallbackQuery, state: FSMContext):
         location=event.location,
         description=event.description,
         cover_image_url=normalize_cover_image_url(event.cover_image_url),
+        is_featured=bool(getattr(event, "is_featured", False)),
         edit_mode=True,
     )
     if callback.message is None:
@@ -1081,6 +1149,8 @@ async def edit_keep_current(callback: CallbackQuery, state: FSMContext):
     elif current_state == AdminStates.EDIT_LOCATION.state:
         await _goto_edit_description(callback.message, state, edit=True)
     elif current_state == AdminStates.EDIT_DESCRIPTION.state:
+        await _prompt_edit_featured(callback.message, state, edit=True)
+    elif current_state == AdminStates.EDIT_FEATURED.state:
         await _goto_edit_image(callback.message, state, edit=True)
     else:
         await callback.answer()
@@ -1130,7 +1200,7 @@ async def edit_location(message: Message, state: FSMContext):
 @router.message(AdminStates.EDIT_DESCRIPTION)
 async def edit_description(message: Message, state: FSMContext):
     await state.update_data(description=(message.text or "").strip())
-    await _goto_edit_image(message, state)
+    await _prompt_edit_featured(message, state)
 
 
 @router.message(AdminStates.EDIT_IMAGE, F.photo)
@@ -1180,12 +1250,14 @@ async def show_edit_confirm(message: Message, state: FSMContext, edit: bool = Fa
     data = await state.get_data()
     event_date = date.fromisoformat(data["event_date"])
     event_time = time.fromisoformat(data["event_time"])
+    featured_label = "да" if data.get("is_featured") else "нет"
     text = (
         f"Проверьте изменения:\n\n"
         f"📌 {data['name']}\n"
         f"📅 {format_date_ru(event_date)}, {format_time_ru(event_time)}\n"
         f"📍 {data['location']}\n"
         f"📝 {data.get('description', '')}\n"
+        f"🖼️ Слайдер: {featured_label}\n"
     )
     await state.set_state(AdminStates.EDIT_CONFIRM)
     keyboard = confirm_keyboard("edit")
