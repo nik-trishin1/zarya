@@ -19,7 +19,7 @@ Project-specific tickets live here. **Templates and DoR are portable** — use:
 | [T-202](T-202-propose-event.md) | Propose event | `blocked` | no (ADR-016 missing) |
 | [T-203](T-203-past-events-archive.md) | Past events archive | `todo` | partial |
 | [T-204](T-204-event-categories.md) | Categories / filters | `todo` | no (ADR missing) |
-| [T-205](T-205-english-i18n.md) | English i18n | `todo` | no (ADR missing) |
+| [T-205](T-205-english-i18n.md) | English i18n | `cancelled` | n/a (Russian-only) |
 | [T-206](T-206-analytics-dashboard.md) | Analytics dashboard | `todo` | no (ADR missing) |
 | [T-301](T-301-event-ownership-editing.md) | Ownership + in-app edit | `todo` | split required |
 | [T-302](T-302-event-duplication.md) | Event duplication | `todo` | partial |

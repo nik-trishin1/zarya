@@ -4,18 +4,18 @@
 ## Human summary (review this first)
 
 **Will do:**
-- (After ADR) Add English UI while keeping Russian default
+- Nothing — ticket cancelled
 
 **Will not do:**
-- Full bot translation in the first slice unless ADR says so
+- English UI, i18n layer, or bot translation
 
-**Touched areas:** Frontend strings, possibly API locale
+**Touched areas:** Docs only (cancellation)
 
-**Risk:** Medium — string coverage gaps
+**Risk:** None
 
-**Smoke check after merge:** Default remains Russian; English toggles key screens
+**Smoke check after merge:** N/A
 
-**Reviewer decision:** `[ ] Approved to implement` — needs ADR first
+**Reviewer decision:** Cancelled by product owner — Russian remains the only supported language
 
 ---
 
@@ -23,28 +23,27 @@
 |-------|-------|
 | ID | T-205 |
 | Title | Add i18n layer with English locale |
-| Status | `todo` |
-| Spec / ADR | Needs ADR (library choice, key structure, bot message strategy) |
+| Status | `cancelled` |
+| Spec / ADR | Superseded by standing Russian-only decision (ADR-003); no English ADR |
 | App | `zarya-tg` |
-| Estimate | L — split into frontend / backend / bot tickets after ADR |
+| Estimate | — |
 
 ## Goal
 
-Support English UI while keeping Russian as default.
+~~Support English UI while keeping Russian as default.~~
+
+**Cancelled (2026-08-05):** Product stays Russian-only. Do not implement English localization or i18n infrastructure unless a new ADR reopens the topic.
 
 ## Acceptance Criteria
 
-- [ ] ADR chooses i18n approach (e.g. react-i18next + backend locale param)
-- [ ] Russian remains default when locale missing
-- [ ] Critical Mini App strings (home empty state, register/cancel, errors) exist in `en` and `ru`
-- [ ] Bot messages strategy documented (ship or defer in ADR)
-- [ ] Lint + build pass; no hardcoded English regressions for default ru users
+- [x] Ticket cancelled; backlog and language ADR updated to Russian-only
+- [ ] ~~ADR chooses i18n approach~~
+- [ ] ~~Critical Mini App strings exist in `en` and `ru`~~
 
 ## Out of Scope
 
-- Full translation of every admin FSM string in the first PR (may be a follow-up ticket)
-- Auto language detection beyond Telegram language_code if ADR defers it
+- All English / multi-locale work (entire ticket)
 
 ## Implementation Notes
 
-- Not factory-ready until ADR exists and this ticket is split to ≤1 PR each.
+- Cancelled intentionally; leave hardcoded Russian UI strings as-is (ADR-003).

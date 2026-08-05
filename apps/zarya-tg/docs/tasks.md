@@ -2,7 +2,7 @@
 
 ## Status Legend
 
-`[ ]` Not started · `[~]` In progress · `[x]` Done · `[-]` Blocked
+`[ ]` Not started · `[~]` In progress · `[x]` Done · `[-]` Blocked / cancelled
 
 ---
 
@@ -114,7 +114,7 @@
 - [ ] **T-202 Propose your own event** — blocked on ADR-016 — [ticket](tickets/T-202-propose-event.md)
 - [ ] **T-203 Past events status / archive** — [ticket](tickets/T-203-past-events-archive.md)
 - [ ] **T-204 Event categories and filters** — needs ADR — [ticket](tickets/T-204-event-categories.md)
-- [ ] **T-205 English localization** — needs ADR — [ticket](tickets/T-205-english-i18n.md)
+- [-] **T-205 English localization** — cancelled; Russian-only (ADR-003) — [ticket](tickets/T-205-english-i18n.md)
 - [ ] **T-206 Analytics dashboard** — needs ADR — [ticket](tickets/T-206-analytics-dashboard.md)
 
 ---
