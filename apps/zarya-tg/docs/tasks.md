@@ -14,11 +14,11 @@
 
 Ordered for product triage — not a factory queue. Nothing below is factory-ready until DoR = yes.
 
-### Ready for factory (DoR met) / in implementation
+### Ready for factory (DoR met)
 
-| ID | Title | Notes | Links |
-|----|-------|-------|-------|
-| **T-211** | Maybe RSVP («Подумаю») + delayed bot ping | DoR approved; maybe in broadcasts + ADR-013; cascade pings; admin `… - Подумаю` | [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) |
+_None — pick from backlog below._
+
+- [x] **T-211 Maybe RSVP («Подумаю») + delayed bot ping** — [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) · PR #17
 
 ### Low priority (later)
 
