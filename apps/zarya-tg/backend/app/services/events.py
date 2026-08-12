@@ -270,8 +270,6 @@ async def register_user(
     event = await get_event_by_id(db, event_id)
     if event is None:
         raise ValueError("Event not found")
-    if not await can_register_for_event(db, event, user):
-        raise ValueError("Event not found")
     party_size = validate_party_size(party_size, allows_plus_one=event_allows_plus_one(event))
     if is_event_past(event):
         raise ValueError("Event past")
@@ -283,6 +281,11 @@ async def register_user(
         )
     )
     existing = result.scalar_one_or_none()
+
+    if not await can_register_for_event(db, event, user):
+        has_maybe = existing is not None and existing.status == RegistrationStatus.MAYBE.value
+        if not has_maybe:
+            raise ValueError("Event not found")
 
     if existing and existing.status == RegistrationStatus.ACTIVE.value:
         raise ValueError("Already registered")
@@ -395,6 +398,27 @@ async def update_party_size(
     registration.party_size = party_size
     await db.commit()
 
+    return await _attendance_after_mutation(db, event_id, user)
+
+
+async def clear_maybe_registration(db: AsyncSession, user: User, event_id: int) -> EventAttendance:
+    """Clear maybe only — does not cancel an active going RSVP."""
+    from app.services.maybe_pings import clear_maybe_pings
+
+    result = await db.execute(
+        select(Registration).where(
+            Registration.user_id == user.user_id,
+            Registration.event_id == event_id,
+            Registration.status == RegistrationStatus.MAYBE.value,
+        )
+    )
+    registration = result.scalar_one_or_none()
+    if registration is None:
+        raise ValueError("Not maybe")
+
+    await clear_maybe_pings(db, registration.registration_id)
+    registration.status = RegistrationStatus.CANCELLED.value
+    await db.commit()
     return await _attendance_after_mutation(db, event_id, user)
 
 

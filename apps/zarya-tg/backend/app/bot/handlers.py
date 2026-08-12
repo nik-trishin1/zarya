@@ -33,7 +33,10 @@ from app.bot.participants import format_participants_message
 from app.bot.parsers import format_capacity_ru, format_date_ru, format_guest_count, format_time_ru, parse_capacity, parse_date, parse_time
 from app.bot.states import AdminStates
 from app.config import get_settings
+from sqlalchemy import select
+
 from app.database import async_session
+from app.models.registration import Registration, RegistrationStatus
 from app.services.access_groups import (
     audience_label,
     get_announcement_recipients,
@@ -43,6 +46,7 @@ from app.services.access_groups import (
 from app.services.users import get_all_users, get_or_create_user
 from app.services.events import (
     cancel_registration,
+    clear_maybe_registration,
     create_event,
     delete_event,
     get_all_events_admin,
@@ -341,10 +345,23 @@ async def maybe_ping_decline(callback: CallbackQuery):
             await callback.answer("Событие не найдено", show_alert=True)
             return
         try:
-            attendance = await cancel_registration(db, user, event_id)
+            attendance = await clear_maybe_registration(db, user, event_id)
             event = attendance.event
         except ValueError as e:
-            if str(e) == "Not registered":
+            if str(e) == "Not maybe":
+                active = await db.execute(
+                    select(Registration).where(
+                        Registration.user_id == user.user_id,
+                        Registration.event_id == event_id,
+                        Registration.status == RegistrationStatus.ACTIVE.value,
+                    )
+                )
+                if active.scalar_one_or_none() is not None:
+                    await callback.answer(
+                        "Вы уже зарегистрированы — отмените регистрацию в приложении",
+                        show_alert=True,
+                    )
+                    return
                 await callback.answer("Отметка уже снята", show_alert=True)
                 return
             raise
