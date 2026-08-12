@@ -33,7 +33,7 @@
 |-------|-------|
 | ID | T-211 |
 | Title | Maybe RSVP («Подумаю») + delayed bot ping |
-| Status | `todo` (factory-ready) |
+| Status | `in_progress` |
 | Spec / ADR | [ADR-022](../decisions/022-maybe-rsvp-delayed-ping.md); broadcast [ADR-007](../decisions/007-participant-broadcast.md); capacity [ADR-012](../decisions/012-event-capacity-limit.md); 24h reminder [ADR-013](../decisions/013-event-reminder-24h.md); party size [ADR-019](../decisions/019-registration-party-size.md); admin list [ADR-006](../decisions/006-admin-participant-list.md) |
 | App | `zarya-tg` |
 | Estimate | M |
