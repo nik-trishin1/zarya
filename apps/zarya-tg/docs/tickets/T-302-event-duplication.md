@@ -5,6 +5,7 @@
 
 **Will do:**
 - Let admin copy an event as a template with empty/new date-time
+- Source can be an **upcoming** manage event or a **past** archive event (ADR-023 / T-203 exposes `event_id` on archive detail)
 
 **Will not do:**
 - Copy registrations or build a full recurrence system
