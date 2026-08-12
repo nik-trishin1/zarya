@@ -18,8 +18,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 _None — pick from backlog below._
 
-- [x] **T-211 Maybe RSVP («Подумаю») + delayed bot ping** — [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) · PR #17
-
 ### Low priority (later)
 
 | ID | Title | Notes | Links |
@@ -81,6 +79,7 @@ _None — pick from backlog below._
 - [x] **T-208** Access groups — [ticket](tickets/T-208-access-groups.md) · ADR-020
 - [x] **T-209** Backend `is_featured` + bot create/edit — [ticket](tickets/T-209-is-featured-bot.md) · [S-209](specs/S-209-home-poster-slider.md) · ADR-021
 - [x] **T-210** Home poster slider (frontend) — [ticket](tickets/T-210-home-poster-slider.md)
+- [x] **T-211** Maybe RSVP («Подумаю») + delayed bot ping — [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) · PR #17
 
 ## Shipped (MVP Phases 0–3 + process)
 
@@ -95,6 +94,6 @@ _None — pick from backlog below._
 
 ## Suggested next product decisions
 
-1. **Implement T-211** (DoR met) — cascade maybe pings + admin «Подумаю» lines.
-2. **T-203** archive UX approve vs leave past events hidden-only (ADR-018).
-3. Whether **T-301** ownership/edit is next Iteration 3 priority (split required) vs more Iteration 2 ADRs (categories / analytics).
+1. **Implement T-203** archive UX or **T-302** event duplication (Human summary approve).
+2. Whether **T-301** ownership/edit is next Iteration 3 priority (split required) vs more Iteration 2 ADRs (categories / analytics).
+3. **T-212** almost-full maybe nudge when capacity UX becomes important.

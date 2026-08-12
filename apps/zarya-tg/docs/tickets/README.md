@@ -14,7 +14,6 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-12).
 
 | ID | Title | Status | DoR |
 |----|-------|--------|-----|
-| [T-211](T-211-maybe-rsvp-delayed-ping.md) | Maybe RSVP («Подумаю») + delayed bot ping | `todo` | yes — DoR approved 2026-08-12 |
 | [T-212](T-212-almost-full-maybe-nudge.md) | Almost-full nudge for maybe RSVPs | `todo` | no — low priority; needs ADR addendum |
 | [T-203](T-203-past-events-archive.md) | Past events archive | `todo` | partial — approve + UI notes |
 | [T-302](T-302-event-duplication.md) | Event duplication | `todo` | partial |
@@ -42,3 +41,4 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-12).
 | [T-208](T-208-access-groups.md) | Access groups | `done` | yes |
 | [T-209](T-209-is-featured-bot.md) | Backend `is_featured` + bot create/edit | `done` | yes |
 | [T-210](T-210-home-poster-slider.md) | Frontend home poster slider | `done` | yes |
+| [T-211](T-211-maybe-rsvp-delayed-ping.md) | Maybe RSVP («Подумаю») + delayed bot ping | `done` | yes |
