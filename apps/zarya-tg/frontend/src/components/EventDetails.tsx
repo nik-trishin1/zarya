@@ -196,7 +196,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
           {past && !event.is_registered && (
             <div className="event-details__past">Событие прошло. Stay tuned!</div>
           )}
-          {goingBlocked && !past && !event.is_registered && (
+          {goingBlocked && !past && !event.is_registered && !isMaybe && (
             <div className="event-details__past">Fully booked. Stay tuned!</div>
           )}
 

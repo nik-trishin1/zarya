@@ -41,9 +41,17 @@ async def test_core_group_seeded():
 
 @pytest.mark.asyncio
 async def test_seed_core_roster_adds_configured_users():
+    import uuid
+
     async with async_session() as db:
-        u1 = await get_or_create_user(db, telegram_id=911_101, username="a", first_name="A")
-        u2 = await get_or_create_user(db, telegram_id=911_102, username="b", first_name="B")
+        # Fresh telegram ids — shared sqlite DB across pytest invocations.
+        suffix = uuid.uuid4().int % 1_000_000
+        u1 = await get_or_create_user(
+            db, telegram_id=911_000_000 + suffix, username="a", first_name="A"
+        )
+        u2 = await get_or_create_user(
+            db, telegram_id=912_000_000 + suffix, username="b", first_name="B"
+        )
         from app.services.access_groups import seed_core_roster
 
         with patch("app.services.access_groups.send_group_welcome", return_value=True) as welcome:

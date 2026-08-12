@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
 
 import pytest
+from sqlalchemy import func, select
 
 from app.models.event import Event
+from app.models.maybe_ping import RegistrationMaybePing
 from app.services.maybe_pings import (
     MOSCOW_TZ,
     build_maybe_ping_message,
     build_maybe_ping_schedule,
     ping_is_due,
 )
+
 
 @pytest.fixture(autouse=True)
 async def ensure_tables():
@@ -72,22 +74,13 @@ def test_build_maybe_ping_message():
 @pytest.mark.asyncio
 async def test_mark_maybe_does_not_take_seats_and_builds_schedule():
     from app.database import async_session
-    from app.models.registration import RegistrationStatus
-    from app.models.user import User
-    from app.services.events import (
-        _seat_count_for_event,
-        mark_maybe,
-        register_user,
-    )
-    from app.models.maybe_ping import RegistrationMaybePing
-    from sqlalchemy import func, select
+    from app.services.events import _seat_count_for_event, mark_maybe, register_user
+    from app.services.users import get_or_create_user
 
     start = datetime.now(MOSCOW_TZ) + timedelta(days=20)
     async with async_session() as db:
-        admin = User(telegram_id=9001, username="admin", first_name="Admin")
-        guest = User(telegram_id=9002, username="guest", first_name="Guest")
-        db.add_all([admin, guest])
-        await db.flush()
+        admin = await get_or_create_user(db, telegram_id=940_001, username="maybe_admin", first_name="Admin")
+        guest = await get_or_create_user(db, telegram_id=940_002, username="maybe_guest", first_name="Guest")
         event = Event(
             name="Пикник",
             description="d",
@@ -107,8 +100,21 @@ async def test_mark_maybe_does_not_take_seats_and_builds_schedule():
         assert attendance.is_registered is False
         assert await _seat_count_for_event(db, event.event_id) == 0
 
+        from app.models.registration import Registration, RegistrationStatus
+
+        reg = (
+            await db.execute(
+                select(Registration).where(
+                    Registration.user_id == guest.user_id,
+                    Registration.event_id == event.event_id,
+                    Registration.status == RegistrationStatus.MAYBE.value,
+                )
+            )
+        ).scalar_one()
         ping_count = await db.scalar(
-            select(func.count()).select_from(RegistrationMaybePing)
+            select(func.count())
+            .select_from(RegistrationMaybePing)
+            .where(RegistrationMaybePing.registration_id == reg.registration_id)
         )
         assert int(ping_count or 0) == 4
 
@@ -117,5 +123,9 @@ async def test_mark_maybe_does_not_take_seats_and_builds_schedule():
         assert going.is_maybe is False
         assert await _seat_count_for_event(db, event.event_id) == 1
 
-        left = await db.scalar(select(func.count()).select_from(RegistrationMaybePing))
+        left = await db.scalar(
+            select(func.count())
+            .select_from(RegistrationMaybePing)
+            .where(RegistrationMaybePing.registration_id == reg.registration_id)
+        )
         assert int(left or 0) == 0
