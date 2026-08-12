@@ -14,11 +14,16 @@
 
 Ordered for product triage — not a factory queue. Nothing below is factory-ready until DoR = yes.
 
+### Ready for factory (DoR met)
+
+| ID | Title | Notes | Links |
+|----|-------|-------|-------|
+| **T-211** | Maybe RSVP («Подумаю») + delayed bot ping | Cascade 7d/3d/2d/24h while maybe; admin list `Имя - Подумаю` | [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) |
+
 ### Needs Human summary approve (ADR exists)
 
 | ID | Title | Blocker | Links |
 |----|-------|---------|-------|
-| **T-211** | Maybe RSVP («Подумаю») + delayed bot ping | Approve Human summary | [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) |
 | **T-203** | Past events archive («Завершено») | Approve + thin UI notes in ticket | [ticket](tickets/T-203-past-events-archive.md) · [ADR-018](decisions/018-hide-past-events.md) |
 | **T-302** | Admin event duplication | Approve (may need thin ADR addendum) | [ticket](tickets/T-302-event-duplication.md) · [ADR-014](decisions/014-event-ownership-and-inline-editing.md) |
 
@@ -84,6 +89,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 ## Suggested next product decisions
 
-1. **Approve or revise T-211** Human summary (ADR-022 already locked) → then implement.
+1. **Implement T-211** (DoR met) — cascade maybe pings + admin «Подумаю» lines.
 2. **T-203** archive UX approve vs leave past events hidden-only (ADR-018).
 3. Whether **T-301** ownership/edit is next Iteration 3 priority (split required) vs more Iteration 2 ADRs (categories / analytics).

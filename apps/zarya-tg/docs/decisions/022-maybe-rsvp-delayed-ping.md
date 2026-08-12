@@ -1,11 +1,11 @@
 # ADR-022: Maybe RSVP («Подумаю») + delayed bot ping
 
 **Date:** 2026-08-12
-**Status:** Accepted (product rules locked; implementation waits on T-211 Human summary approve)
+**Status:** Accepted
 
 ## Context
 
-Users often are not ready to confirm attendance when they open an event. Today RSVP is binary (`active` / `cancelled`). A third state — «Подумаю» — lets them bookmark interest without taking a seat, and the bot should nudge them later so the decision does not get lost.
+Users often are not ready to confirm attendance when they open an event. Today RSVP is binary (`active` / `cancelled`). A third state — «Подумаю» — lets them bookmark interest without taking a seat, and the bot should nudge them on the way to the event so the decision does not get lost.
 
 Existing 24h reminders (ADR-013) only target **active** registrants, once per event via `events.reminder_sent_at`. That model cannot schedule per-user maybe follow-ups.
 
@@ -21,16 +21,18 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
 
 3. **Capacity.** `maybe` does **not** occupy seats. Seat count remains `SUM(party_size)` over `status == active` only (ADR-012 / ADR-019). `party_size` on a maybe row is irrelevant until the user becomes `active` (then normal Один / +1 rules apply).
 
-4. **Precompute one ping.** When status becomes `maybe`, set `registrations.maybe_ping_at` from the tier table below and clear `registrations.maybe_ping_sent_at`. The scheduler only selects due maybe rows — no continuous “is it 7 days before?” scans across all events.
+4. **Cascade of scheduled pings.** While status stays `maybe`, the bot sends a nudge at each **future** milestone before `event_start`. Offsets (fixed set):
 
-   | Time until `event_start` at mark | `maybe_ping_at` |
-   |---|---|
-   | ≥ 8 days | `event_start − 7 days` |
-   | ≥ 4 and &lt; 8 days | `event_start − 3 days` |
-   | ≥ 3 and &lt; 4 days | `event_start − 2 days` |
-   | &lt; 3 days | `event_start − 24 hours` |
+   - `event_start − 7 days`
+   - `event_start − 3 days`
+   - `event_start − 2 days`
+   - `event_start − 24 hours`
 
-5. **Delivery.** Same process loop pattern as ADR-013: hourly tick in `run.py`, active **08:00–22:00 Europe/Moscow**, fire when `now` is within ~±1 hour of `maybe_ping_at` and `maybe_ping_sent_at IS NULL` and status is still `maybe`. After the send attempt, set `maybe_ping_sent_at` so there is **no retry / no second ping** until the user marks «Подумаю» again.
+   On mark «Подумаю», **precompute and store** one schedule entry per offset whose due time is still in the future (`due_at > now`). Past offsets are skipped (e.g. mark with 5 days left → schedule 3d, 2d, 24h only).
+
+   Ignoring a ping (no «Буду» / «Не смогу») does **not** cancel later entries — keep sending until the user leaves `maybe` or the event starts.
+
+5. **Delivery.** Same process loop pattern as ADR-013: hourly tick in `run.py`, active **08:00–22:00 Europe/Moscow**, fire when `now` is within ~±1 hour of an unsent schedule entry’s `due_at` and the registration is still `maybe`. Mark that entry sent after the attempt. Leaving `maybe` deletes or ignores remaining unsent entries. Re-marking «Подумаю» rebuilds the schedule from remaining future offsets.
 
 6. **Ping copy and buttons (Russian).** Short nudge, e.g.:
 
@@ -42,25 +44,28 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
 
    Inline keyboard: **«Буду»** → register `active` with `party_size=1` (capacity permitting); **«Не смогу»** → set `cancelled` (or equivalent clear of maybe). Callbacks must not open the Mini App.
 
-7. **Relation to ADR-013.** Unchanged for `active` users. Maybe users never receive the going reminder. The &lt;3-day tier uses a **maybe-specific** ~24h ping (different copy/buttons), not `events.reminder_sent_at`.
+7. **Relation to ADR-013.** Unchanged for `active` users. Maybe users never receive the going reminder. The maybe `−24h` entry is a **maybe-specific** ping (different copy/buttons), not `events.reminder_sent_at`.
 
 8. **Surfaces.**
    - Event details / cards: show a distinct maybe indicator (not the going ✅).
-   - «Мои регистрации», calendar export, capacity, participant broadcast, admin guest list: **active only** (maybe is not a guest).
+   - Admin «Участники» (ADR-006 / ADR-019): include maybe rows **after** active seat-expanded lines, labeled like `Имя - Подумаю` (username rules unchanged). Maybe lines do **not** count toward capacity / «Гостей: X из Y».
+   - «Мои регистрации», calendar export, participant broadcast: **active only**.
 
 ## Alternatives Considered
 
-**Window-scan only (no `maybe_ping_at`).** Rejected — more logic each tick and harder to reason about missed windows; product preferred pre-scheduling.
+**Single ping only (first future tier).** Rejected — product wants continued nudges on 7d / 3d / 2d / 24h while the user remains «Подумаю».
 
-**Cascade of 7d + 3d + 2d + 24h for every maybe.** Rejected for v1 — one ping per maybe cycle is enough; repeated nags are out of scope.
+**Window-scan only (no stored schedule).** Rejected — more logic each tick and harder to reason about missed windows; product preferred pre-scheduling all remaining milestones at mark time.
 
 **Maybe occupies a soft hold on capacity.** Rejected — product wants no seat reservation.
 
 **Separate interest table.** Rejected — `UniqueConstraint(user_id, event_id)` already models one RSVP row; a third status is simpler.
 
+**Hide maybe from admin guest list.** Rejected — organizers need to see interest; label distinguishes them from confirmed guests.
+
 ## Consequences
 
-- All `status == active` filters (capacity, my list, reminders, broadcasts, admin list) must stay active-only; new code paths must not treat maybe as registered for seats.
+- Capacity, «Мои регистрации», .ics, ADR-013, and participant broadcasts stay **active-only**; admin list is the exception for visibility.
 - Event API needs an explicit RSVP signal for the current user (`maybe` vs going vs none), not only `is_registered: bool`.
-- Schema updates add `maybe` status usage plus `maybe_ping_at` / `maybe_ping_sent_at` on `registrations` (idempotent `schema_updates`, same as other Iteration 2 columns).
+- Schema: `maybe` status plus a per-registration ping schedule (child rows or equivalent JSON entries with `due_at` / `sent_at` / offset id) via idempotent `schema_updates`.
 - Implementation ticket: [T-211](../tickets/T-211-maybe-rsvp-delayed-ping.md).
