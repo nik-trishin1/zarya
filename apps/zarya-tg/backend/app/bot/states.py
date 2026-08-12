@@ -17,6 +17,8 @@ class AdminStates(StatesGroup):
     CREATE_CONFIRM = State()
     MANAGE_LIST = State()
     MANAGE_DETAIL = State()
+    ARCHIVE_LIST = State()
+    ARCHIVE_DETAIL = State()
     EDIT_NAME = State()
     EDIT_DATE = State()
     EDIT_TIME = State()

@@ -73,3 +73,21 @@
   line-height: 1;
   font-weight: 700;
 }
+
+.event-card--completed {
+  opacity: 0.7;
+}
+
+.event-card--completed .event-card__image {
+  filter: grayscale(0.4);
+}
+
+.event-card__completed-label {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}

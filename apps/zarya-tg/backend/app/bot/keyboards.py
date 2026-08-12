@@ -10,6 +10,7 @@ def admin_menu_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [InlineKeyboardButton(text="Создать событие", callback_data="admin:create")],
             [InlineKeyboardButton(text="Управлять событиями", callback_data="admin:manage")],
+            [InlineKeyboardButton(text="Архив", callback_data="admin:archive")],
             [InlineKeyboardButton(text="📢 Написать всем", callback_data="admin:broadcast_all")],
             [InlineKeyboardButton(text="📢 Написать группе", callback_data="admin:broadcast_group")],
         ]
@@ -112,6 +113,15 @@ def event_manage_keyboard(event_id: int) -> InlineKeyboardMarkup:
     )
 
 
+def event_archive_keyboard(event_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Участники", callback_data=f"admin:archive:registrations:{event_id}")],
+            [InlineKeyboardButton(text="◀️ Назад", callback_data="admin:archive")],
+        ]
+    )
+
+
 def broadcast_confirm_keyboard(event_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -174,6 +184,14 @@ def back_to_event_keyboard(event_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="◀️ К событию", callback_data=f"admin:detail:{event_id}")],
+        ]
+    )
+
+
+def back_to_archive_event_keyboard(event_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="◀️ К событию", callback_data=f"admin:archive:detail:{event_id}")],
         ]
     )
 

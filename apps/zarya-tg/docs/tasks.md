@@ -18,7 +18,7 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 | ID | Title | Notes | Links |
 |----|-------|-------|-------|
-| **T-203** | Past events archive («Архив») | Active-only archive; admin view/participants; no calendar in archive | [ticket](tickets/T-203-past-events-archive.md) · [ADR-023](decisions/023-past-events-archive.md) |
+| **T-203** | Past events archive («Архив») | Active-only archive; admin view/participants; no calendar in archive | [ticket](tickets/T-203-past-events-archive.md) · [ADR-023](decisions/023-past-events-archive.md) | `in_review` |
 
 ### Low priority (later)
 

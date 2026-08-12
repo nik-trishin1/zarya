@@ -141,6 +141,11 @@ export async function fetchMyRegistrations(): Promise<Event[]> {
   return events.map(normalizeEvent);
 }
 
+export async function fetchMyArchive(): Promise<Event[]> {
+  const events = await apiFetch<Event[]>("/api/registrations/my/archive");
+  return events.map(normalizeEvent);
+}
+
 export async function registerForEvent(
   eventId: number,
   partySize: number = 1,

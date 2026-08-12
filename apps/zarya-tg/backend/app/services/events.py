@@ -445,6 +445,55 @@ async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> Ev
     return await _attendance_after_mutation(db, event_id, user)
 
 
+async def get_past_registered_events(
+    db: AsyncSession,
+    user: User,
+) -> list[EventAttendance]:
+    """Past events where the user had active (going) registration — archive only (ADR-023)."""
+    today = date.today()
+    query = (
+        select(Event)
+        .join(
+            Registration,
+            (Registration.event_id == Event.event_id)
+            & (Registration.user_id == user.user_id)
+            & (Registration.status == RegistrationStatus.ACTIVE.value),
+        )
+        .where(Event.date < today)
+        .order_by(Event.date.desc(), Event.time.desc())
+    )
+    result = await db.execute(query)
+    events = list(result.scalars().all())
+    events = await _filter_visible_events(db, events, user, keep_registered=True)
+    if not events:
+        return []
+
+    event_ids = [e.event_id for e in events]
+    counts = await _seat_counts_for_events(db, event_ids)
+
+    party_by_event: dict[int, int] = {}
+    reg_result = await db.execute(
+        select(Registration.event_id, Registration.party_size).where(
+            Registration.user_id == user.user_id,
+            Registration.event_id.in_(event_ids),
+            Registration.status == RegistrationStatus.ACTIVE.value,
+        )
+    )
+    for event_id, party_size in reg_result.all():
+        party_by_event[event_id] = int(party_size)
+
+    return [
+        EventAttendance(
+            event=event,
+            registration_count=counts.get(event.event_id, 0),
+            is_registered=True,
+            party_size=party_by_event.get(event.event_id, 0),
+            is_maybe=False,
+        )
+        for event in events
+    ]
+
+
 async def get_all_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:
     """Return upcoming events for admin manage UI. Past events stay in DB but are hidden."""
     today = date.today()
@@ -461,6 +510,26 @@ async def get_all_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:
         .where(Event.date >= today)
         .group_by(Event.event_id)
         .order_by(Event.date.asc(), Event.time.asc())
+    )
+    return [(event, int(reg_count or 0)) for event, reg_count in result.all()]
+
+
+async def get_past_events_admin(db: AsyncSession) -> list[tuple[Event, int]]:
+    """Return past events for admin archive UI, newest first (ADR-023)."""
+    today = date.today()
+    result = await db.execute(
+        select(
+            Event,
+            _active_seats_expr().label("reg_count"),
+        )
+        .outerjoin(
+            Registration,
+            (Registration.event_id == Event.event_id)
+            & (Registration.status == RegistrationStatus.ACTIVE.value),
+        )
+        .where(Event.date < today)
+        .group_by(Event.event_id)
+        .order_by(Event.date.desc(), Event.time.desc())
     )
     return [(event, int(reg_count or 0)) for event, reg_count in result.all()]
 

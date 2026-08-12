@@ -124,6 +124,17 @@
   font-size: 15px;
 }
 
+.event-details__completed-banner {
+  background: var(--color-card);
+  color: var(--color-text-secondary);
+  padding: 12px 16px;
+  border-radius: var(--radius-button);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
 .event-details__loading,
 .event-details__error {
   padding: 48px 16px;
