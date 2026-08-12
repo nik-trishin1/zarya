@@ -32,6 +32,7 @@ class EventAttendance:
     registration_count: int
     is_registered: bool
     party_size: int = 0
+    is_maybe: bool = False
 
 
 def is_event_past(event: Event) -> bool:
@@ -154,15 +155,22 @@ async def get_upcoming_events(
     counts = await _seat_counts_for_events(db, event_ids)
 
     party_by_event: dict[int, int] = {}
+    maybe_event_ids: set[int] = set()
     if user:
         reg_result = await db.execute(
-            select(Registration.event_id, Registration.party_size).where(
+            select(Registration.event_id, Registration.party_size, Registration.status).where(
                 Registration.user_id == user.user_id,
                 Registration.event_id.in_(event_ids),
-                Registration.status == RegistrationStatus.ACTIVE.value,
+                Registration.status.in_(
+                    [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
+                ),
             )
         )
-        party_by_event = {event_id: int(party_size) for event_id, party_size in reg_result.all()}
+        for event_id, party_size, status in reg_result.all():
+            if status == RegistrationStatus.ACTIVE.value:
+                party_by_event[event_id] = int(party_size)
+            elif status == RegistrationStatus.MAYBE.value:
+                maybe_event_ids.add(event_id)
 
     return [
         EventAttendance(
@@ -170,6 +178,7 @@ async def get_upcoming_events(
             registration_count=counts.get(event.event_id, 0),
             is_registered=event.event_id in party_by_event,
             party_size=party_by_event.get(event.event_id, 0),
+            is_maybe=event.event_id in maybe_event_ids,
         )
         for event in events
     ]
@@ -192,23 +201,30 @@ async def get_event_detail(
     reg_count = await _seat_count_for_event(db, event_id)
 
     party_size = 0
+    is_maybe = False
     if user:
         reg_result = await db.execute(
             select(Registration).where(
                 Registration.event_id == event_id,
                 Registration.user_id == user.user_id,
-                Registration.status == RegistrationStatus.ACTIVE.value,
+                Registration.status.in_(
+                    [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
+                ),
             )
         )
         registration = reg_result.scalar_one_or_none()
         if registration is not None:
-            party_size = int(registration.party_size)
+            if registration.status == RegistrationStatus.ACTIVE.value:
+                party_size = int(registration.party_size)
+            elif registration.status == RegistrationStatus.MAYBE.value:
+                is_maybe = True
 
     return EventAttendance(
         event=event,
         registration_count=reg_count,
         is_registered=party_size > 0,
         party_size=party_size,
+        is_maybe=is_maybe,
     )
 
 
@@ -223,16 +239,25 @@ async def _attendance_after_mutation(
         select(Registration).where(
             Registration.event_id == event_id,
             Registration.user_id == user.user_id,
-            Registration.status == RegistrationStatus.ACTIVE.value,
+            Registration.status.in_(
+                [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
+            ),
         )
     )
     registration = reg_result.scalar_one_or_none()
-    party_size = int(registration.party_size) if registration is not None else 0
+    party_size = 0
+    is_maybe = False
+    if registration is not None:
+        if registration.status == RegistrationStatus.ACTIVE.value:
+            party_size = int(registration.party_size)
+        elif registration.status == RegistrationStatus.MAYBE.value:
+            is_maybe = True
     return EventAttendance(
         event=event,
         registration_count=reg_count,
         is_registered=party_size > 0,
         party_size=party_size,
+        is_maybe=is_maybe,
     )
 
 
@@ -271,6 +296,9 @@ async def register_user(
         existing.status = RegistrationStatus.ACTIVE.value
         existing.registered_at = datetime.now(MOSCOW_TZ)
         existing.party_size = party_size
+        from app.services.maybe_pings import clear_maybe_pings
+
+        await clear_maybe_pings(db, existing.registration_id)
     else:
         db.add(
             Registration(
@@ -282,6 +310,47 @@ async def register_user(
 
     await db.commit()
 
+    return await _attendance_after_mutation(db, event_id, user)
+
+
+async def mark_maybe(db: AsyncSession, user: User, event_id: int) -> EventAttendance:
+    """Set RSVP to maybe and rebuild cascade ping schedule (ADR-022)."""
+    from app.services.maybe_pings import rebuild_maybe_ping_schedule
+
+    event = await get_event_by_id(db, event_id)
+    if event is None:
+        raise ValueError("Event not found")
+    if not await can_register_for_event(db, event, user):
+        raise ValueError("Event not found")
+    if is_event_past(event):
+        raise ValueError("Event past")
+
+    result = await db.execute(
+        select(Registration).where(
+            Registration.user_id == user.user_id,
+            Registration.event_id == event_id,
+        )
+    )
+    existing = result.scalar_one_or_none()
+    if existing and existing.status == RegistrationStatus.ACTIVE.value:
+        raise ValueError("Already registered")
+
+    if existing:
+        existing.status = RegistrationStatus.MAYBE.value
+        existing.registered_at = datetime.now(MOSCOW_TZ)
+        registration = existing
+    else:
+        registration = Registration(
+            user_id=user.user_id,
+            event_id=event_id,
+            status=RegistrationStatus.MAYBE.value,
+            party_size=MIN_PARTY_SIZE,
+        )
+        db.add(registration)
+        await db.flush()
+
+    await rebuild_maybe_ping_schedule(db, registration, event)
+    await db.commit()
     return await _attendance_after_mutation(db, event_id, user)
 
 
@@ -330,17 +399,22 @@ async def update_party_size(
 
 
 async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> EventAttendance:
+    from app.services.maybe_pings import clear_maybe_pings
+
     result = await db.execute(
         select(Registration).where(
             Registration.user_id == user.user_id,
             Registration.event_id == event_id,
-            Registration.status == RegistrationStatus.ACTIVE.value,
+            Registration.status.in_(
+                [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
+            ),
         )
     )
     registration = result.scalar_one_or_none()
     if registration is None:
         raise ValueError("Not registered")
 
+    await clear_maybe_pings(db, registration.registration_id)
     registration.status = RegistrationStatus.CANCELLED.value
     await db.commit()
 
@@ -413,14 +487,18 @@ async def delete_event(db: AsyncSession, event: Event) -> None:
 
 
 async def get_event_registered_users(db: AsyncSession, event_id: int) -> list[User]:
-    """Unique active registrants (one row per user) for broadcasts/reminders."""
+    """Active + maybe registrants for broadcasts and ADR-013 reminders (ADR-022)."""
     result = await db.execute(
         select(User)
         .join(
             Registration,
             (Registration.user_id == User.user_id)
             & (Registration.event_id == event_id)
-            & (Registration.status == RegistrationStatus.ACTIVE.value),
+            & (
+                Registration.status.in_(
+                    [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
+                )
+            ),
         )
         .order_by(Registration.registered_at.asc())
     )
@@ -442,3 +520,18 @@ async def get_event_registration_parties(
         .order_by(Registration.registered_at.asc())
     )
     return [(user, int(party_size)) for user, party_size in result.all()]
+
+
+async def get_event_maybe_users(db: AsyncSession, event_id: int) -> list[User]:
+    """Maybe RSVPs for admin list (after active seat lines)."""
+    result = await db.execute(
+        select(User)
+        .join(
+            Registration,
+            (Registration.user_id == User.user_id)
+            & (Registration.event_id == event_id)
+            & (Registration.status == RegistrationStatus.MAYBE.value),
+        )
+        .order_by(Registration.registered_at.asc())
+    )
+    return list(result.scalars().all())

@@ -20,6 +20,11 @@ export function EventCard({ event, onClick }: EventCardProps) {
         <p className="event-card__location">{event.location}</p>
       </div>
       {event.is_registered && <span className="event-card__badge" aria-label="Зарегистрирован">✅</span>}
+      {!event.is_registered && event.is_maybe && (
+        <span className="event-card__badge event-card__badge--maybe" aria-label="Подумаю">
+          …
+        </span>
+      )}
     </button>
   );
 }

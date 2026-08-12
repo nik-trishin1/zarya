@@ -19,6 +19,7 @@ from app.services.events import (
     cancel_registration,
     get_event_detail,
     get_upcoming_events,
+    mark_maybe,
     register_user,
     update_party_size,
 )
@@ -137,6 +138,7 @@ async def register_for_event(
         registration_count=attendance.registration_count,
         is_registered=attendance.is_registered,
         party_size=attendance.party_size,
+        is_maybe=attendance.is_maybe,
     )
 
 
@@ -169,6 +171,29 @@ async def update_registration_party_size(
         registration_count=attendance.registration_count,
         is_registered=attendance.is_registered,
         party_size=attendance.party_size,
+        is_maybe=attendance.is_maybe,
+    )
+
+
+@router.post("/registrations/{event_id}/maybe", response_model=RegistrationResponse)
+async def mark_event_maybe(
+    event_id: int,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    try:
+        attendance = await mark_maybe(db, user, event_id)
+    except ValueError as e:
+        raise _registration_error(e) from e
+
+    date_str = format_event_date(attendance.event.date, attendance.event.time)
+    message = f"Отметили «Подумаю» для {attendance.event.name} на {date_str}"
+    return RegistrationResponse(
+        message=message,
+        registration_count=attendance.registration_count,
+        is_registered=attendance.is_registered,
+        party_size=0,
+        is_maybe=attendance.is_maybe,
     )
 
 
@@ -178,23 +203,33 @@ async def cancel_event_registration(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    detail = await get_event_detail(db, event_id, user)
+    was_going = bool(detail and detail.is_registered)
+    was_maybe = bool(detail and detail.is_maybe)
     try:
         attendance = await cancel_registration(db, user, event_id)
     except ValueError as e:
         raise _registration_error(e) from e
 
-    await notify_admins_registration_change(
-        user,
-        attendance.event,
-        attendance.registration_count,
-        registered=False,
-        party_size=0,
+    if was_going:
+        await notify_admins_registration_change(
+            user,
+            attendance.event,
+            attendance.registration_count,
+            registered=False,
+            party_size=0,
+        )
+    message = (
+        f"Вы сняли «Подумаю» с {attendance.event.name}"
+        if was_maybe and not was_going
+        else f"Вы отменили регистрацию на {attendance.event.name}"
     )
     return RegistrationResponse(
-        message=f"Вы отменили регистрацию на {attendance.event.name}",
+        message=message,
         registration_count=attendance.registration_count,
         is_registered=attendance.is_registered,
         party_size=0,
+        is_maybe=attendance.is_maybe,
     )
 
 

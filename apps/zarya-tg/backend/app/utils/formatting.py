@@ -38,6 +38,7 @@ def event_to_response(
     reg_count: int,
     is_registered: bool,
     party_size: int = 0,
+    is_maybe: bool = False,
 ) -> EventResponse:
     return EventResponse(
         event_id=event.event_id,
@@ -57,6 +58,7 @@ def event_to_response(
         allows_plus_one=event_allows_plus_one(event),
         allows_sharing=event_allows_sharing(event),
         is_featured=bool(getattr(event, "is_featured", False)),
+        is_maybe=is_maybe and not is_registered,
     )
 
 
@@ -65,6 +67,7 @@ def event_to_detail(
     reg_count: int,
     is_registered: bool,
     party_size: int = 0,
+    is_maybe: bool = False,
 ) -> EventDetailResponse:
     return EventDetailResponse(
         event_id=event.event_id,
@@ -84,6 +87,7 @@ def event_to_detail(
         allows_plus_one=event_allows_plus_one(event),
         allows_sharing=event_allows_sharing(event),
         is_featured=bool(getattr(event, "is_featured", False)),
+        is_maybe=is_maybe and not is_registered,
     )
 
 
@@ -93,6 +97,7 @@ def attendance_to_response(attendance: EventAttendance) -> EventResponse:
         attendance.registration_count,
         attendance.is_registered,
         attendance.party_size,
+        attendance.is_maybe,
     )
 
 
@@ -102,4 +107,5 @@ def attendance_to_detail(attendance: EventAttendance) -> EventDetailResponse:
         attendance.registration_count,
         attendance.is_registered,
         attendance.party_size,
+        attendance.is_maybe,
     )

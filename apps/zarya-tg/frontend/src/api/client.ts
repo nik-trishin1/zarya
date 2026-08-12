@@ -18,6 +18,7 @@ export interface Event {
   allows_plus_one: boolean;
   allows_sharing: boolean;
   is_featured: boolean;
+  is_maybe: boolean;
 }
 
 export interface RegistrationResponse {
@@ -25,6 +26,7 @@ export interface RegistrationResponse {
   registration_count: number;
   is_registered: boolean;
   party_size: number;
+  is_maybe: boolean;
 }
 
 function resolveApiBase(): string {
@@ -78,6 +80,7 @@ function normalizeEvent(event: Event): Event {
     allows_plus_one: event.allows_plus_one !== false,
     allows_sharing: event.allows_sharing !== false,
     is_featured: event.is_featured === true,
+    is_maybe: event.is_maybe === true && event.is_registered !== true,
   };
 }
 
@@ -160,6 +163,12 @@ export async function updateRegistrationPartySize(
 
 export async function cancelRegistration(eventId: number): Promise<RegistrationResponse> {
   return apiFetch<RegistrationResponse>(`/api/registrations/${eventId}`, { method: "DELETE" });
+}
+
+export async function markEventMaybe(eventId: number): Promise<RegistrationResponse> {
+  return apiFetch<RegistrationResponse>(`/api/registrations/${eventId}/maybe`, {
+    method: "POST",
+  });
 }
 
 interface CalendarLinksResponse {

@@ -4,6 +4,7 @@ import {
   cancelRegistration,
   downloadCalendar,
   fetchEvent,
+  markEventMaybe,
   registerForEvent,
   updateRegistrationPartySize,
 } from "../api/client";
@@ -13,7 +14,6 @@ import {
   canTakeSeats,
   formatEventDate,
   formatEventSeats,
-  hasGuestLimit,
   isEventPast,
 } from "../utils/format";
 import { openTelegramShareLink } from "../utils/telegram";
@@ -96,6 +96,19 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     }
   };
 
+  const handleMaybe = async () => {
+    if (!event) return;
+    setActionLoading(true);
+    try {
+      const result = await markEventMaybe(event.event_id);
+      await refreshAfterChange(result.message);
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : "Не удалось отметить «Подумаю»");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleCalendar = async () => {
     if (!event) return;
     try {
@@ -139,19 +152,19 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
   }
 
   const past = event.is_past ?? isEventPast(event.date);
-  const full =
-    !event.is_registered &&
-    (event.is_full ??
-      (hasGuestLimit(event.max_participants) &&
-        event.registration_count >= (event.max_participants as number)));
-  const registrationBlocked = past || full;
+  const isMaybe = event.is_maybe === true && !event.is_registered;
+  // «Подумаю» allowed when full (no seat); going blocked when full
+  const goingBlocked = past || (event.is_full ?? false);
   const allowsPlusOne = event.allows_plus_one !== false;
   const allowsSharing = event.allows_sharing !== false;
   const canRegisterAlone =
-    !registrationBlocked && canTakeSeats(event.registration_count, event.max_participants, 1);
+    !past &&
+    !(event.is_full ?? false) &&
+    canTakeSeats(event.registration_count, event.max_participants, 1);
   const canRegisterPlusOne =
     allowsPlusOne &&
-    !registrationBlocked &&
+    !past &&
+    !(event.is_full ?? false) &&
     canTakeSeats(event.registration_count, event.max_participants, 2);
   const canAddPlusOne =
     allowsPlusOne &&
@@ -160,6 +173,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
     !past &&
     canTakeSeats(event.registration_count, event.max_participants, 1);
   const hasPlusOne = event.is_registered && event.party_size > 1;
+  const canMarkMaybe = !past && !event.is_registered;
 
   return (
     <div className="event-details">
@@ -182,7 +196,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
           {past && !event.is_registered && (
             <div className="event-details__past">Событие прошло. Stay tuned!</div>
           )}
-          {full && (
+          {goingBlocked && !past && !event.is_registered && (
             <div className="event-details__past">Fully booked. Stay tuned!</div>
           )}
 
@@ -190,18 +204,56 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
             <div className="event-details__registered">
               {hasPlusOne ? "Вы зарегистрированы (+1) ✅" : "Вы зарегистрированы ✅"}
             </div>
-          ) : (
-            !registrationBlocked &&
-            (allowsPlusOne ? (
-              <div className="event-details__register-row">
+          ) : isMaybe ? (
+            <div className="event-details__maybe">Отметили «Подумаю»</div>
+          ) : null}
+
+          {!event.is_registered && !isMaybe && !past && (
+            <>
+              {allowsPlusOne ? (
+                <div className="event-details__register-row">
+                  <button
+                    type="button"
+                    className="btn btn--primary btn--half"
+                    onClick={() => handleRegister(1)}
+                    disabled={actionLoading || !canRegisterAlone}
+                  >
+                    Буду
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--secondary btn--half"
+                    onClick={() => handleRegister(2)}
+                    disabled={actionLoading || !canRegisterPlusOne}
+                    title={!canRegisterPlusOne ? "Недостаточно мест для +1" : undefined}
+                  >
+                    Буду +1
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
-                  className="btn btn--primary btn--half"
+                  className="btn btn--primary"
                   onClick={() => handleRegister(1)}
                   disabled={actionLoading || !canRegisterAlone}
                 >
-                  Буду
+                  Зарегистрироваться
                 </button>
+              )}
+            </>
+          )}
+
+          {isMaybe && (
+            <div className="event-details__register-row">
+              <button
+                type="button"
+                className="btn btn--primary btn--half"
+                onClick={() => handleRegister(1)}
+                disabled={actionLoading || !canRegisterAlone}
+              >
+                Буду
+              </button>
+              {allowsPlusOne && (
                 <button
                   type="button"
                   className="btn btn--secondary btn--half"
@@ -211,17 +263,19 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
                 >
                   Буду +1
                 </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="btn btn--primary"
-                onClick={() => handleRegister(1)}
-                disabled={actionLoading || !canRegisterAlone}
-              >
-                Зарегистрироваться
-              </button>
-            ))
+              )}
+            </div>
+          )}
+
+          {canMarkMaybe && !isMaybe && (
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={handleMaybe}
+              disabled={actionLoading}
+            >
+              Подумаю
+            </button>
           )}
 
           {event.is_registered && (
@@ -270,6 +324,17 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
                 Отменить регистрацию
               </button>
             </>
+          )}
+
+          {isMaybe && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={handleCancel}
+              disabled={actionLoading}
+            >
+              Снять «Подумаю»
+            </button>
           )}
         </div>
       </div>

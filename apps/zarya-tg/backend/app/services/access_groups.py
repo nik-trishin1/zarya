@@ -92,13 +92,16 @@ async def can_view_event(db: AsyncSession, event: Event, user: User | None) -> b
 async def user_has_active_registration(
     db: AsyncSession, user_id: int, event_id: int
 ) -> bool:
+    """True if user has going or maybe RSVP (ACL escape for group events)."""
     from app.models.registration import Registration, RegistrationStatus
 
     result = await db.execute(
         select(Registration.registration_id).where(
             Registration.user_id == user_id,
             Registration.event_id == event_id,
-            Registration.status == RegistrationStatus.ACTIVE.value,
+            Registration.status.in_(
+                [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
+            ),
         )
     )
     return result.scalar_one_or_none() is not None

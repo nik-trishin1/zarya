@@ -197,3 +197,20 @@ def reminder_cancel_keyboard(event_id: int) -> InlineKeyboardMarkup:
             ],
         ]
     )
+
+
+def maybe_ping_keyboard(event_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Буду",
+                    callback_data=f"maybe:going:{event_id}",
+                ),
+                InlineKeyboardButton(
+                    text="Не смогу",
+                    callback_data=f"maybe:decline:{event_id}",
+                ),
+            ],
+        ]
+    )

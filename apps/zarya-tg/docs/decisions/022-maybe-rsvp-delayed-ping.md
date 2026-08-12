@@ -44,9 +44,9 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
 
    Inline keyboard: **«Буду»** → register `active` with `party_size=1` (capacity permitting; if full, stay `maybe`, keep schedule, tell the user); **«Не смогу»** → set `cancelled`. Callbacks must not open the Mini App.
 
-7. **Relation to ADR-013.** Unchanged for `active` users. Maybe users never receive the going reminder. The maybe `−24h` entry is a **maybe-specific** ping (different copy/buttons), not `events.reminder_sent_at`.
+7. **Relation to ADR-013.** Going reminders stay on the shared recipient helper. **Decision (2026-08-12):** `get_event_registered_users` includes `active` **and** `maybe`, so maybe users may also receive «Ждем вас уже завтра!» with «Не смогу прийти». That overlap with the maybe `−24h` cascade ping is accepted. Reminder cancel must clear `active` or `maybe`.
 
-   **Integrity rule:** do **not** widen `get_event_registered_users()` for broadcasts in a way that also feeds reminders. Broadcast recipients and reminder recipients must be separate queries (or one helper with an explicit status filter).
+   The maybe cascade still uses its own schedule, copy, and **«Буду» / «Не смогу»** buttons (not `events.reminder_sent_at`).
 
 8. **Surfaces.**
 
@@ -56,13 +56,15 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
    | Cascade bot pings | yes |
    | Admin «Участники» | yes — after active seat-expanded lines, `N. Имя @username - Подумаю` (username omitted if missing); `Всего` footer = **active seats only** |
    | Participant broadcast («Написать участникам», ADR-007) | yes — same message body to `active` + `maybe`; order by `registered_at` ASC; one DM per user |
+   | ADR-013 24h reminder | yes — same recipients helper as broadcast (`active` + `maybe`) |
    | «Мои регистрации» | no (active only) |
    | Calendar .ics | no (active only) |
    | Capacity / `is_full` / «Гостей» | no (active only) |
-   | ADR-013 24h going reminder | no (active only) |
    | Admin notify on mark maybe (ADR-005) | no for v1 |
 
-9. **Group ACL.** Treat `maybe` like `active` for “has registration on this group event” escape hatches so a maybe user who loses group membership can still open the event to confirm or clear (same rationale as going cancel).
+9. **Group ACL.** Treat `maybe` like `active` for “has registration on this group event” escape hatches so a maybe user who loses group membership can still open the event to confirm or clear.
+
+10. **Capacity corner cases (deferred).** No special almost-full messaging for maybe in T-211. Future low-priority backlog: nudge maybe users when seats are nearly gone («Места почти закончились — присоединяйся»). «Буду» when full keeps existing API 409 behavior without extra product flow.
 
 ## Alternatives Considered
 

@@ -11,6 +11,7 @@ from app.database import Base
 
 if TYPE_CHECKING:
     from app.models.event import Event
+    from app.models.maybe_ping import RegistrationMaybePing
     from app.models.user import User
 
 # MVP product UI allows 1–2; column has no upper bound for a future N-ticket UI (ADR-019).
@@ -21,6 +22,7 @@ MIN_PARTY_SIZE = 1
 class RegistrationStatus(str, Enum):
     ACTIVE = "active"
     CANCELLED = "cancelled"
+    MAYBE = "maybe"
 
 
 class Registration(Base):
@@ -39,3 +41,7 @@ class Registration(Base):
 
     user: Mapped["User"] = relationship(back_populates="registrations")
     event: Mapped["Event"] = relationship(back_populates="registrations")
+    maybe_pings: Mapped[list["RegistrationMaybePing"]] = relationship(
+        back_populates="registration",
+        cascade="all, delete-orphan",
+    )

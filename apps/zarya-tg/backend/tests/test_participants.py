@@ -62,3 +62,20 @@ def test_format_participants_message_with_party_size():
     assert "2. Никита + 1" in message
     assert "3. Другой гость @other" in message
     assert message.endswith("Всего: 3")
+
+
+def test_format_participants_message_with_maybe():
+    parties = [(_user(first_name="Никита", username="nikita"), 2)]
+    maybe = [_user(first_name="Глеб", username="gleb")]
+    message = format_participants_message("Встреча", parties, maybe_users=maybe)
+    assert "1. Никита @nikita" in message
+    assert "2. Никита + 1" in message
+    assert "3. Глеб @gleb - Подумаю" in message
+    assert message.endswith("Всего: 2")
+
+
+def test_format_participants_message_maybe_only():
+    maybe = [_user(first_name="Глеб", username="gleb")]
+    message = format_participants_message("Встреча", [], maybe_users=maybe)
+    assert "1. Глеб @gleb - Подумаю" in message
+    assert message.endswith("Всего: 0")

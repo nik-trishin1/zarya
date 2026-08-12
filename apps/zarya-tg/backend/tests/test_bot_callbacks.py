@@ -34,6 +34,12 @@ def test_edit_confirm_does_not_match_edit_start_pattern():
     assert reminder_pattern.match("reminder:cancel:42") is not None
     assert reminder_pattern.match("reminder:cancel:confirm") is None
 
+    maybe_going = re.compile(r"^maybe:going:\d+$")
+    maybe_decline = re.compile(r"^maybe:decline:\d+$")
+    assert maybe_going.match("maybe:going:7") is not None
+    assert maybe_decline.match("maybe:decline:7") is not None
+    assert maybe_going.match("maybe:going:x") is None
+
 
 def test_edit_confirm_handler_matches_without_fsm_state():
     router = Router()

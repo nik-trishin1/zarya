@@ -47,8 +47,10 @@ from app.services.events import (
     delete_event,
     get_all_events_admin,
     get_event_by_id,
+    get_event_maybe_users,
     get_event_registered_users,
     get_event_registration_parties,
+    register_user,
     update_event,
 )
 from app.services.event_announcement import send_new_event_announcement
@@ -278,6 +280,76 @@ async def reminder_cancel_registration(callback: CallbackQuery):
             raise
 
     await callback.answer(f"Вы отменили регистрацию на «{event.name}»", show_alert=True)
+
+
+@router.callback_query(F.data.regexp(r"^maybe:going:\d+$"))
+async def maybe_ping_going(callback: CallbackQuery):
+    if callback.from_user is None:
+        await callback.answer()
+        return
+
+    event_id = int(callback.data.split(":")[-1])
+    async with async_session() as db:
+        user = await get_or_create_user(
+            db,
+            callback.from_user.id,
+            callback.from_user.username,
+            callback.from_user.first_name,
+        )
+        event = await get_event_by_id(db, event_id)
+        if event is None:
+            await callback.answer("Событие не найдено", show_alert=True)
+            return
+        try:
+            attendance = await register_user(db, user, event_id, party_size=1)
+            event = attendance.event
+        except ValueError as e:
+            code = str(e)
+            if code == "Already registered":
+                await callback.answer("Вы уже зарегистрированы", show_alert=True)
+                return
+            if code == "Event full":
+                await callback.answer("Мест нет", show_alert=True)
+                return
+            if code == "Event past":
+                await callback.answer("Событие уже прошло", show_alert=True)
+                return
+            if code == "Event not found":
+                await callback.answer("Событие не найдено", show_alert=True)
+                return
+            raise
+
+    await callback.answer(f"Вы зарегистрированы на «{event.name}»", show_alert=True)
+
+
+@router.callback_query(F.data.regexp(r"^maybe:decline:\d+$"))
+async def maybe_ping_decline(callback: CallbackQuery):
+    if callback.from_user is None:
+        await callback.answer()
+        return
+
+    event_id = int(callback.data.split(":")[-1])
+    async with async_session() as db:
+        user = await get_or_create_user(
+            db,
+            callback.from_user.id,
+            callback.from_user.username,
+            callback.from_user.first_name,
+        )
+        event = await get_event_by_id(db, event_id)
+        if event is None:
+            await callback.answer("Событие не найдено", show_alert=True)
+            return
+        try:
+            attendance = await cancel_registration(db, user, event_id)
+            event = attendance.event
+        except ValueError as e:
+            if str(e) == "Not registered":
+                await callback.answer("Отметка уже снята", show_alert=True)
+                return
+            raise
+
+    await callback.answer(f"Отметили, что не сможете на «{event.name}»", show_alert=True)
 
 
 @router.message(Command("myid"))
@@ -727,10 +799,11 @@ async def admin_event_registrations(callback: CallbackQuery, state: FSMContext):
             await callback.answer("Событие не найдено", show_alert=True)
             return
         parties = await get_event_registration_parties(db, event_id)
+        maybe_users = await get_event_maybe_users(db, event_id)
 
     await state.set_state(AdminStates.MANAGE_DETAIL)
     await state.update_data(event_id=event_id)
-    text = format_participants_message(event.name, parties)
+    text = format_participants_message(event.name, parties, maybe_users=maybe_users)
     await callback.message.edit_text(text, reply_markup=back_to_event_keyboard(event_id))
     await callback.answer()
 

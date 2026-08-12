@@ -14,11 +14,17 @@
 
 Ordered for product triage — not a factory queue. Nothing below is factory-ready until DoR = yes.
 
-### Ready for factory (DoR met)
+### Ready for factory (DoR met) / in implementation
 
 | ID | Title | Notes | Links |
 |----|-------|-------|-------|
-| **T-211** | Maybe RSVP («Подумаю») + delayed bot ping | DoR approved: cascade pings; admin `… - Подумаю`; broadcasts include maybe | [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) · [ADR-007](decisions/007-participant-broadcast.md) |
+| **T-211** | Maybe RSVP («Подумаю») + delayed bot ping | DoR approved; maybe in broadcasts + ADR-013; cascade pings; admin `… - Подумаю` | [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) |
+
+### Low priority (later)
+
+| ID | Title | Notes | Links |
+|----|-------|-------|-------|
+| **T-212** | Almost-full nudge for maybe RSVPs | When seats nearly gone, DM maybe users («Места почти закончились — присоединяйся»). Deferred capacity urgency from T-211. | backlog stub below |
 
 ### Needs Human summary approve (ADR exists)
 
