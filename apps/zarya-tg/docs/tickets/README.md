@@ -14,6 +14,7 @@ Project-specific tickets live here. **Templates and DoR are portable** — use:
 | [T-FACTORY-002](T-FACTORY-002-portable-process.md) | Portable AI-Factory process + human-readable specs | `done` | yes |
 | [T-209](T-209-is-featured-bot.md) | Backend `is_featured` + bot create/edit | `done` | yes |
 | [T-210](T-210-home-poster-slider.md) | Frontend home poster slider | `done` | yes |
+| [T-211](T-211-maybe-rsvp-delayed-ping.md) | Maybe RSVP («Подумаю») + delayed bot ping | `todo` | no (Human summary unapproved) |
 | [T-201](T-201-access-codes.md) | Access codes | `blocked` | no (codes ADR after ADR-020) |
 | [T-208](T-208-access-groups.md) | Access groups | `done` | yes (ADR-020) |
 | [T-202](T-202-propose-event.md) | Propose event | `blocked` | no (ADR-016 missing) |
