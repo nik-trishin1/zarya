@@ -28,13 +28,19 @@
 **Reviewer decision:** `[x] Approved to implement` · Reviewer: product (chat) · Date: 2026-08-12  
 **DoR:** `[x] Approved`
 
+## Handoff (when done)
+
+- PR URL: https://github.com/nik-trishin1/zarya/pull/18
+- Defaults chosen: readOnly from archive context (not is_past); separate admin archive callbacks
+- Residual risks: date boundary uses server `date.today()` (ADR-018 pattern)
+
 ---
 
 | Field | Value |
 |-------|-------|
 | ID | T-203 |
 | Title | Past events archive («Архив» / «Завершено») |
-| Status | `in_review` |
+| Status | `done` |
 | Spec / ADR | [ADR-023](../decisions/023-past-events-archive.md), extends [ADR-018](../decisions/018-hide-past-events.md) |
 | App | `zarya-tg` |
 | Estimate | M |

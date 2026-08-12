@@ -80,7 +80,7 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 - [x] **T-209** Backend `is_featured` + bot create/edit — [ticket](tickets/T-209-is-featured-bot.md) · [S-209](specs/S-209-home-poster-slider.md) · ADR-021
 - [x] **T-210** Home poster slider (frontend) — [ticket](tickets/T-210-home-poster-slider.md)
 - [x] **T-211** Maybe RSVP («Подумаю») + delayed bot ping — [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) · PR #17
-- [~] **T-203** Past events archive («Архив») — [ticket](tickets/T-203-past-events-archive.md) · [ADR-023](decisions/023-past-events-archive.md)
+- [x] **T-203** Past events archive («Архив») — [ticket](tickets/T-203-past-events-archive.md) · [ADR-023](decisions/023-past-events-archive.md) · PR #18
 
 ## Shipped (MVP Phases 0–3 + process)
 
