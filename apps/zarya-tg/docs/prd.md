@@ -40,7 +40,7 @@ Small friend groups lack a centralized, low-friction way to organize recurring s
 - Mobile app (Telegram Mini App only; no native iOS/Android app).
 - Automated email invitations or calendar integrations beyond .ics export.
 - Analytics dashboard or reporting.
-- Localization beyond Russian (English support in Iteration 2+).
+- Localization beyond Russian (English cancelled; Russian-only — ADR-003 / T-205).
 
 ## 4. Target Personas & JTBD
 
@@ -262,7 +262,7 @@ The admin interface is accessed via Telegram commands and remains separate from 
 
 **Telegram Mini App:** All user interactions happen in a Web App embedded in Telegram (not in the chat interface). This provides a modern, app-like experience with better UX than a text-only bot.
 
-**Language:** All text is in Russian (Русский язык). Localization to English is deferred to Iteration 2.
+**Language:** All text is in Russian (Русский язык). English localization is not planned (ADR-003; T-205 cancelled).
 
 **Bot Personality:** Messages use the zarya brand voice: warm, inviting, minimalist. Emoji use is subtle (🌅 for zarya, ✅ for confirmation, 📅 for calendar).
 
@@ -497,7 +497,7 @@ Registrations
 7. Event cover images are uploaded by admin during event creation. ✅
 8. Access codes and circle-tier events are deferred to Iteration 2. ✅
 9. User profiles are not needed in MVP; only Telegram ID and username. ✅
-10. Interface is in Russian only; English localization in Iteration 2+. ✅
+10. Interface is in Russian only; English localization cancelled (ADR-003 / T-205). ✅
 11. Deployment is to Railway.com (free or paid tier). ✅
 12. Bottom tab bar is used for navigation (not hamburger menu). ✅
 13. Home screen displays events immediately (no welcome screen). ✅

@@ -4,7 +4,7 @@
 
 ## Status Legend
 
-`[ ]` Not started · `[~]` In progress · `[x]` Done · `[-]` Blocked
+`[ ]` Not started · `[~]` In progress · `[x]` Done · `[-]` Blocked / cancelled
 
 **DoR** = Definition of Ready (`process/ai-factory/DEFINITION_OF_READY.md`): approved Human summary + linked ADR/spec + verifiable AC.
 
@@ -33,12 +33,17 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 | ID | Title | Missing | Links |
 |----|-------|---------|-------|
 | **T-204** | Event categories + filter chips | Category ADR | [ticket](tickets/T-204-event-categories.md) |
-| **T-205** | English i18n | i18n ADR (then split FE/BE/bot) | [ticket](tickets/T-205-english-i18n.md) |
 | **T-206** | Admin analytics dashboard | Metrics + channel ADR | [ticket](tickets/T-206-analytics-dashboard.md) |
 | **T-201** | Access codes (circle tier) | ADR-015 (after ADR-020 groups) | [ticket](tickets/T-201-access-codes.md) |
 | **T-202** | Propose your own event | ADR-016 | [ticket](tickets/T-202-propose-event.md) |
 | **T-303** | Invite system | Invite ADR | [ticket](tickets/T-303-invite-system.md) |
 | **T-304** | Public web version (zarya.org) | Web ADR | [ticket](tickets/T-304-web-version.md) |
+
+### Cancelled
+
+| ID | Title | Reason | Links |
+|----|-------|--------|-------|
+| **T-205** | English i18n | Russian-only (ADR-003) | [ticket](tickets/T-205-english-i18n.md) |
 
 ### Ops / launch (Phase 4 leftovers)
 
