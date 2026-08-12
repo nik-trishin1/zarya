@@ -18,7 +18,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 | ID | Title | Notes | Links |
 |----|-------|-------|-------|
-| **T-203** | Past events archive («Архив») | Active-only archive; admin view/participants; no calendar in archive | [ticket](tickets/T-203-past-events-archive.md) · [ADR-023](decisions/023-past-events-archive.md) |
 
 ### Low priority (later)
 
@@ -30,7 +29,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 | ID | Title | Blocker | Links |
 |----|-------|---------|-------|
-| **T-203** | Past events archive («Завершено») | — | [ticket](tickets/T-203-past-events-archive.md) · [ADR-023](decisions/023-past-events-archive.md) |
 | **T-302** | Admin event duplication | Approve (may need thin ADR addendum) | [ticket](tickets/T-302-event-duplication.md) · [ADR-014](decisions/014-event-ownership-and-inline-editing.md) |
 
 ### Needs split / more design before enqueue
@@ -82,6 +80,7 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 - [x] **T-209** Backend `is_featured` + bot create/edit — [ticket](tickets/T-209-is-featured-bot.md) · [S-209](specs/S-209-home-poster-slider.md) · ADR-021
 - [x] **T-210** Home poster slider (frontend) — [ticket](tickets/T-210-home-poster-slider.md)
 - [x] **T-211** Maybe RSVP («Подумаю») + delayed bot ping — [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) · PR #17
+- [~] **T-203** Past events archive («Архив») — [ticket](tickets/T-203-past-events-archive.md) · [ADR-023](decisions/023-past-events-archive.md)
 
 ## Shipped (MVP Phases 0–3 + process)
 
@@ -96,6 +95,5 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 ## Suggested next product decisions
 
-1. **Implement T-203** (DoR met) — user + admin archive.
-2. **T-302** event duplication (Human summary approve) — duplicate from admin archive detail.
-3. Whether **T-301** ownership/edit is next Iteration 3 priority (split required).
+1. **T-302** event duplication (Human summary approve) — duplicate from admin archive detail.
+2. Whether **T-301** ownership/edit is next Iteration 3 priority (split required).

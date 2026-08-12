@@ -34,7 +34,7 @@
 |-------|-------|
 | ID | T-203 |
 | Title | Past events archive («Архив» / «Завершено») |
-| Status | `todo` (factory-ready) |
+| Status | `in_review` |
 | Spec / ADR | [ADR-023](../decisions/023-past-events-archive.md), extends [ADR-018](../decisions/018-hide-past-events.md) |
 | App | `zarya-tg` |
 | Estimate | M |

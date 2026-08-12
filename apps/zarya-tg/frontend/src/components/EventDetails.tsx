@@ -21,11 +21,12 @@ import "./EventDetails.css";
 
 interface EventDetailsProps {
   eventId: number;
+  readOnly?: boolean;
   onClose: () => void;
   onRegistrationChange: () => void;
 }
 
-export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDetailsProps) {
+export function EventDetails({ eventId, readOnly = false, onClose, onRegistrationChange }: EventDetailsProps) {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -153,6 +154,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
 
   const past = event.is_past ?? isEventPast(event.date);
   const isMaybe = event.is_maybe === true && !event.is_registered;
+  const archiveView = readOnly;
   // «Подумаю» allowed when full (no seat); going blocked when full
   const goingBlocked = past || (event.is_full ?? false);
   const allowsPlusOne = event.allows_plus_one !== false;
@@ -192,7 +194,13 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
           {formatEventSeats(event.registration_count, event.max_participants)}
         </p>
 
+        {archiveView && (
+          <div className="event-details__completed-banner">Событие завершено</div>
+        )}
+
         <div className="event-details__actions">
+          {archiveView ? null : (
+            <>
           {past && !event.is_registered && (
             <div className="event-details__past">Событие прошло. Stay tuned!</div>
           )}
@@ -335,6 +343,8 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
             >
               Снять «Подумаю»
             </button>
+          )}
+            </>
           )}
         </div>
       </div>

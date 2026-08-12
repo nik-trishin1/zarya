@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Event } from "./api/client";
-import { fetchEvents, fetchMyRegistrations } from "./api/client";
+import { fetchEvents, fetchMyArchive, fetchMyRegistrations } from "./api/client";
 import { EventCard } from "./components/EventCard";
 import { EventDetails } from "./components/EventDetails";
 import { Header } from "./components/Header";
@@ -15,12 +15,14 @@ function App() {
   useTelegram();
   const [screen, setScreen] = useState<Screen>("home");
   const [events, setEvents] = useState<Event[]>([]);
+  const [archiveEvents, setArchiveEvents] = useState<Event[]>([]);
   const [registrationCount, setRegistrationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<number | null>(() =>
     parseEventStartParam(getTelegramStartParam()),
   );
+  const [selectedFromArchive, setSelectedFromArchive] = useState(false);
 
   const refreshRegistrationCount = useCallback(async () => {
     try {
@@ -31,16 +33,29 @@ function App() {
     }
   }, []);
 
+  const loadScreenData = useCallback(async (currentScreen: Screen) => {
+    if (currentScreen === "home") {
+      const data = await fetchEvents();
+      return { events: data, archive: [] as Event[] };
+    }
+    const [upcoming, archive] = await Promise.all([
+      fetchMyRegistrations(),
+      fetchMyArchive(),
+    ]);
+    return { events: upcoming, archive };
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
-        const data = screen === "home" ? await fetchEvents() : await fetchMyRegistrations();
+        const { events: loadedEvents, archive } = await loadScreenData(screen);
         if (cancelled) return;
-        setEvents(data);
+        setEvents(loadedEvents);
+        setArchiveEvents(archive);
         if (screen === "registrations") {
-          setRegistrationCount(data.length);
+          setRegistrationCount(loadedEvents.length);
         }
         setError(null);
       } catch (err) {
@@ -54,7 +69,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [screen]);
+  }, [screen, loadScreenData]);
 
   useEffect(() => {
     if (screen !== "home") return;
@@ -78,10 +93,11 @@ function App() {
     setLoading(true);
     void (async () => {
       try {
-        const data = screen === "home" ? await fetchEvents() : await fetchMyRegistrations();
-        setEvents(data);
+        const { events: loadedEvents, archive } = await loadScreenData(screen);
+        setEvents(loadedEvents);
+        setArchiveEvents(archive);
         if (screen === "registrations") {
-          setRegistrationCount(data.length);
+          setRegistrationCount(loadedEvents.length);
         }
         setError(null);
       } catch (err) {
@@ -91,11 +107,16 @@ function App() {
       }
     })();
     void refreshRegistrationCount();
-  }, [screen, refreshRegistrationCount]);
+  }, [screen, loadScreenData, refreshRegistrationCount]);
 
   const handleNavClick = () => {
     setLoading(true);
     setScreen((s) => (s === "home" ? "registrations" : "home"));
+  };
+
+  const handleEventSelect = (event: Event, fromArchive = false) => {
+    setSelectedFromArchive(fromArchive);
+    setSelectedEventId(event.event_id);
   };
 
   const emptyMessage =
@@ -106,6 +127,10 @@ function App() {
   const featuredEvents =
     screen === "home" ? events.filter((event) => event.is_featured) : [];
 
+  const hasUpcoming = events.length > 0;
+  const hasArchive = screen === "registrations" && archiveEvents.length > 0;
+  const showEmptyState = !loading && !error && !hasUpcoming && !hasArchive;
+
   return (
     <div className="app">
       <Header screen={screen} registrationCount={registrationCount} onNavClick={handleNavClick} />
@@ -113,22 +138,46 @@ function App() {
       <main className="app__main">
         {loading && <p className="app__status">Загрузка...</p>}
         {error && <p className="app__status app__status--error">{error}</p>}
-        {!loading && !error && events.length === 0 && (
-          <p className="app__status">{emptyMessage}</p>
-        )}
-        {!loading && !error && events.length > 0 && (
+        {showEmptyState && <p className="app__status">{emptyMessage}</p>}
+        {!loading && !error && screen === "home" && hasUpcoming && (
           <>
             {featuredEvents.length > 0 && (
               <PosterSlider
                 events={featuredEvents}
-                onSelect={(e) => setSelectedEventId(e.event_id)}
+                onSelect={(e) => handleEventSelect(e)}
               />
             )}
             <div className="event-list">
               {events.map((event) => (
-                <EventCard key={event.event_id} event={event} onClick={(e) => setSelectedEventId(e.event_id)} />
+                <EventCard key={event.event_id} event={event} onClick={(e) => handleEventSelect(e)} />
               ))}
             </div>
+          </>
+        )}
+        {!loading && !error && screen === "registrations" && (hasUpcoming || hasArchive) && (
+          <>
+            {hasUpcoming && (
+              <div className="event-list">
+                {events.map((event) => (
+                  <EventCard key={event.event_id} event={event} onClick={(e) => handleEventSelect(e)} />
+                ))}
+              </div>
+            )}
+            {hasArchive && (
+              <>
+                <h2 className="app__section-title">Архив</h2>
+                <div className="event-list">
+                  {archiveEvents.map((event) => (
+                    <EventCard
+                      key={event.event_id}
+                      event={event}
+                      completed
+                      onClick={(e) => handleEventSelect(e, true)}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
       </main>
@@ -137,7 +186,11 @@ function App() {
         <EventDetails
           key={selectedEventId}
           eventId={selectedEventId}
-          onClose={() => setSelectedEventId(null)}
+          readOnly={selectedFromArchive}
+          onClose={() => {
+            setSelectedEventId(null);
+            setSelectedFromArchive(false);
+          }}
           onRegistrationChange={handleRegistrationChange}
         />
       )}

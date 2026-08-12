@@ -18,6 +18,7 @@ from app.schemas.registration import (
 from app.services.events import (
     cancel_registration,
     get_event_detail,
+    get_past_registered_events,
     get_upcoming_events,
     mark_maybe,
     register_user,
@@ -102,6 +103,15 @@ async def my_registrations(
     user: User = Depends(get_current_user),
 ):
     rows = await get_upcoming_events(db, user=user, registered_only=True)
+    return [attendance_to_response(row) for row in rows]
+
+
+@router.get("/registrations/my/archive", response_model=list[EventResponse])
+async def my_archive_registrations(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    rows = await get_past_registered_events(db, user)
     return [attendance_to_response(row) for row in rows]
 
 
