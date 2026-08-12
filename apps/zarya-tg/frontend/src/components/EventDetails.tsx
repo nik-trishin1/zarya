@@ -200,7 +200,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
                   onClick={() => handleRegister(1)}
                   disabled={actionLoading || !canRegisterAlone}
                 >
-                  Один
+                  Буду
                 </button>
                 <button
                   type="button"
@@ -209,7 +209,7 @@ export function EventDetails({ eventId, onClose, onRegistrationChange }: EventDe
                   disabled={actionLoading || !canRegisterPlusOne}
                   title={!canRegisterPlusOne ? "Недостаточно мест для +1" : undefined}
                 >
-                  +1
+                  Буду +1
                 </button>
               </div>
             ) : (
