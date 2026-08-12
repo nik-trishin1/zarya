@@ -18,7 +18,7 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 | ID | Title | Notes | Links |
 |----|-------|-------|-------|
-| **T-211** | Maybe RSVP («Подумаю») + delayed bot ping | Cascade 7d/3d/2d/24h while maybe; admin list `Имя - Подумаю` | [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) |
+| **T-211** | Maybe RSVP («Подумаю») + delayed bot ping | DoR approved: cascade pings; admin `… - Подумаю`; broadcasts include maybe | [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) · [ADR-007](decisions/007-participant-broadcast.md) |
 
 ### Needs Human summary approve (ADR exists)
 

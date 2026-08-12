@@ -17,7 +17,7 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
    - Not registered / cancelled → `maybe` (tap «Подумаю»)
    - `maybe` → `active` (Mini App «Буду» / «Буду +1», or bot ping «Буду»)
    - `maybe` → `cancelled` (Mini App cancel / clear, or bot ping «Не смогу»)
-   - `active` → `cancelled` unchanged; user may set `maybe` again later from a non-active state
+   - `active` → `cancelled` unchanged; **do not** offer «Подумаю» while already going (cancel first, then maybe if needed)
 
 3. **Capacity.** `maybe` does **not** occupy seats. Seat count remains `SUM(party_size)` over `status == active` only (ADR-012 / ADR-019). `party_size` on a maybe row is irrelevant until the user becomes `active` (then normal Один / +1 rules apply).
 
@@ -30,7 +30,7 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
 
    On mark «Подумаю», **precompute and store** one schedule entry per offset whose due time is still in the future (`due_at > now`). Past offsets are skipped (e.g. mark with 5 days left → schedule 3d, 2d, 24h only).
 
-   Ignoring a ping (no «Буду» / «Не смогу») does **not** cancel later entries — keep sending until the user leaves `maybe` or the event starts.
+   Ignoring a ping (no «Буду» / «Не смогу») does **not** cancel later entries — keep sending until the user leaves `maybe` or the event starts. Block marking maybe on past events; drop unsent schedule after event start.
 
 5. **Delivery.** Same process loop pattern as ADR-013: hourly tick in `run.py`, active **08:00–22:00 Europe/Moscow**, fire when `now` is within ~±1 hour of an unsent schedule entry’s `due_at` and the registration is still `maybe`. Mark that entry sent after the attempt. Leaving `maybe` deletes or ignores remaining unsent entries. Re-marking «Подумаю» rebuilds the schedule from remaining future offsets.
 
@@ -42,30 +42,43 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
    📍 {location}
    ```
 
-   Inline keyboard: **«Буду»** → register `active` with `party_size=1` (capacity permitting); **«Не смогу»** → set `cancelled` (or equivalent clear of maybe). Callbacks must not open the Mini App.
+   Inline keyboard: **«Буду»** → register `active` with `party_size=1` (capacity permitting; if full, stay `maybe`, keep schedule, tell the user); **«Не смогу»** → set `cancelled`. Callbacks must not open the Mini App.
 
 7. **Relation to ADR-013.** Unchanged for `active` users. Maybe users never receive the going reminder. The maybe `−24h` entry is a **maybe-specific** ping (different copy/buttons), not `events.reminder_sent_at`.
 
+   **Integrity rule:** do **not** widen `get_event_registered_users()` for broadcasts in a way that also feeds reminders. Broadcast recipients and reminder recipients must be separate queries (or one helper with an explicit status filter).
+
 8. **Surfaces.**
-   - Event details / cards: show a distinct maybe indicator (not the going ✅).
-   - Admin «Участники» (ADR-006 / ADR-019): include maybe rows **after** active seat-expanded lines, labeled like `Имя - Подумаю` (username rules unchanged). Maybe lines do **not** count toward capacity / «Гостей: X из Y».
-   - «Мои регистрации», calendar export, participant broadcast: **active only**.
+
+   | Surface | Include `maybe`? |
+   |---|---|
+   | Mini App indicator / «Подумаю» CTA | yes |
+   | Cascade bot pings | yes |
+   | Admin «Участники» | yes — after active seat-expanded lines, `N. Имя @username - Подумаю` (username omitted if missing); `Всего` footer = **active seats only** |
+   | Participant broadcast («Написать участникам», ADR-007) | yes — same message body to `active` + `maybe`; order by `registered_at` ASC; one DM per user |
+   | «Мои регистрации» | no (active only) |
+   | Calendar .ics | no (active only) |
+   | Capacity / `is_full` / «Гостей» | no (active only) |
+   | ADR-013 24h going reminder | no (active only) |
+   | Admin notify on mark maybe (ADR-005) | no for v1 |
+
+9. **Group ACL.** Treat `maybe` like `active` for “has registration on this group event” escape hatches so a maybe user who loses group membership can still open the event to confirm or clear (same rationale as going cancel).
 
 ## Alternatives Considered
 
 **Single ping only (first future tier).** Rejected — product wants continued nudges on 7d / 3d / 2d / 24h while the user remains «Подумаю».
 
-**Window-scan only (no stored schedule).** Rejected — more logic each tick and harder to reason about missed windows; product preferred pre-scheduling all remaining milestones at mark time.
+**Window-scan only (no stored schedule).** Rejected — more logic each tick; product preferred pre-scheduling remaining milestones at mark time.
 
-**Maybe occupies a soft hold on capacity.** Rejected — product wants no seat reservation.
+**Maybe occupies a soft hold on capacity.** Rejected — no seat reservation.
 
-**Separate interest table.** Rejected — `UniqueConstraint(user_id, event_id)` already models one RSVP row; a third status is simpler.
+**Hide maybe from admin list / broadcasts.** Rejected — organizers need to see and message interest.
 
-**Hide maybe from admin guest list.** Rejected — organizers need to see interest; label distinguishes them from confirmed guests.
+**Separate interest table.** Rejected — one RSVP row per `(user_id, event_id)` is enough.
 
 ## Consequences
 
-- Capacity, «Мои регистрации», .ics, ADR-013, and participant broadcasts stay **active-only**; admin list is the exception for visibility.
-- Event API needs an explicit RSVP signal for the current user (`maybe` vs going vs none), not only `is_registered: bool`.
-- Schema: `maybe` status plus a per-registration ping schedule (child rows or equivalent JSON entries with `due_at` / `sent_at` / offset id) via idempotent `schema_updates`.
+- Event API needs explicit RSVP for the current user (`maybe` vs going vs none); keep `is_registered == (status == active)` so calendar and existing clients stay correct.
+- Schema: `maybe` status plus a per-registration ping schedule (child rows preferred) via `create_all` + idempotent `schema_updates` as needed.
+- ADR-007 recipient set expands to active + maybe (see that ADR).
 - Implementation ticket: [T-211](../tickets/T-211-maybe-rsvp-delayed-ping.md).

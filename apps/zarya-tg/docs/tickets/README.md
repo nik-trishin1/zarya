@@ -14,7 +14,7 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-12).
 
 | ID | Title | Status | DoR |
 |----|-------|--------|-----|
-| [T-211](T-211-maybe-rsvp-delayed-ping.md) | Maybe RSVP («Подумаю») + delayed bot ping | `todo` | yes — approved 2026-08-12 |
+| [T-211](T-211-maybe-rsvp-delayed-ping.md) | Maybe RSVP («Подумаю») + delayed bot ping | `todo` | yes — DoR approved 2026-08-12 (broadcasts include maybe) |
 | [T-203](T-203-past-events-archive.md) | Past events archive | `todo` | partial — approve + UI notes |
 | [T-302](T-302-event-duplication.md) | Event duplication | `todo` | partial |
 | [T-301](T-301-event-ownership-editing.md) | Ownership + in-app edit | `todo` | no — split required (ADR-014) |
