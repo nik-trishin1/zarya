@@ -23,7 +23,6 @@ export function EventCard({ event, onClick, completed = false }: EventCardProps)
         <time className="event-card__date">{formatEventDate(event.date, event.time)}</time>
         <h2 className="event-card__title">{event.name}</h2>
         <p className="event-card__location">{event.location}</p>
-        {completed && <span className="event-card__completed-label">Завершено</span>}
       </div>
       {!completed && event.is_registered && (
         <span className="event-card__badge" aria-label="Зарегистрирован">✅</span>

@@ -194,10 +194,6 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
           {formatEventSeats(event.registration_count, event.max_participants)}
         </p>
 
-        {archiveView && (
-          <div className="event-details__completed-banner">Событие завершено</div>
-        )}
-
         <div className="event-details__actions">
           {archiveView ? null : (
             <>

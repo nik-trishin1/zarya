@@ -102,13 +102,7 @@ Users and admins can browse completed events without cluttering active lists.
 
 ## Verification
 
-1. [ ] `PYTHONPATH=. pytest -q` in backend
-2. [ ] `npm run lint && npm run build` in frontend
-3. [ ] CI green
-4. [ ] Review pass (`process/ai-factory/REVIEW_PASS.md`)
-
-## Handoff (when done)
-
-- PR URL:
-- Defaults chosen (if any):
-- Residual risks:
+1. [x] `PYTHONPATH=. pytest -q` in backend
+2. [x] `npm run lint && npm run build` in frontend
+3. [x] CI green
+4. [x] Review pass (`process/ai-factory/REVIEW_PASS.md`)
