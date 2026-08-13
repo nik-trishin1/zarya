@@ -5,6 +5,8 @@ description: Spec-driven development workflow for zarya — plan before coding
 
 Before writing any code, confirm that the relevant specification exists and is up to date. Portable templates: `process/ai-factory/SPEC_TEMPLATE.md` and `TICKET_TEMPLATE.md`.
 
+**Large product bets first.** If the work is a new segment, Job, value proposition, positioning, or "should we build this" (not a factory ticket), follow `.cursor/rules/next-move-theory.mdc` and `.cursor/skills/product-hypothesis/SKILL.md` **before** writing a spec. NMT output is a hypothesis, not a license to code.
+
 **Step 1 — Read the spec.** Check `apps/zarya-tg/docs/prd.md`, `apps/zarya-tg/docs/specs/`, or the linked ticket. Prefer specs/tickets that include a **Human summary** suitable for human review. If the story does not exist or is ambiguous, stop and clarify (unless factory DoR exception applies).
 
 **Step 2 — Check decisions.** Check `apps/zarya-tg/docs/decisions/` for any ADR that constrains the implementation. Do not contradict an existing ADR without creating a new one.

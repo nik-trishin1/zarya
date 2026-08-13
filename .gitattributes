@@ -1,0 +1,6 @@
+# Vendored Next Move Theory (Ivan Zamesin, CC BY-NC-SA 4.0)
+Next-Move-Theory-Canon/** linguist-vendored
+.claude/skills/** linguist-vendored
+.agents/skills/** linguist-vendored
+.cursor/skills/nmt-*/** linguist-vendored
+NextMoveTheory-README.md linguist-vendored

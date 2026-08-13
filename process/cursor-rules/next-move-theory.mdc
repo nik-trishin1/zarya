@@ -1,0 +1,29 @@
+---
+description: >-
+  Large product hypotheses, strategy, JTBD/AJTBD, segmentation, value
+  propositions, positioning, PMF, market research, go-to-market, "should we
+  build this", diagnose a live product, riskiest assumption (RAT), крупная
+  продуктовая гипотеза. Route through Next Move Theory skills before specs or
+  code. Do not apply to factory tickets, bugfixes, or approved-spec implementation.
+alwaysApply: false
+---
+
+# Next Move Theory — large product hypotheses
+
+Portable copy. After copying `process/` into a repo, also copy this file to `.cursor/rules/next-move-theory.mdc` and install the canon + skills (see `process/next-move-theory/README.md`).
+
+When the task is a **large product bet** (who to serve, which Jobs to compete for, whether to build, how to position, how to grow, or why a strategic metric is broken), do **not** answer from generic Jobs To Be Done in training data and do **not** jump to tickets or code.
+
+**Read and follow** `.cursor/skills/product-hypothesis/SKILL.md` first (Cursor). That skill routes to the vendored `nmt-*` skills and `Next-Move-Theory-Canon/`.
+
+## Cursor-specific behavior
+
+- Load `.cursor/skills/<nmt-skill>/SKILL.md` with the Read tool, then follow it.
+- Ask intake questions **in chat** (no `AskUserQuestion` / `request_user_input`).
+- Default artifacts: the consuming app's `docs/research/nmt/` (this repo: `apps/zarya-tg/docs/research/nmt/`). One Markdown file per run.
+- Producer skills yield **hypotheses**. Name the riskiest assumption and the cheapest falsifying test before recommending a build.
+- NMT is **upstream of AI-Factory**. Do not implement from an NMT report in the same pass. Next: field evidence, then spec + ADR if scope changes, then DoR.
+
+## What is not a large hypothesis
+
+Factory-queued tickets, bugfixes, copy/UI polish, and implementing an already-approved spec stay on the existing AI-Factory / spec-driven path.
