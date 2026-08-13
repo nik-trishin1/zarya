@@ -50,9 +50,9 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
     };
   }, [eventId]);
 
-  const refreshAfterChange = async (message: string) => {
+  const refreshAfterChange = async (message?: string | null) => {
     if (!event) return;
-    setToast(message);
+    if (message) setToast(message);
     const updated = await fetchEvent(event.event_id);
     setEvent(updated);
     onRegistrationChange();
@@ -86,10 +86,12 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
 
   const handleCancel = async () => {
     if (!event) return;
+    const clearingMaybe = event.is_maybe === true && !event.is_registered;
     setActionLoading(true);
     try {
       const result = await cancelRegistration(event.event_id);
-      await refreshAfterChange(result.message);
+      // No toast when clearing «Подумаю» — UI already shows the new state
+      await refreshAfterChange(clearingMaybe ? null : result.message);
     } catch (err) {
       setToast(err instanceof Error ? err.message : "Ошибка отмены");
     } finally {
@@ -337,7 +339,7 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
               onClick={handleCancel}
               disabled={actionLoading}
             >
-              Снять «Подумаю»
+              Решил, что не пойду
             </button>
           )}
             </>

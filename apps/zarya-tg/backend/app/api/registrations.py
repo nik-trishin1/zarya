@@ -230,7 +230,7 @@ async def cancel_event_registration(
             party_size=0,
         )
     message = (
-        f"Вы сняли «Подумаю» с {attendance.event.name}"
+        "Решил, что не пойду"
         if was_maybe and not was_going
         else f"Вы отменили регистрацию на {attendance.event.name}"
     )
