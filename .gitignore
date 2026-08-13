@@ -50,5 +50,8 @@ zarya.db
 # Uploads
 uploads/
 
+# Next Move Theory producer default output (repo convention: apps/zarya-tg/docs/research/nmt/)
+Skills-Results/
+
 # Railway
 .railway/

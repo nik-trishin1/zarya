@@ -13,11 +13,13 @@ A community platform for organizing and attending social events — built around
 ```
 zarya/
 ├── AGENTS.md          # AI agent instructions (read first)
-├── process/           # Portable AI-Factory standards (reuse in other repos)
+├── process/           # Portable AI-Factory + Next Move Theory wiring
 ├── apps/
 │   └── zarya-tg/      # Telegram Mini App
+├── Next-Move-Theory-Canon/  # Vendored AJTBD / NMT theses
 ├── .cursor/
-│   └── rules/         # Cursor AI behavior rules
+│   ├── rules/         # Cursor AI behavior rules
+│   └── skills/        # product-hypothesis + nmt-* skills
 ├── .github/
 │   └── workflows/     # CI (pytest, lint/build, Railway log scan)
 └── .gitignore
@@ -27,6 +29,8 @@ zarya/
 
 Cross-project playbook: [process/README.md](process/README.md).  
 zarya-tg tickets: [apps/zarya-tg/docs/tickets/](apps/zarya-tg/docs/tickets/).
+
+Large product hypotheses (what to build, who for, whether the bet should live) go through **Next Move Theory** before specs or code. Start with the Cursor skill `product-hypothesis`. Canon, skills, and update steps: [process/next-move-theory/README.md](process/next-move-theory/README.md). Upstream: [Next Move Theory Canon and Skills](https://github.com/zamesin/Next-Move-Theory-Canon-and-Skills) (CC BY-NC-SA 4.0).
 
 ## Contributing
 

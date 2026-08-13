@@ -28,7 +28,7 @@ Humans review that summary **before** enqueueing implementation. Agents treat an
 
 ## Happy path
 
-1. Roast idea → write spec from `SPEC_TEMPLATE.md` → **human reviews Human summary**.
+1. Large product bet → Next Move Theory (`process/next-move-theory/`) → cheapest field test. Then roast the remaining idea → write spec from `SPEC_TEMPLATE.md` → **human reviews Human summary**. Skip NMT for small, already-scoped tickets.
 2. Split into DoR tickets from `TICKET_TEMPLATE.md`.
 3. Enqueue via orchestrator (`ORCHESTRATOR.md`).
 4. Agent implements → local checks → PR.
