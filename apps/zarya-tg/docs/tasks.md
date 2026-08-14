@@ -1,6 +1,6 @@
 # zarya — Task Backlog
 
-> Refreshed 2026-08-12. Tickets: [`docs/tickets/`](tickets/). Process: [`process/ai-factory/`](../../../process/ai-factory/).
+> Refreshed 2026-08-14. Tickets: [`docs/tickets/`](tickets/). Process: [`process/ai-factory/`](../../../process/ai-factory/).
 
 ## Status Legend
 
@@ -29,6 +29,9 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 | ID | Title | Blocker | Links |
 |----|-------|---------|-------|
+| **T-220** | Luma-style event cards | Approve S-024 + ADR-024 Human summaries | [ticket](tickets/T-220-luma-event-cards.md) · [S-024](specs/S-024-mini-app-visual-refresh.md) · [ADR-024](decisions/024-mini-app-visual-language.md) |
+| **T-221** | Circular RSVP + details | Approve S-024 + ADR-024 Human summaries | [ticket](tickets/T-221-circular-rsvp-details.md) · [S-024](specs/S-024-mini-app-visual-refresh.md) · [ADR-024](decisions/024-mini-app-visual-language.md) |
+| **T-222** | Tokens, header, empty states | Approve S-024 + ADR-024 Human summaries | [ticket](tickets/T-222-tokens-header-empty.md) · [S-024](specs/S-024-mini-app-visual-refresh.md) · [ADR-024](decisions/024-mini-app-visual-language.md) |
 | **T-302** | Admin event duplication | Approve (may need thin ADR addendum) | [ticket](tickets/T-302-event-duplication.md) · [ADR-014](decisions/014-event-ownership-and-inline-editing.md) |
 
 ### Needs split / more design before enqueue
@@ -95,5 +98,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 ## Suggested next product decisions
 
-1. **T-302** event duplication (Human summary approve) — duplicate from admin archive detail.
-2. Whether **T-301** ownership/edit is next Iteration 3 priority (split required).
+1. **S-024 / ADR-024** Mini App visual refresh — approve Human summaries, then factory T-220 → T-221 → T-222.
+2. **T-302** event duplication (Human summary approve) — duplicate from admin archive detail.
+3. Whether **T-301** ownership/edit is next Iteration 3 priority (split required).
