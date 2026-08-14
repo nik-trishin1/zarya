@@ -19,14 +19,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 | ID | Title | Notes | Links |
 |----|-------|-------|-------|
 
-### In review
-
-| ID | Title | Notes | Links |
-|----|-------|-------|-------|
-| **T-220** | Luma-style event cards | Stacked with T-221 / T-222 on PR #23 | [ticket](tickets/T-220-luma-event-cards.md) · [S-024](specs/S-024-mini-app-visual-refresh.md) |
-| **T-221** | Circular RSVP + details | Same PR | [ticket](tickets/T-221-circular-rsvp-details.md) |
-| **T-222** | Tokens, header, empty states | Same PR | [ticket](tickets/T-222-tokens-header-empty.md) |
-
 ### Low priority (later)
 
 | ID | Title | Notes | Links |
@@ -89,6 +81,7 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 - [x] **T-210** Home poster slider (frontend) — [ticket](tickets/T-210-home-poster-slider.md)
 - [x] **T-211** Maybe RSVP («Подумаю») + delayed bot ping — [ticket](tickets/T-211-maybe-rsvp-delayed-ping.md) · [ADR-022](decisions/022-maybe-rsvp-delayed-ping.md) · PR #17
 - [x] **T-203** Past events archive («Архив») — [ticket](tickets/T-203-past-events-archive.md) · [ADR-023](decisions/023-past-events-archive.md) · PR #18
+- [x] **T-220 / T-221 / T-222** Mini App visual refresh — [S-024](specs/S-024-mini-app-visual-refresh.md) · [ADR-024](decisions/024-mini-app-visual-language.md) · PR #23
 
 ## Shipped (MVP Phases 0–3 + process)
 

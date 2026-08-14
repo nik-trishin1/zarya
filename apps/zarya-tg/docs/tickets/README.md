@@ -14,9 +14,6 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-14).
 
 | ID | Title | Status | DoR |
 |----|-------|--------|-----|
-| [T-220](T-220-luma-event-cards.md) | Luma-style event cards + date headers | `in_review` | yes — Human summary approved 2026-08-14 |
-| [T-221](T-221-circular-rsvp-details.md) | Circular RSVP + event details chrome | `in_review` | yes — Human summary approved 2026-08-14 |
-| [T-222](T-222-tokens-header-empty.md) | Tokens, header chrome, empty states | `in_review` | yes — Human summary approved 2026-08-14 |
 | [T-212](T-212-almost-full-maybe-nudge.md) | Almost-full nudge for maybe RSVPs | `todo` | no — low priority; needs ADR addendum |
 | [T-203](T-203-past-events-archive.md) | Past events archive | `done` | yes — DoR approved 2026-08-12 |
 | [T-302](T-302-event-duplication.md) | Event duplication | `todo` | partial |
@@ -45,3 +42,6 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-14).
 | [T-209](T-209-is-featured-bot.md) | Backend `is_featured` + bot create/edit | `done` | yes |
 | [T-210](T-210-home-poster-slider.md) | Frontend home poster slider | `done` | yes |
 | [T-211](T-211-maybe-rsvp-delayed-ping.md) | Maybe RSVP («Подумаю») + delayed bot ping | `done` | yes |
+| [T-220](T-220-luma-event-cards.md) | Luma-style event cards + date headers | `done` | yes |
+| [T-221](T-221-circular-rsvp-details.md) | Circular RSVP + event details chrome | `done` | yes |
+| [T-222](T-222-tokens-header-empty.md) | Tokens, header chrome, empty states | `done` | yes |

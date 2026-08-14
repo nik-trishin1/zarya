@@ -39,7 +39,7 @@
 |-------|-------|
 | Spec ID | S-024 |
 | Title | Mini App visual refresh (list + circular RSVP) |
-| Status | `in_review` |
+| Status | `done` |
 | Related ADR / PRD | [ADR-024](../decisions/024-mini-app-visual-language.md), [ADR-002](../decisions/002-ux-navigation.md), [ADR-021](../decisions/021-home-featured-slider.md), [ADR-022](../decisions/022-maybe-rsvp-delayed-ping.md), [ADR-023](../decisions/023-past-events-archive.md), PRD US-2 / US-3 / US-4, [research](../research/event-app-redesign-benchmarks.md) |
 | Owner | zarya maintainers |
 

@@ -33,7 +33,7 @@
 |-------|-------|
 | ID | T-222 |
 | Title | Tokens, header chrome, empty states |
-| Status | `in_review` |
+| Status | `done` |
 | Spec / ADR | [S-024](../specs/S-024-mini-app-visual-refresh.md), [ADR-024](../decisions/024-mini-app-visual-language.md), [ADR-002](../decisions/002-ux-navigation.md), [ADR-003](../decisions/003-language.md) |
 | App | `zarya-tg` |
 | Estimate | S |
@@ -69,8 +69,8 @@ Make chrome feel native to Telegram and to the new list/RSVP language without ad
 
 1. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 2. [ ] Smoke: header toggle both directions; empty vs filled lists; light/dark
-3. [ ] CI green on the PR
-4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
+3. [x] CI green on the PR
+4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md)) — PASS 2026-08-14 (second agent; product Telegram smoke still recommended)
 
 ## Handoff (when done)
 
