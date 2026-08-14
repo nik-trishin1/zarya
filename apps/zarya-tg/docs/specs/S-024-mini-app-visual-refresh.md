@@ -27,7 +27,7 @@
 **How we will know it worked (smoke):**
 - Home: slider still ~half screen with list visible; a going event shows «Иду» on the thumb; a maybe event shows «Подумаю»
 - Details: two circles; selecting «Буду» fills the circle and still registers; «+1» chip when allowed; archive has no circles
-- Telegram back closes details; header «Мои» shows the count; no English “Stay tuned”
+- 🏠 closes details; header 🎫 / 🏠; no English “Stay tuned”
 
 **Reviewer decision:** `[x] Approved for ticket split` · `[ ] Needs changes` · Reviewer: product · Date: 2026-08-14
 
@@ -90,8 +90,8 @@ Unchanged. Trust existing `Event` fields (`is_registered`, `is_maybe`, `is_featu
 **Header**
 - Home title: **События**
 - Registrations title: **Мои регистрации**
-- Toggle on home: **Мои** + count (count = upcoming `active` only, ADR-023)
-- Toggle on registrations: **События**
+- Toggle on home: 🎫 + upcoming `active` count (ADR-023)
+- Toggle on registrations: 🏠
 - `aria-label` must stay descriptive (include count when on home)
 
 **Empty**
@@ -106,7 +106,7 @@ Unchanged. Trust existing `Event` fields (`is_registered`, `is_maybe`, `is_featu
 
 ```text
 ┌─────────────────────────────────┐
-│  События              [Мои  2]  │
+│  События              [🎫  2]  │
 ├─────────────────────────────────┤
 │  ▌ peek │████ POSTER ████│ peek ▐  ~50vh if featured
 ├─────────────────────────────────┤
