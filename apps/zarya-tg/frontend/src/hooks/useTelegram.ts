@@ -9,6 +9,9 @@ function isTelegramWebApp(): boolean {
 function applySafeAreaInsets(): void {
   const root = document.documentElement;
   const { safeAreaInset, contentSafeAreaInset } = WebApp;
+  if (!safeAreaInset || !contentSafeAreaInset) {
+    return;
+  }
 
   root.style.setProperty("--tg-safe-area-inset-top", `${safeAreaInset.top}px`);
   root.style.setProperty("--tg-safe-area-inset-bottom", `${safeAreaInset.bottom}px`);
