@@ -43,7 +43,7 @@ Archive cards stay muted (ADR-023); they do not show going/maybe overlays.
 ### 4. Event details
 
 - Cover remains ~200px full-width (not ~40vh).
-- Telegram **`BackButton`** closes details; hide the custom 🏠 overlay.
+- Telegram **`BackButton` is not used.** Prod incident 2026-08-14: showing native BackButton on details coincided with event pages failing to open and Mini App reloads. Keep the in-app 🏠 overlay (same as before T-221). Do not call `BackButton.show()`.
 - Title, then icon rows: date/time, location, seats (`formatEventSeats`). Then description.
 - **RSVP row:** two circles (~56px hit target) with icon + caption:
   - **«Буду»** — check icon
