@@ -1,36 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import WebApp from "@twa-dev/sdk";
 import { applyAppTheme } from "../utils/theme";
-import { isTelegramMiniApp } from "../utils/telegram";
 
 function isTelegramWebApp(): boolean {
-  return isTelegramMiniApp();
-}
-
-/** Native Telegram back while a screen is open; hidden on unmount. */
-export function useTelegramBackButton(onBack: () => void) {
-  const onBackRef = useRef(onBack);
-
-  useEffect(() => {
-    onBackRef.current = onBack;
-  }, [onBack]);
-
-  useEffect(() => {
-    if (!isTelegramMiniApp()) {
-      return;
-    }
-
-    const handler = () => {
-      onBackRef.current();
-    };
-
-    WebApp.BackButton.onClick(handler);
-    WebApp.BackButton.show();
-    return () => {
-      WebApp.BackButton.offClick(handler);
-      WebApp.BackButton.hide();
-    };
-  }, []);
+  return Boolean(window.Telegram?.WebApp?.initData);
 }
 
 function applySafeAreaInsets(): void {

@@ -19,15 +19,6 @@ declare global {
           params: { url: string; file_name: string },
           callback?: (accepted: boolean) => void,
         ) => void;
-        BackButton?: {
-          show: () => void;
-          hide: () => void;
-          onClick: (callback: () => void) => void;
-          offClick: (callback: () => void) => void;
-        };
-        HapticFeedback?: {
-          impactOccurred: (style: "light" | "medium" | "heavy") => void;
-        };
         requestFullscreen?: () => void;
         onEvent?: (eventType: string, callback: () => void) => void;
         offEvent?: (eventType: string, callback: () => void) => void;

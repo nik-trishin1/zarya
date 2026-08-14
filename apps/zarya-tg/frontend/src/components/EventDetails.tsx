@@ -9,17 +9,6 @@ import {
   updateRegistrationPartySize,
 } from "../api/client";
 import { CoverImage } from "./CoverImage";
-import {
-  IconCalendar,
-  IconCheck,
-  IconChevronLeft,
-  IconClock,
-  IconPause,
-  IconPin,
-  IconShare,
-  IconUsers,
-} from "./icons";
-import { useTelegramBackButton } from "../hooks/useTelegram";
 import { buildEventShareLink, formatShareMessage } from "../utils/deepLink";
 import {
   canTakeSeats,
@@ -27,7 +16,7 @@ import {
   formatEventSeats,
   isEventPast,
 } from "../utils/format";
-import { hapticImpact, isTelegramMiniApp, openTelegramShareLink } from "../utils/telegram";
+import { openTelegramShareLink } from "../utils/telegram";
 import "./EventDetails.css";
 
 interface EventDetailsProps {
@@ -42,9 +31,6 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const showChevronBack = !isTelegramMiniApp();
-
-  useTelegramBackButton(onClose);
 
   // Parent remounts this component with key={eventId}; loading starts true.
   useEffect(() => {
@@ -74,7 +60,6 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
 
   const handleRegister = async (partySize: number) => {
     if (!event) return;
-    hapticImpact();
     setActionLoading(true);
     try {
       const result = await registerForEvent(event.event_id, partySize);
@@ -88,7 +73,6 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
 
   const handlePartySizeChange = async (partySize: number) => {
     if (!event) return;
-    hapticImpact();
     setActionLoading(true);
     try {
       const result = await updateRegistrationPartySize(event.event_id, partySize);
@@ -103,7 +87,6 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
   const handleCancel = async () => {
     if (!event) return;
     const clearingMaybe = event.is_maybe === true && !event.is_registered;
-    hapticImpact("light");
     setActionLoading(true);
     try {
       const result = await cancelRegistration(event.event_id);
@@ -118,7 +101,6 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
 
   const handleMaybe = async () => {
     if (!event) return;
-    hapticImpact();
     setActionLoading(true);
     try {
       const result = await markEventMaybe(event.event_id);
@@ -155,16 +137,9 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
     }
   };
 
-  const backControl = showChevronBack ? (
-    <button type="button" className="event-details__back" onClick={onClose} aria-label="Назад">
-      <IconChevronLeft size={22} />
-    </button>
-  ) : null;
-
   if (loading) {
     return (
       <div className="event-details">
-        {backControl}
         <div className="event-details__loading">Загрузка...</div>
       </div>
     );
@@ -173,7 +148,7 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
   if (!event) {
     return (
       <div className="event-details">
-        {backControl}
+        <button type="button" className="event-details__back" onClick={onClose}>🏠</button>
         <p className="event-details__error">Событие не найдено</p>
       </div>
     );
@@ -182,6 +157,7 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
   const past = event.is_past ?? isEventPast(event.date);
   const isMaybe = event.is_maybe === true && !event.is_registered;
   const archiveView = readOnly;
+  // «Подумаю» allowed when full (no seat); going blocked when full
   const goingBlocked = past || (event.is_full ?? false);
   const allowsPlusOne = event.allows_plus_one !== false;
   const allowsSharing = event.allows_sharing !== false;
@@ -201,165 +177,171 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
     !past &&
     canTakeSeats(event.registration_count, event.max_participants, 1);
   const hasPlusOne = event.is_registered && event.party_size > 1;
-  const goingDisabled = actionLoading || (!event.is_registered && !canRegisterAlone);
   const canMarkMaybe = !past && !event.is_registered;
-  const showRsvp = !archiveView && (!past || event.is_registered || isMaybe);
-  const showMaybeCircle = showRsvp && !event.is_registered;
-
-  const plusOneDisabled = event.is_registered
-    ? actionLoading || past || (!hasPlusOne && !canAddPlusOne)
-    : actionLoading || !canRegisterPlusOne;
-  const plusOneTitle = event.is_registered
-    ? !hasPlusOne && !canAddPlusOne
-      ? "Недостаточно мест для +1"
-      : undefined
-    : !canRegisterPlusOne
-      ? "Недостаточно мест для +1"
-      : undefined;
 
   return (
     <div className="event-details">
-      {backControl}
+      <button type="button" className="event-details__back" onClick={onClose} aria-label="На главную">
+        🏠
+      </button>
 
       <CoverImage url={event.cover_image_url} className="event-details__cover" />
 
       <div className="event-details__body">
         <h2 className="event-details__title">{event.name}</h2>
-
-        <div className="event-details__rows">
-          <div className="event-details__row">
-            <IconClock size={18} />
-            <span>{formatEventDate(event.date, event.time)}</span>
-          </div>
-          {event.location ? (
-            <div className="event-details__row">
-              <IconPin size={18} />
-              <span>{event.location}</span>
-            </div>
-          ) : null}
-          <div className="event-details__row">
-            <IconUsers size={18} />
-            <span>{formatEventSeats(event.registration_count, event.max_participants)}</span>
-          </div>
-        </div>
-
+        <p className="event-details__meta">{formatEventDate(event.date, event.time)}</p>
+        <p className="event-details__meta">📍 {event.location}</p>
         <p className="event-details__description">{event.description}</p>
+        <p className="event-details__count">
+          {formatEventSeats(event.registration_count, event.max_participants)}
+        </p>
 
         <div className="event-details__actions">
           {archiveView ? null : (
             <>
-              {past && !event.is_registered && (
-                <div className="event-details__past">Событие прошло</div>
-              )}
-              {goingBlocked && !past && !event.is_registered && !isMaybe && (
-                <div className="event-details__past">Мест нет</div>
-              )}
+          {past && !event.is_registered && (
+            <div className="event-details__past">Событие прошло. Stay tuned!</div>
+          )}
+          {goingBlocked && !past && !event.is_registered && !isMaybe && (
+            <div className="event-details__past">Fully booked. Stay tuned!</div>
+          )}
 
-              {showRsvp && (
-                <div className="rsvp">
-                  <div className="rsvp__row">
-                    <div className="rsvp__option">
-                      <button
-                        type="button"
-                        className={`rsvp__circle rsvp__circle--going${event.is_registered ? " rsvp__circle--selected" : ""}`}
-                        onClick={() => {
-                          if (!event.is_registered) {
-                            void handleRegister(1);
-                          }
-                        }}
-                        disabled={goingDisabled}
-                        aria-pressed={event.is_registered}
-                        aria-label="Буду"
-                      >
-                        <IconCheck size={24} />
-                      </button>
-                      <span className="rsvp__caption">Буду</span>
-                      {allowsPlusOne && (
-                        <button
-                          type="button"
-                          className={`rsvp__chip${hasPlusOne ? " rsvp__chip--active" : ""}`}
-                          onClick={() => {
-                            if (event.is_registered) {
-                              void handlePartySizeChange(hasPlusOne ? 1 : 2);
-                            } else {
-                              void handleRegister(2);
-                            }
-                          }}
-                          disabled={plusOneDisabled}
-                          title={plusOneTitle}
-                          aria-label={hasPlusOne ? "Убрать +1" : "+1"}
-                        >
-                          {hasPlusOne ? "Убрать +1" : "+1"}
-                        </button>
-                      )}
-                    </div>
+          {event.is_registered ? (
+            <div className="event-details__registered">
+              {hasPlusOne ? "Вы зарегистрированы (+1) ✅" : "Вы зарегистрированы ✅"}
+            </div>
+          ) : isMaybe ? (
+            <div className="event-details__maybe">Отметили «Подумаю»</div>
+          ) : null}
 
-                    {showMaybeCircle && (
-                      <div className="rsvp__option">
-                        <button
-                          type="button"
-                          className={`rsvp__circle rsvp__circle--maybe${isMaybe ? " rsvp__circle--selected" : ""}`}
-                          onClick={() => {
-                            if (!isMaybe) {
-                              void handleMaybe();
-                            }
-                          }}
-                          disabled={actionLoading || (!isMaybe && !canMarkMaybe)}
-                          aria-pressed={isMaybe}
-                          aria-label="Подумаю"
-                        >
-                          <IconPause size={22} />
-                        </button>
-                        <span className="rsvp__caption">Подумаю</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {event.is_registered && (
-                <>
+          {!event.is_registered && !isMaybe && !past && (
+            <>
+              {allowsPlusOne ? (
+                <div className="event-details__register-row">
                   <button
                     type="button"
-                    className="btn btn--ghost"
-                    onClick={() => void handleCancel()}
-                    disabled={actionLoading}
+                    className="btn btn--primary btn--half"
+                    onClick={() => handleRegister(1)}
+                    disabled={actionLoading || !canRegisterAlone}
                   >
-                    Отменить регистрацию
+                    Буду
                   </button>
-                  <div className="event-details__icon-row">
-                    {allowsSharing && (
-                      <button
-                        type="button"
-                        className="icon-btn"
-                        onClick={() => void handleShare()}
-                        aria-label="Поделиться"
-                      >
-                        <IconShare size={18} />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="icon-btn"
-                      onClick={() => void handleCalendar()}
-                      aria-label="В календарь"
-                    >
-                      <IconCalendar size={18} />
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {isMaybe && (
+                  <button
+                    type="button"
+                    className="btn btn--secondary btn--half"
+                    onClick={() => handleRegister(2)}
+                    disabled={actionLoading || !canRegisterPlusOne}
+                    title={!canRegisterPlusOne ? "Недостаточно мест для +1" : undefined}
+                  >
+                    Буду +1
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
-                  className="btn btn--ghost"
-                  onClick={() => void handleCancel()}
-                  disabled={actionLoading}
+                  className="btn btn--primary"
+                  onClick={() => handleRegister(1)}
+                  disabled={actionLoading || !canRegisterAlone}
                 >
-                  Решил, что не пойду
+                  Зарегистрироваться
                 </button>
               )}
+            </>
+          )}
+
+          {isMaybe && (
+            <div className="event-details__register-row">
+              <button
+                type="button"
+                className="btn btn--primary btn--half"
+                onClick={() => handleRegister(1)}
+                disabled={actionLoading || !canRegisterAlone}
+              >
+                Буду
+              </button>
+              {allowsPlusOne && (
+                <button
+                  type="button"
+                  className="btn btn--secondary btn--half"
+                  onClick={() => handleRegister(2)}
+                  disabled={actionLoading || !canRegisterPlusOne}
+                  title={!canRegisterPlusOne ? "Недостаточно мест для +1" : undefined}
+                >
+                  Буду +1
+                </button>
+              )}
+            </div>
+          )}
+
+          {canMarkMaybe && !isMaybe && (
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={handleMaybe}
+              disabled={actionLoading}
+            >
+              Подумаю
+            </button>
+          )}
+
+          {event.is_registered && (
+            <>
+              {allowsPlusOne &&
+                (hasPlusOne ? (
+                  <button
+                    type="button"
+                    className="btn btn--secondary"
+                    onClick={() => handlePartySizeChange(1)}
+                    disabled={actionLoading || past}
+                  >
+                    Убрать +1
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn--secondary"
+                    onClick={() => handlePartySizeChange(2)}
+                    disabled={actionLoading || past || !canAddPlusOne}
+                    title={!canAddPlusOne ? "Недостаточно мест для +1" : undefined}
+                  >
+                    Добавить +1
+                  </button>
+                ))}
+              <div className="event-details__secondary-row">
+                <button
+                  type="button"
+                  className={`btn btn--secondary${allowsSharing ? " btn--half" : ""}`}
+                  onClick={handleCalendar}
+                >
+                  🗓️ В календарь
+                </button>
+                {allowsSharing && (
+                  <button type="button" className="btn btn--secondary btn--half" onClick={handleShare}>
+                    🔗 Поделиться
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={handleCancel}
+                disabled={actionLoading}
+              >
+                Отменить регистрацию
+              </button>
+            </>
+          )}
+
+          {isMaybe && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={handleCancel}
+              disabled={actionLoading}
+            >
+              Решил, что не пойду
+            </button>
+          )}
             </>
           )}
         </div>

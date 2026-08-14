@@ -2,15 +2,8 @@
 :root {
   --color-accent: #e8874a;
   --color-success: #4caf50;
-  --color-rsvp-going: #2d8a4e;
-  --color-rsvp-maybe: #c4892a;
   --radius-card: 16px;
   --radius-button: 12px;
-  --font-size-display: 22px;
-  --font-size-title: 17px;
-  --font-size-body: 15px;
-  --font-size-caption: 13px;
-  --font-size-small: 12px;
 }
 
 :root,

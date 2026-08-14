@@ -17,7 +17,7 @@
 }
 
 .header__title {
-  font-size: var(--font-size-display);
+  font-size: 20px;
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
@@ -44,14 +44,14 @@
   opacity: 0.8;
 }
 
-.header__pill-label {
-  font-size: var(--font-size-caption);
-  font-weight: 600;
+.header__pill-emoji {
+  font-size: 18px;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .header__pill-count {
-  font-size: var(--font-size-body);
+  font-size: 15px;
   font-weight: 600;
   line-height: 1;
   min-width: 0.5em;

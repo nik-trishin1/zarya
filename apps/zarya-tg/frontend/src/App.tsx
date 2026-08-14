@@ -4,53 +4,12 @@ import { fetchEvents, fetchMyArchive, fetchMyRegistrations } from "./api/client"
 import { EventCard } from "./components/EventCard";
 import { EventDetails } from "./components/EventDetails";
 import { Header } from "./components/Header";
-import { IconCalendarEmpty } from "./components/icons";
 import { PosterSlider } from "./components/PosterSlider";
 import { useTelegram } from "./hooks/useTelegram";
 import { getTelegramStartParam, parseEventStartParam } from "./utils/deepLink";
-import { groupEventsByCalendarDay } from "./utils/format";
 import "./App.css";
 
 type Screen = "home" | "registrations";
-
-function EmptyState({ title, hint }: { title: string; hint: string }) {
-  return (
-    <div className="empty-state">
-      <IconCalendarEmpty className="empty-state__icon" />
-      <p className="empty-state__title">{title}</p>
-      <p className="empty-state__hint">{hint}</p>
-    </div>
-  );
-}
-
-function GroupedEventList({
-  events,
-  completed = false,
-  onSelect,
-}: {
-  events: Event[];
-  completed?: boolean;
-  onSelect: (event: Event, fromArchive?: boolean) => void;
-}) {
-  const groups = groupEventsByCalendarDay(events);
-  return (
-    <div className="event-list">
-      {groups.map((group, index) => (
-        <section key={group.header ?? `day-${index}`} className="event-list__group">
-          {group.header && <h2 className="event-list__day-header">{group.header}</h2>}
-          {group.events.map((event) => (
-            <EventCard
-              key={event.event_id}
-              event={event}
-              completed={completed}
-              onClick={(selected) => onSelect(selected, completed)}
-            />
-          ))}
-        </section>
-      ))}
-    </div>
-  );
-}
 
 function App() {
   useTelegram();
@@ -160,6 +119,11 @@ function App() {
     setSelectedEventId(event.event_id);
   };
 
+  const emptyMessage =
+    screen === "home"
+      ? "Нет предстоящих событий"
+      : "Вы не зарегистрированы ни на какие события";
+
   const featuredEvents =
     screen === "home" ? events.filter((event) => event.is_featured) : [];
 
@@ -174,18 +138,7 @@ function App() {
       <main className="app__main">
         {loading && <p className="app__status">Загрузка...</p>}
         {error && <p className="app__status app__status--error">{error}</p>}
-        {showEmptyState && screen === "home" && (
-          <EmptyState
-            title="Нет предстоящих событий"
-            hint="Загляните позже — новые встречи появятся здесь."
-          />
-        )}
-        {showEmptyState && screen === "registrations" && (
-          <EmptyState
-            title="Пока нет регистраций"
-            hint="Откройте События и отметьтесь на встрече."
-          />
-        )}
+        {showEmptyState && <p className="app__status">{emptyMessage}</p>}
         {!loading && !error && screen === "home" && hasUpcoming && (
           <>
             {featuredEvents.length > 0 && (
@@ -194,13 +147,21 @@ function App() {
                 onSelect={(e) => handleEventSelect(e)}
               />
             )}
-            <GroupedEventList events={events} onSelect={handleEventSelect} />
+            <div className="event-list">
+              {events.map((event) => (
+                <EventCard key={event.event_id} event={event} onClick={(e) => handleEventSelect(e)} />
+              ))}
+            </div>
           </>
         )}
         {!loading && !error && screen === "registrations" && (hasUpcoming || hasArchive) && (
           <>
             {hasUpcoming && (
-              <GroupedEventList events={events} onSelect={handleEventSelect} />
+              <div className="event-list">
+                {events.map((event) => (
+                  <EventCard key={event.event_id} event={event} onClick={(e) => handleEventSelect(e)} />
+                ))}
+              </div>
             )}
             {hasArchive && (
               <>
