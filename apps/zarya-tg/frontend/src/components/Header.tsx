@@ -25,15 +25,11 @@ export function Header({ screen, registrationCount, onNavClick }: HeaderProps) {
       <button type="button" className="header__pill" onClick={onNavClick} aria-label={navLabel}>
         {isHome ? (
           <>
-            <span className="header__pill-emoji" aria-hidden="true">
-              🎫
-            </span>
+            <span className="header__pill-label">Мои</span>
             <span className="header__pill-count">{registrationCount}</span>
           </>
         ) : (
-          <span className="header__pill-emoji" aria-hidden="true">
-            🏠
-          </span>
+          <span className="header__pill-label">События</span>
         )}
       </button>
     </header>

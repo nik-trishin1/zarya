@@ -1,7 +1,7 @@
 # ADR-024: Mini App visual language (list + circular RSVP)
 
 **Date:** 2026-08-14  
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
 

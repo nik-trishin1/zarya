@@ -6,6 +6,17 @@ export function getTelegramInitData(): string {
   return getTelegramWebApp()?.initData || "";
 }
 
+export function isTelegramMiniApp(): boolean {
+  return Boolean(getTelegramInitData());
+}
+
+export function hapticImpact(style: "light" | "medium" | "heavy" = "medium"): void {
+  const haptic = getTelegramWebApp()?.HapticFeedback;
+  if (typeof haptic?.impactOccurred === "function") {
+    haptic.impactOccurred(style);
+  }
+}
+
 export function openTelegramShareLink(message: string): boolean {
   const tg = getTelegramWebApp();
   if (typeof tg?.openTelegramLink !== "function") {

@@ -14,9 +14,9 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-14).
 
 | ID | Title | Status | DoR |
 |----|-------|--------|-----|
-| [T-220](T-220-luma-event-cards.md) | Luma-style event cards + date headers | `todo` | no — Human summary (S-024 / ADR-024) |
-| [T-221](T-221-circular-rsvp-details.md) | Circular RSVP + event details chrome | `todo` | no — Human summary (S-024 / ADR-024) |
-| [T-222](T-222-tokens-header-empty.md) | Tokens, header chrome, empty states | `todo` | no — Human summary (S-024 / ADR-024) |
+| [T-220](T-220-luma-event-cards.md) | Luma-style event cards + date headers | `in_review` | yes — Human summary approved 2026-08-14 |
+| [T-221](T-221-circular-rsvp-details.md) | Circular RSVP + event details chrome | `in_review` | yes — Human summary approved 2026-08-14 |
+| [T-222](T-222-tokens-header-empty.md) | Tokens, header chrome, empty states | `in_review` | yes — Human summary approved 2026-08-14 |
 | [T-212](T-212-almost-full-maybe-nudge.md) | Almost-full nudge for maybe RSVPs | `todo` | no — low priority; needs ADR addendum |
 | [T-203](T-203-past-events-archive.md) | Past events archive | `done` | yes — DoR approved 2026-08-12 |
 | [T-302](T-302-event-duplication.md) | Event duplication | `todo` | partial |

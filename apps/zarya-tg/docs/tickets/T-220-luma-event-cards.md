@@ -23,8 +23,8 @@
 - Two days of events → date headers; one day → no extra header required
 - Frontend lint/build pass
 
-**Reviewer decision:** `[ ] Approved to implement` · `[ ] Needs changes` · Reviewer: ____ · Date: ____  
-**DoR:** `[ ] Approved` — blocked on Human summary approve for [S-024](../specs/S-024-mini-app-visual-refresh.md) / [ADR-024](../decisions/024-mini-app-visual-language.md)
+**Reviewer decision:** `[x] Approved to implement` · `[ ] Needs changes` · Reviewer: product · Date: 2026-08-14  
+**DoR:** `[x] Approved` — Human summary approved with S-024 / ADR-024 (implement request 2026-08-14)
 
 ---
 
@@ -34,7 +34,7 @@
 |-------|-------|
 | ID | T-220 |
 | Title | Luma-style event cards + date headers |
-| Status | `todo` |
+| Status | `in_review` |
 | Spec / ADR | [S-024](../specs/S-024-mini-app-visual-refresh.md), [ADR-024](../decisions/024-mini-app-visual-language.md), [ADR-021](../decisions/021-home-featured-slider.md), [ADR-023](../decisions/023-past-events-archive.md) |
 | App | `zarya-tg` |
 | Estimate | M |
@@ -45,12 +45,12 @@ Make the chronological event list scannable like Luma’s compact rows without c
 
 ## Acceptance Criteria
 
-- [ ] `EventCard` thumb stays ~80px rounded square (not 16:9 full-width); status overlay bottom-left **Иду** / **Подумаю**; no corner ✅ / … emoji
-- [ ] Meta is two lines with outline clock + pin icons; location has no `📍` text prefix; title remains primary
-- [ ] Archive / `completed` cards stay muted and **do not** show Иду/Подумаю overlays (ADR-023)
-- [ ] Home and upcoming «Мои» lists group by calendar day when **2+ distinct dates**; headers like `Сегодня / пт` using existing Russian date helpers; single-day lists need no header
-- [ ] `PosterSlider` height, featured-in-list, and tap-to-details unchanged (ADR-021)
-- [ ] `npm run lint` and `npm run build` pass in `apps/zarya-tg/frontend`
+- [x] `EventCard` thumb stays ~80px rounded square (not 16:9 full-width); status overlay bottom-left **Иду** / **Подумаю**; no corner ✅ / … emoji
+- [x] Meta is two lines with outline clock + pin icons; location has no `📍` text prefix; title remains primary
+- [x] Archive / `completed` cards stay muted and **do not** show Иду/Подумаю overlays (ADR-023)
+- [x] Home and upcoming «Мои» lists group by calendar day when **2+ distinct dates**; headers like `Сегодня / пт` using existing Russian date helpers; single-day lists need no header
+- [x] `PosterSlider` height, featured-in-list, and tap-to-details unchanged (ADR-021)
+- [x] `npm run lint` and `npm run build` pass in `apps/zarya-tg/frontend`
 
 ## Out of Scope
 
@@ -69,13 +69,13 @@ Make the chronological event list scannable like Luma’s compact rows without c
 
 ## Verification
 
-1. [ ] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
+1. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 2. [ ] Manual smoke: 0/1/N featured; going/maybe/plain/archive cards; 1-day vs 2-day lists
 3. [ ] CI green on the PR
 4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 
-- PR URL:
-- Defaults chosen (if any):
-- Residual risks:
+- PR URL: https://github.com/nik-trishin1/zarya/pull/23
+- Defaults chosen (if any): Date headers only on upcoming home / «Мои» lists (not Архив). Group key is `event.date`, not the formatted header string.
+- Residual risks: Visual smoke still needed on a real Telegram client.

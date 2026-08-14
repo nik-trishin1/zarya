@@ -22,8 +22,8 @@
 - Light and dark themes still use paper/dark + `#e8874a`
 - Frontend lint/build pass
 
-**Reviewer decision:** `[ ] Approved to implement` · `[ ] Needs changes` · Reviewer: ____ · Date: ____  
-**DoR:** `[ ] Approved` — blocked on Human summary approve for [S-024](../specs/S-024-mini-app-visual-refresh.md) / [ADR-024](../decisions/024-mini-app-visual-language.md)
+**Reviewer decision:** `[x] Approved to implement` · `[ ] Needs changes` · Reviewer: product · Date: 2026-08-14  
+**DoR:** `[x] Approved` — Human summary approved with S-024 / ADR-024 (implement request 2026-08-14)
 
 ---
 
@@ -33,7 +33,7 @@
 |-------|-------|
 | ID | T-222 |
 | Title | Tokens, header chrome, empty states |
-| Status | `todo` |
+| Status | `in_review` |
 | Spec / ADR | [S-024](../specs/S-024-mini-app-visual-refresh.md), [ADR-024](../decisions/024-mini-app-visual-language.md), [ADR-002](../decisions/002-ux-navigation.md), [ADR-003](../decisions/003-language.md) |
 | App | `zarya-tg` |
 | Estimate | S |
@@ -44,12 +44,12 @@ Make chrome feel native to Telegram and to the new list/RSVP language without ad
 
 ## Acceptance Criteria
 
-- [ ] `index.css` keeps `--color-accent: #e8874a` and existing paper/dark surfaces; adds title/meta/body type scale; RSVP green/amber used only for going/maybe chrome
-- [ ] Header toggle is still a single control (ADR-002): home **Мои** + upcoming `active` count; registrations **События**; titles **События** / **Мои регистрации**; `aria-label` includes count on home
-- [ ] Empty home: **Нет предстоящих событий** + **Загляните позже — новые встречи появятся здесь.**
-- [ ] Empty registrations (no upcoming and no archive): **Пока нет регистраций** + **Откройте События и отметьтесь на встрече.**
-- [ ] Shared outline SVG icons live in one module if T-220/T-221 duplicated them; no icon-font package
-- [ ] `npm run lint` and `npm run build` pass in `apps/zarya-tg/frontend`
+- [x] `index.css` keeps `--color-accent: #e8874a` and existing paper/dark surfaces; adds title/meta/body type scale; RSVP green/amber used only for going/maybe chrome
+- [x] Header toggle is still a single control (ADR-002): home **Мои** + upcoming `active` count; registrations **События**; titles **События** / **Мои регистрации**; `aria-label` includes count on home
+- [x] Empty home: **Нет предстоящих событий** + **Загляните позже — новые встречи появятся здесь.**
+- [x] Empty registrations (no upcoming and no archive): **Пока нет регистраций** + **Откройте События и отметьтесь на встрече.**
+- [x] Shared outline SVG icons live in one module if T-220/T-221 duplicated them; no icon-font package
+- [x] `npm run lint` and `npm run build` pass in `apps/zarya-tg/frontend`
 
 ## Out of Scope
 
@@ -67,13 +67,13 @@ Make chrome feel native to Telegram and to the new list/RSVP language without ad
 
 ## Verification
 
-1. [ ] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
+1. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 2. [ ] Smoke: header toggle both directions; empty vs filled lists; light/dark
 3. [ ] CI green on the PR
 4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 
-- PR URL:
-- Defaults chosen (if any):
-- Residual risks:
+- PR URL: https://github.com/nik-trishin1/zarya/pull/23
+- Defaults chosen (if any): Home pill always shows the numeric count (including 0), matching the previous 🎫 badge. RSVP green/amber tokens are `#2d8a4e` / `#c4892a`.
+- Residual risks: Light/dark visual smoke still needed.
