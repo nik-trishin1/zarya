@@ -6,7 +6,7 @@
 - Make event list cards look like a modern invite list (square photo, date and place with small icons, «Иду» / «Подумаю» on the photo) without hiding the list under a bigger poster
 - Keep the current half-screen featured slider and keep featured events in the list underneath
 - On the event page, replace the stack of wide buttons with two circles — «Буду» and «Подумаю» — plus a small «+1» chip next to «Буду» when guests are allowed
-- Use Telegram’s back control instead of the 🏠 overlay; label the ticket toggle «Мои» / «События» instead of emoji-only
+- Use the in-app 🏠 overlay on details (Telegram BackButton is not used after the 2026-08-14 prod incident); keep 🎫 / 🏠 on the existing toggle
 - Fix leftover English strings to Russian
 
 **We will not:**
@@ -21,7 +21,7 @@
 **Main risks / open questions already decided:**
 - Slider ~50vh; featured stay in the list (product, 2026-08-14)
 - Two circles only; `+1` is a chip; cancel stays ghost text
-- `BackButton` yes; `MainButton` no
+- `BackButton` no (prod incident 2026-08-14); in-app 🏠; `MainButton` no
 - Tokens keep `#e8874a` and paper/dark; green/amber only on RSVP chrome
 
 **How we will know it worked (smoke):**
@@ -51,7 +51,7 @@ The Mini App already does the Jobs. Presentation lags event-app baselines: cards
 
 - Luma-like compact list without growing the hero
 - Partiful-like circular RSVP for existing `Буду` / `Подумаю` only
-- Telegram `BackButton` + haptic; word labels on the ADR-002 toggle
+- Telegram `BackButton` caused a prod incident — keep 🏠; word labels on the ADR-002 toggle were reverted to 🎫 / 🏠 after product feedback
 - Russian-only copy; keep brand colors
 - Frontend-only; split into three tickets
 
@@ -122,7 +122,7 @@ Unchanged. Trust existing `Event` fields (`is_registered`, `is_maybe`, `is_featu
 
 ```text
 ┌─────────────────────────────────┐
-│  cover ~200px                   │  BackButton (Telegram)
+│  cover ~200px                   │  in-app 🏠 (not Telegram BackButton)
 │  Title                          │
 │  🕒  date-time                  │
 │  📍  location                   │  outline SVG, not emoji-in-copy
@@ -150,8 +150,8 @@ Unchanged. Trust existing `Event` fields (`is_registered`, `is_maybe`, `is_featu
 | Full + not going | Circles: «Буду» disabled; «Подумаю» still allowed (ADR-022) |
 | `allows_plus_one` false | No +1 chip; register party_size 1 only |
 | Archive / `readOnly` | No circles, no +1, no share/calendar (ADR-023) |
-| Deep link to event | Details opens; BackButton closes to the list underneath |
-| Outside Telegram | CSS back control (chevron) instead of `BackButton`; same close handler |
+| Deep link to event | Details opens; 🏠 closes to the list underneath |
+| Outside Telegram | Same 🏠 control; same close handler |
 | Missing cover | Existing `CoverImage` placeholder |
 
 ## Acceptance criteria (spec-level)
@@ -161,7 +161,7 @@ Unchanged. Trust existing `Event` fields (`is_registered`, `is_maybe`, `is_featu
 - [ ] Event cards use overlay status, icon meta, no corner emoji / `📍` paragraph
 - [ ] Date headers when 2+ distinct days
 - [ ] Details: two RSVP circles + +1 chip + ghost cancel; no MainButton
-- [ ] Telegram BackButton (or chevron fallback) replaces 🏠
+- [ ] In-app 🏠 closes details (Telegram `BackButton` is not used)
 - [ ] Header toggle uses words + count
 - [ ] English leftover strings gone
 - [ ] No guest list, tabs, API/bot changes
