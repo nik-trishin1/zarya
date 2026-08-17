@@ -29,6 +29,7 @@ from app.utils.calendar import (
     build_google_calendar_url,
     build_outlook_calendar_url,
     build_yahoo_calendar_url,
+    calendar_add_payload,
     generate_ics,
 )
 from app.utils.calendar_tokens import create_calendar_token, verify_calendar_token
@@ -257,6 +258,7 @@ async def get_calendar_links(
         "outlook_url": build_outlook_calendar_url(event),
         "yahoo_url": build_yahoo_calendar_url(event),
         "ics_token": token,
+        **calendar_add_payload(event),
     }
 
 
@@ -286,5 +288,5 @@ async def download_calendar(
     return Response(
         content=ics_content,
         media_type="text/calendar; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
     )

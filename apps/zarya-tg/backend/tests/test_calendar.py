@@ -1,7 +1,8 @@
-from datetime import date, time
+from datetime import date, time, datetime
+from zoneinfo import ZoneInfo
 
 from app.models.event import Event
-from app.utils.calendar import build_google_calendar_url, generate_ics
+from app.utils.calendar import build_google_calendar_url, calendar_add_payload, generate_ics
 
 
 def _sample_event() -> Event:
@@ -34,3 +35,14 @@ def test_build_google_calendar_url_contains_required_params():
     assert "ctz=Europe%2FMoscow" in url
     assert "20250715T190000" in url
     assert "20250715T210000" in url
+
+
+def test_calendar_add_payload_uses_moscow_epoch():
+    payload = calendar_add_payload(_sample_event())
+    expected_start = datetime(2025, 7, 15, 19, 0, tzinfo=ZoneInfo("Europe/Moscow"))
+    expected_end = datetime(2025, 7, 15, 21, 0, tzinfo=ZoneInfo("Europe/Moscow"))
+    assert payload["title"] == "Встреча друзей"
+    assert payload["location"] == "Москва, парк"
+    assert payload["begin_ms"] == int(expected_start.timestamp() * 1000)
+    assert payload["end_ms"] == int(expected_end.timestamp() * 1000)
+    assert payload["end_ms"] - payload["begin_ms"] == 2 * 60 * 60 * 1000

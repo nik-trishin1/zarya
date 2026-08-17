@@ -1,4 +1,11 @@
-import { getTelegramInitData, getTelegramWebApp, toAbsoluteUrl } from "../utils/telegram";
+import { getTelegramInitData, toAbsoluteUrl } from "../utils/telegram";
+import {
+  hasCalendarInsertPayload,
+  isAndroidUserAgent,
+  openAndroidCalendarInsert,
+  openIcsWithoutBrowser,
+  waitForAppSwitch,
+} from "../utils/calendar";
 
 export interface Event {
   event_id: number;
@@ -180,18 +187,31 @@ interface CalendarLinksResponse {
   google_url: string;
   outlook_url: string;
   yahoo_url: string;
+  ics_token: string;
+  title?: string;
+  description?: string;
+  location?: string;
+  begin_ms?: number;
+  end_ms?: number;
 }
 
 export async function downloadCalendar(eventId: number): Promise<void> {
   const links = await apiFetch<CalendarLinksResponse>(`/api/registrations/${eventId}/calendar-links`);
-
-  const tg = getTelegramWebApp();
-  if (typeof tg?.openLink === "function") {
-    tg.openLink(links.google_url);
-    return;
+  const token = links.ics_token;
+  if (!token) {
+    throw new Error("Не удалось открыть календарь");
   }
 
-  window.open(links.google_url, "_blank", "noopener,noreferrer");
+  const calendarUrl = `${window.location.origin}/api/events/${eventId}/calendar?calendar_token=${encodeURIComponent(token)}`;
+  const fileName = `zarya-event-${eventId}.ics`;
+
+  if (isAndroidUserAgent() && hasCalendarInsertPayload(links)) {
+    openAndroidCalendarInsert(links);
+    const openedNative = await waitForAppSwitch(900);
+    if (openedNative) return;
+  }
+
+  await openIcsWithoutBrowser(calendarUrl, fileName);
 }
 
 /** Same-origin absolute URL for event covers; null → gradient placeholder. */

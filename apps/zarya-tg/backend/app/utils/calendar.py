@@ -23,6 +23,19 @@ def event_end_datetime(event: Event) -> datetime:
     return event_start_datetime(event) + EVENT_DURATION
 
 
+def calendar_add_payload(event: Event) -> dict[str, str | int]:
+    """Fields for a native calendar insert (Android intent / .ics)."""
+    start_dt = event_start_datetime(event)
+    end_dt = event_end_datetime(event)
+    return {
+        "title": event.name,
+        "description": event.description or "",
+        "location": event.location or "",
+        "begin_ms": int(start_dt.timestamp() * 1000),
+        "end_ms": int(end_dt.timestamp() * 1000),
+    }
+
+
 def _calendar_details(event: Event) -> str:
     return f"{event.description}\n\nЛокация: {event.location}"
 
