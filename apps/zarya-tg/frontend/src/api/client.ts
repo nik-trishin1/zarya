@@ -1,11 +1,5 @@
 import { getTelegramInitData, toAbsoluteUrl } from "../utils/telegram";
-import {
-  hasCalendarInsertPayload,
-  isAndroidUserAgent,
-  openAndroidCalendarInsert,
-  openIcsWithoutBrowser,
-  waitForAppSwitch,
-} from "../utils/calendar";
+import { openIcsWithoutBrowser } from "../utils/calendar";
 
 export interface Event {
   event_id: number;
@@ -184,15 +178,7 @@ export async function markEventMaybe(eventId: number): Promise<RegistrationRespo
 }
 
 interface CalendarLinksResponse {
-  google_url: string;
-  outlook_url: string;
-  yahoo_url: string;
   ics_token: string;
-  title?: string;
-  description?: string;
-  location?: string;
-  begin_ms?: number;
-  end_ms?: number;
 }
 
 export async function downloadCalendar(eventId: number): Promise<void> {
@@ -202,15 +188,10 @@ export async function downloadCalendar(eventId: number): Promise<void> {
     throw new Error("Не удалось открыть календарь");
   }
 
+  // HTTPS .ics only. Custom schemes (intent:/webcal:) crash Telegram's WebView
+  // with ERR_UNKNOWN_URL_SCHEME; openLink() would open the in-app browser.
   const calendarUrl = `${window.location.origin}/api/events/${eventId}/calendar?calendar_token=${encodeURIComponent(token)}`;
   const fileName = `zarya-event-${eventId}.ics`;
-
-  if (isAndroidUserAgent() && hasCalendarInsertPayload(links)) {
-    openAndroidCalendarInsert(links);
-    const openedNative = await waitForAppSwitch(900);
-    if (openedNative) return;
-  }
-
   await openIcsWithoutBrowser(calendarUrl, fileName);
 }
 
