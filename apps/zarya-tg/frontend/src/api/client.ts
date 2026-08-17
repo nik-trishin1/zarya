@@ -1,5 +1,5 @@
 import { getTelegramInitData, toAbsoluteUrl } from "../utils/telegram";
-import { openIcsWithoutBrowser } from "../utils/calendar";
+import { openPrefilledCalendar } from "../utils/calendar";
 
 export interface Event {
   event_id: number;
@@ -178,21 +178,15 @@ export async function markEventMaybe(eventId: number): Promise<RegistrationRespo
 }
 
 interface CalendarLinksResponse {
-  ics_token: string;
+  google_url: string;
 }
 
 export async function downloadCalendar(eventId: number): Promise<void> {
   const links = await apiFetch<CalendarLinksResponse>(`/api/registrations/${eventId}/calendar-links`);
-  const token = links.ics_token;
-  if (!token) {
+  if (!links.google_url) {
     throw new Error("Не удалось открыть календарь");
   }
-
-  // HTTPS .ics only. Custom schemes (intent:/webcal:) crash Telegram's WebView
-  // with ERR_UNKNOWN_URL_SCHEME; openLink() would open the in-app browser.
-  const calendarUrl = `${window.location.origin}/api/events/${eventId}/calendar?calendar_token=${encodeURIComponent(token)}`;
-  const fileName = `zarya-event-${eventId}.ics`;
-  await openIcsWithoutBrowser(calendarUrl, fileName);
+  openPrefilledCalendar(links.google_url);
 }
 
 /** Same-origin absolute URL for event covers; null → gradient placeholder. */
