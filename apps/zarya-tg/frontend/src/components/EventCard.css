@@ -68,6 +68,14 @@
   background: var(--color-rsvp-maybe);
 }
 
+.event-card__status--pending {
+  background: var(--color-accent);
+  max-width: 68px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .event-card__body {
   flex: 1;
   min-width: 0;

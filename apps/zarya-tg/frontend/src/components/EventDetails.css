@@ -143,6 +143,12 @@
   color: #fff;
 }
 
+.rsvp__circle--pending.rsvp__circle--selected {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
 .rsvp__caption {
   font-size: var(--font-size-small);
   font-weight: 600;

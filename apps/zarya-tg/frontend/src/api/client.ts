@@ -20,6 +20,8 @@ export interface Event {
   allows_sharing: boolean;
   is_featured: boolean;
   is_maybe: boolean;
+  is_pending: boolean;
+  requires_approval: boolean;
 }
 
 export interface RegistrationResponse {
@@ -28,6 +30,7 @@ export interface RegistrationResponse {
   is_registered: boolean;
   party_size: number;
   is_maybe: boolean;
+  is_pending: boolean;
 }
 
 function resolveApiBase(): string {
@@ -81,7 +84,9 @@ function normalizeEvent(event: Event): Event {
     allows_plus_one: event.allows_plus_one !== false,
     allows_sharing: event.allows_sharing !== false,
     is_featured: event.is_featured === true,
-    is_maybe: event.is_maybe === true && event.is_registered !== true,
+    is_maybe: event.is_maybe === true && event.is_registered !== true && event.is_pending !== true,
+    is_pending: event.is_pending === true && event.is_registered !== true,
+    requires_approval: event.requires_approval === true,
   };
 }
 

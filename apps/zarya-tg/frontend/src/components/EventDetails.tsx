@@ -97,7 +97,7 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
 
   const handleCancel = async () => {
     if (!event) return;
-    const clearingMaybe = event.is_maybe === true && !event.is_registered;
+    const clearingMaybe = event.is_maybe === true && !event.is_registered && !event.is_pending;
     hapticImpact("light");
     setActionLoading(true);
     try {
@@ -175,7 +175,9 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
   }
 
   const past = event.is_past ?? isEventPast(event.date);
-  const isMaybe = event.is_maybe === true && !event.is_registered;
+  const isMaybe = event.is_maybe === true && !event.is_registered && !event.is_pending;
+  const isPending = event.is_pending === true && !event.is_registered;
+  const requiresApproval = event.requires_approval === true;
   const archiveView = readOnly;
   const goingBlocked = past || (event.is_full ?? false);
   const allowsPlusOne = event.allows_plus_one !== false;
@@ -196,10 +198,17 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
     !past &&
     canTakeSeats(event.registration_count, event.max_participants, 1);
   const hasPlusOne = event.is_registered && event.party_size > 1;
-  const goingDisabled = actionLoading || (!event.is_registered && !canRegisterAlone);
-  const canMarkMaybe = !past && !event.is_registered;
-  const showRsvp = !archiveView && (!past || event.is_registered || isMaybe);
-  const showMaybeCircle = showRsvp && !event.is_registered;
+  const goingDisabled =
+    actionLoading || isPending || (!event.is_registered && !canRegisterAlone);
+  const canMarkMaybe = !past && !event.is_registered && !isPending;
+  const showRsvp = !archiveView && (!past || event.is_registered || isMaybe || isPending);
+  const showMaybeCircle = showRsvp && !event.is_registered && !isPending;
+  const goingCaption = isPending
+    ? "На рассмотрении"
+    : requiresApproval && !event.is_registered
+      ? "Записаться"
+      : "Буду";
+  const showPlusOneChip = allowsPlusOne && !isPending;
 
   const plusOneDisabled = event.is_registered
     ? actionLoading || past || (!hasPlusOne && !canAddPlusOne)
@@ -243,10 +252,10 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
         <div className="event-details__actions">
           {archiveView ? null : (
             <>
-              {past && !event.is_registered && (
+              {past && !event.is_registered && !isPending && (
                 <div className="event-details__past">Событие прошло</div>
               )}
-              {goingBlocked && !past && !event.is_registered && !isMaybe && (
+              {goingBlocked && !past && !event.is_registered && !isMaybe && !isPending && (
                 <div className="event-details__past">Мест нет</div>
               )}
 
@@ -256,20 +265,20 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
                     <div className="rsvp__option">
                       <button
                         type="button"
-                        className={`rsvp__circle rsvp__circle--going${event.is_registered ? " rsvp__circle--selected" : ""}`}
+                        className={`rsvp__circle rsvp__circle--going${event.is_registered ? " rsvp__circle--selected" : ""}${isPending ? " rsvp__circle--pending rsvp__circle--selected" : ""}`}
                         onClick={() => {
-                          if (!event.is_registered) {
+                          if (!event.is_registered && !isPending) {
                             void handleRegister(1);
                           }
                         }}
                         disabled={goingDisabled}
-                        aria-pressed={event.is_registered}
-                        aria-label="Буду"
+                        aria-pressed={event.is_registered || isPending}
+                        aria-label={goingCaption}
                       >
                         <IconCheck size={24} />
                       </button>
-                      <span className="rsvp__caption">Буду</span>
-                      {allowsPlusOne && (
+                      <span className="rsvp__caption">{goingCaption}</span>
+                      {showPlusOneChip && (
                         <button
                           type="button"
                           className={`rsvp__chip${hasPlusOne ? " rsvp__chip--active" : ""}`}
@@ -343,6 +352,17 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
                     </button>
                   </div>
                 </>
+              )}
+
+              {isPending && (
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() => void handleCancel()}
+                  disabled={actionLoading}
+                >
+                  Отменить заявку
+                </button>
               )}
 
               {isMaybe && (

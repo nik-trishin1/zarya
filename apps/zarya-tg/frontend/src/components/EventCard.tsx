@@ -13,6 +13,7 @@ interface EventCardProps {
 export function EventCard({ event, onClick, completed = false }: EventCardProps) {
   const showGoing = !completed && event.is_registered;
   const showMaybe = !completed && !event.is_registered && event.is_maybe;
+  const showPending = !completed && !event.is_registered && event.is_pending;
 
   return (
     <button
@@ -23,6 +24,9 @@ export function EventCard({ event, onClick, completed = false }: EventCardProps)
       <div className="event-card__thumb">
         <CoverImage url={event.cover_image_url} className="event-card__image" />
         {showGoing && <span className="event-card__status event-card__status--going">Иду</span>}
+        {showPending && (
+          <span className="event-card__status event-card__status--pending">На рассмотрении</span>
+        )}
         {showMaybe && <span className="event-card__status event-card__status--maybe">Подумаю</span>}
       </div>
       <div className="event-card__body">
