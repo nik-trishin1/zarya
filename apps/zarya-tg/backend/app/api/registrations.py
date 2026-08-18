@@ -24,7 +24,10 @@ from app.services.events import (
     register_user,
     update_party_size,
 )
-from app.services.admin_notifications import notify_admins_registration_change
+from app.services.admin_notifications import (
+    notify_admins_application,
+    notify_admins_registration_change,
+)
 from app.utils.calendar import (
     build_google_calendar_url,
     build_outlook_calendar_url,
@@ -82,6 +85,8 @@ def _registration_error(exc: ValueError) -> HTTPException:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Событие не найдено")
     if code == "Already registered":
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Вы уже зарегистрированы")
+    if code == "Already pending":
+        return HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Заявка уже на рассмотрении")
     if code == "Event past":
         return HTTPException(status_code=status.HTTP_410_GONE, detail="Событие уже прошло")
     if code == "Event full":
@@ -130,26 +135,42 @@ async def register_for_event(
         raise _registration_error(e) from e
 
     date_str = format_event_date(attendance.event.date, attendance.event.time)
-    if attendance.party_size > 1:
+    if attendance.is_pending:
+        message = "Заявка отправлена. Ждём подтверждения."
+        await notify_admins_application(
+            user,
+            attendance.event,
+            attendance.registration_count,
+            party_size=party_size,
+        )
+    elif attendance.party_size > 1:
         message = (
             f"Вы зарегистрированы на {attendance.event.name} на {date_str} "
             f"(+{attendance.party_size - 1})"
         )
+        await notify_admins_registration_change(
+            user,
+            attendance.event,
+            attendance.registration_count,
+            registered=True,
+            party_size=attendance.party_size,
+        )
     else:
         message = f"Вы зарегистрированы на {attendance.event.name} на {date_str}"
-    await notify_admins_registration_change(
-        user,
-        attendance.event,
-        attendance.registration_count,
-        registered=True,
-        party_size=attendance.party_size,
-    )
+        await notify_admins_registration_change(
+            user,
+            attendance.event,
+            attendance.registration_count,
+            registered=True,
+            party_size=attendance.party_size,
+        )
     return RegistrationResponse(
         message=message,
         registration_count=attendance.registration_count,
         is_registered=attendance.is_registered,
-        party_size=attendance.party_size,
+        party_size=attendance.party_size if attendance.is_registered else 0,
         is_maybe=attendance.is_maybe,
+        is_pending=attendance.is_pending,
     )
 
 
@@ -183,6 +204,7 @@ async def update_registration_party_size(
         is_registered=attendance.is_registered,
         party_size=attendance.party_size,
         is_maybe=attendance.is_maybe,
+        is_pending=attendance.is_pending,
     )
 
 
@@ -205,6 +227,7 @@ async def mark_event_maybe(
         is_registered=attendance.is_registered,
         party_size=0,
         is_maybe=attendance.is_maybe,
+        is_pending=attendance.is_pending,
     )
 
 
@@ -217,12 +240,13 @@ async def cancel_event_registration(
     detail = await get_event_detail(db, event_id, user)
     was_going = bool(detail and detail.is_registered)
     was_maybe = bool(detail and detail.is_maybe)
+    was_pending = bool(detail and detail.is_pending)
     try:
         attendance = await cancel_registration(db, user, event_id)
     except ValueError as e:
         raise _registration_error(e) from e
 
-    if was_going:
+    if was_going or was_pending:
         await notify_admins_registration_change(
             user,
             attendance.event,
@@ -232,7 +256,7 @@ async def cancel_event_registration(
         )
     message = (
         "Решил, что не пойду"
-        if was_maybe and not was_going
+        if was_maybe and not was_going and not was_pending
         else f"Вы отменили регистрацию на {attendance.event.name}"
     )
     return RegistrationResponse(
@@ -241,6 +265,7 @@ async def cancel_event_registration(
         is_registered=attendance.is_registered,
         party_size=0,
         is_maybe=attendance.is_maybe,
+        is_pending=attendance.is_pending,
     )
 
 

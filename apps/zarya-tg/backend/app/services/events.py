@@ -25,6 +25,13 @@ from app.services.access_groups import (
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
+# Current-user RSVP rows that the Mini App can show (not cancelled).
+_OPEN_RSVP_STATUSES = (
+    RegistrationStatus.ACTIVE.value,
+    RegistrationStatus.MAYBE.value,
+    RegistrationStatus.PENDING.value,
+)
+
 
 @dataclass(frozen=True)
 class EventAttendance:
@@ -33,6 +40,20 @@ class EventAttendance:
     is_registered: bool
     party_size: int = 0
     is_maybe: bool = False
+    is_pending: bool = False
+
+
+def _flags_from_registration(registration: Registration | None) -> tuple[int, bool, bool]:
+    """Return (party_size for going, is_maybe, is_pending)."""
+    if registration is None:
+        return 0, False, False
+    if registration.status == RegistrationStatus.ACTIVE.value:
+        return int(registration.party_size), False, False
+    if registration.status == RegistrationStatus.MAYBE.value:
+        return 0, True, False
+    if registration.status == RegistrationStatus.PENDING.value:
+        return 0, False, True
+    return 0, False, False
 
 
 def is_event_past(event: Event) -> bool:
@@ -129,7 +150,11 @@ async def get_upcoming_events(
                 Registration,
                 (Registration.event_id == Event.event_id)
                 & (Registration.user_id == user.user_id)
-                & (Registration.status == RegistrationStatus.ACTIVE.value),
+                & (
+                    Registration.status.in_(
+                        [RegistrationStatus.ACTIVE.value, RegistrationStatus.PENDING.value]
+                    )
+                ),
             )
             .where(Event.date >= today)
             .order_by(Event.date.asc(), Event.time.asc())
@@ -156,14 +181,13 @@ async def get_upcoming_events(
 
     party_by_event: dict[int, int] = {}
     maybe_event_ids: set[int] = set()
+    pending_event_ids: set[int] = set()
     if user:
         reg_result = await db.execute(
             select(Registration.event_id, Registration.party_size, Registration.status).where(
                 Registration.user_id == user.user_id,
                 Registration.event_id.in_(event_ids),
-                Registration.status.in_(
-                    [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
-                ),
+                Registration.status.in_(_OPEN_RSVP_STATUSES),
             )
         )
         for event_id, party_size, status in reg_result.all():
@@ -171,6 +195,8 @@ async def get_upcoming_events(
                 party_by_event[event_id] = int(party_size)
             elif status == RegistrationStatus.MAYBE.value:
                 maybe_event_ids.add(event_id)
+            elif status == RegistrationStatus.PENDING.value:
+                pending_event_ids.add(event_id)
 
     return [
         EventAttendance(
@@ -179,6 +205,7 @@ async def get_upcoming_events(
             is_registered=event.event_id in party_by_event,
             party_size=party_by_event.get(event.event_id, 0),
             is_maybe=event.event_id in maybe_event_ids,
+            is_pending=event.event_id in pending_event_ids,
         )
         for event in events
     ]
@@ -202,22 +229,17 @@ async def get_event_detail(
 
     party_size = 0
     is_maybe = False
+    is_pending = False
     if user:
         reg_result = await db.execute(
             select(Registration).where(
                 Registration.event_id == event_id,
                 Registration.user_id == user.user_id,
-                Registration.status.in_(
-                    [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
-                ),
+                Registration.status.in_(_OPEN_RSVP_STATUSES),
             )
         )
         registration = reg_result.scalar_one_or_none()
-        if registration is not None:
-            if registration.status == RegistrationStatus.ACTIVE.value:
-                party_size = int(registration.party_size)
-            elif registration.status == RegistrationStatus.MAYBE.value:
-                is_maybe = True
+        party_size, is_maybe, is_pending = _flags_from_registration(registration)
 
     return EventAttendance(
         event=event,
@@ -225,6 +247,7 @@ async def get_event_detail(
         is_registered=party_size > 0,
         party_size=party_size,
         is_maybe=is_maybe,
+        is_pending=is_pending,
     )
 
 
@@ -239,25 +262,18 @@ async def _attendance_after_mutation(
         select(Registration).where(
             Registration.event_id == event_id,
             Registration.user_id == user.user_id,
-            Registration.status.in_(
-                [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
-            ),
+            Registration.status.in_(_OPEN_RSVP_STATUSES),
         )
     )
     registration = reg_result.scalar_one_or_none()
-    party_size = 0
-    is_maybe = False
-    if registration is not None:
-        if registration.status == RegistrationStatus.ACTIVE.value:
-            party_size = int(registration.party_size)
-        elif registration.status == RegistrationStatus.MAYBE.value:
-            is_maybe = True
+    party_size, is_maybe, is_pending = _flags_from_registration(registration)
     return EventAttendance(
         event=event,
         registration_count=reg_count,
         is_registered=party_size > 0,
         party_size=party_size,
         is_maybe=is_maybe,
+        is_pending=is_pending,
     )
 
 
@@ -283,20 +299,30 @@ async def register_user(
     existing = result.scalar_one_or_none()
 
     if not await can_register_for_event(db, event, user):
-        has_maybe = existing is not None and existing.status == RegistrationStatus.MAYBE.value
-        if not has_maybe:
+        has_open = existing is not None and existing.status in (
+            RegistrationStatus.MAYBE.value,
+            RegistrationStatus.PENDING.value,
+        )
+        if not has_open:
             raise ValueError("Event not found")
 
     if existing and existing.status == RegistrationStatus.ACTIVE.value:
         raise ValueError("Already registered")
+    if existing and existing.status == RegistrationStatus.PENDING.value:
+        raise ValueError("Already pending")
 
     if event.max_participants is not None:
         reg_count = await _seat_count_for_event(db, event_id)
         if reg_count + party_size > event.max_participants:
             raise ValueError("Event full")
 
+    requires_approval = bool(getattr(event, "requires_approval", False))
+    new_status = (
+        RegistrationStatus.PENDING.value if requires_approval else RegistrationStatus.ACTIVE.value
+    )
+
     if existing:
-        existing.status = RegistrationStatus.ACTIVE.value
+        existing.status = new_status
         existing.registered_at = datetime.now(MOSCOW_TZ)
         existing.party_size = party_size
         from app.services.maybe_pings import clear_maybe_pings
@@ -308,6 +334,7 @@ async def register_user(
                 user_id=user.user_id,
                 event_id=event_id,
                 party_size=party_size,
+                status=new_status,
             )
         )
 
@@ -337,6 +364,8 @@ async def mark_maybe(db: AsyncSession, user: User, event_id: int) -> EventAttend
     existing = result.scalar_one_or_none()
     if existing and existing.status == RegistrationStatus.ACTIVE.value:
         raise ValueError("Already registered")
+    if existing and existing.status == RegistrationStatus.PENDING.value:
+        raise ValueError("Already pending")
 
     if existing:
         existing.status = RegistrationStatus.MAYBE.value
@@ -429,9 +458,7 @@ async def cancel_registration(db: AsyncSession, user: User, event_id: int) -> Ev
         select(Registration).where(
             Registration.user_id == user.user_id,
             Registration.event_id == event_id,
-            Registration.status.in_(
-                [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
-            ),
+            Registration.status.in_(_OPEN_RSVP_STATUSES),
         )
     )
     registration = result.scalar_one_or_none()
@@ -489,6 +516,7 @@ async def get_past_registered_events(
             is_registered=True,
             party_size=party_by_event.get(event.event_id, 0),
             is_maybe=False,
+            is_pending=False,
         )
         for event in events
     ]
@@ -546,6 +574,7 @@ async def create_event(
     max_participants: int | None = None,
     audience_group_id: int | None = None,
     is_featured: bool = False,
+    requires_approval: bool = False,
 ) -> Event:
     event = Event(
         name=name,
@@ -557,6 +586,7 @@ async def create_event(
         max_participants=max_participants,
         audience_group_id=audience_group_id,
         is_featured=is_featured,
+        requires_approval=requires_approval,
         created_by_admin_id=admin_user.user_id,
     )
     db.add(event)
@@ -628,3 +658,87 @@ async def get_event_maybe_users(db: AsyncSession, event_id: int) -> list[User]:
         .order_by(Registration.registered_at.asc())
     )
     return list(result.scalars().all())
+
+
+async def get_event_pending_users(db: AsyncSession, event_id: int) -> list[tuple[User, int]]:
+    """Pending applications for admin list (before confirmed guests)."""
+    result = await db.execute(
+        select(User, Registration.party_size)
+        .join(
+            Registration,
+            (Registration.user_id == User.user_id)
+            & (Registration.event_id == event_id)
+            & (Registration.status == RegistrationStatus.PENDING.value),
+        )
+        .order_by(Registration.registered_at.asc())
+    )
+    return [(user, int(party_size)) for user, party_size in result.all()]
+
+
+async def approve_registration(
+    db: AsyncSession, event_id: int, applicant_user_id: int
+) -> EventAttendance:
+    """Admin accepts a pending application. Occupies seats like a normal register."""
+    event = await get_event_by_id(db, event_id)
+    if event is None:
+        raise ValueError("Event not found")
+
+    result = await db.execute(select(User).where(User.user_id == applicant_user_id))
+    applicant = result.scalar_one_or_none()
+    if applicant is None:
+        raise ValueError("User not found")
+
+    reg_result = await db.execute(
+        select(Registration).where(
+            Registration.user_id == applicant_user_id,
+            Registration.event_id == event_id,
+        )
+    )
+    registration = reg_result.scalar_one_or_none()
+    if registration is None:
+        raise ValueError("Not pending")
+    if registration.status == RegistrationStatus.ACTIVE.value:
+        raise ValueError("Already registered")
+    if registration.status != RegistrationStatus.PENDING.value:
+        raise ValueError("Not pending")
+
+    party_size = int(registration.party_size)
+    if event.max_participants is not None:
+        reg_count = await _seat_count_for_event(db, event_id)
+        if reg_count + party_size > event.max_participants:
+            raise ValueError("Event full")
+
+    registration.status = RegistrationStatus.ACTIVE.value
+    registration.registered_at = datetime.now(MOSCOW_TZ)
+    await db.commit()
+    return await _attendance_after_mutation(db, event_id, applicant)
+
+
+async def reject_registration(
+    db: AsyncSession, event_id: int, applicant_user_id: int
+) -> EventAttendance:
+    """Admin declines a pending application."""
+    event = await get_event_by_id(db, event_id)
+    if event is None:
+        raise ValueError("Event not found")
+
+    result = await db.execute(select(User).where(User.user_id == applicant_user_id))
+    applicant = result.scalar_one_or_none()
+    if applicant is None:
+        raise ValueError("User not found")
+
+    reg_result = await db.execute(
+        select(Registration).where(
+            Registration.user_id == applicant_user_id,
+            Registration.event_id == event_id,
+        )
+    )
+    registration = reg_result.scalar_one_or_none()
+    if registration is None or registration.status != RegistrationStatus.PENDING.value:
+        if registration is not None and registration.status == RegistrationStatus.ACTIVE.value:
+            raise ValueError("Already registered")
+        raise ValueError("Not pending")
+
+    registration.status = RegistrationStatus.CANCELLED.value
+    await db.commit()
+    return await _attendance_after_mutation(db, event_id, applicant)

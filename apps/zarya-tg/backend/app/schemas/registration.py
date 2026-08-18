@@ -33,3 +33,4 @@ class RegistrationResponse(BaseModel):
     is_registered: bool
     party_size: int = 0
     is_maybe: bool = False
+    is_pending: bool = False

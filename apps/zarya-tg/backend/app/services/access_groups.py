@@ -100,7 +100,7 @@ async def user_has_active_registration(
             Registration.user_id == user_id,
             Registration.event_id == event_id,
             Registration.status.in_(
-                [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value]
+                [RegistrationStatus.ACTIVE.value, RegistrationStatus.MAYBE.value, RegistrationStatus.PENDING.value]
             ),
         )
     )

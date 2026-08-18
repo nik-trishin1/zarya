@@ -204,6 +204,60 @@ def back_to_menu_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def application_decision_keyboard(event_id: int, applicant_user_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Принять",
+                    callback_data=f"admin:approve:{event_id}:{applicant_user_id}",
+                ),
+                InlineKeyboardButton(
+                    text="Отклонить",
+                    callback_data=f"admin:reject:{event_id}:{applicant_user_id}",
+                ),
+            ],
+        ]
+    )
+
+
+def pending_list_keyboard(
+    event_id: int,
+    pending_users: list,
+    *,
+    back_callback: str,
+) -> InlineKeyboardMarkup:
+    rows: list[list[InlineKeyboardButton]] = []
+    for user in pending_users:
+        label = (getattr(user, "first_name", None) or "Участник").strip() or "Участник"
+        short = label[:18]
+        rows.append(
+            [
+                InlineKeyboardButton(
+                    text=f"Принять: {short}",
+                    callback_data=f"admin:approve:{event_id}:{user.user_id}",
+                ),
+                InlineKeyboardButton(
+                    text="Отклонить",
+                    callback_data=f"admin:reject:{event_id}:{user.user_id}",
+                ),
+            ]
+        )
+    rows.append([InlineKeyboardButton(text="◀️ К событию", callback_data=back_callback)])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def approval_mode_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Запись сразу", callback_data="admin:approval:open"),
+                InlineKeyboardButton(text="По заявке", callback_data="admin:approval:required"),
+            ],
+        ]
+    )
+
+
 def reminder_cancel_keyboard(event_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[

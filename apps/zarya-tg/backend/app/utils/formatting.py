@@ -39,7 +39,10 @@ def event_to_response(
     is_registered: bool,
     party_size: int = 0,
     is_maybe: bool = False,
+    is_pending: bool = False,
 ) -> EventResponse:
+    pending = is_pending and not is_registered
+    maybe = is_maybe and not is_registered and not pending
     return EventResponse(
         event_id=event.event_id,
         name=event.name,
@@ -58,7 +61,9 @@ def event_to_response(
         allows_plus_one=event_allows_plus_one(event),
         allows_sharing=event_allows_sharing(event),
         is_featured=bool(getattr(event, "is_featured", False)),
-        is_maybe=is_maybe and not is_registered,
+        is_maybe=maybe,
+        is_pending=pending,
+        requires_approval=bool(getattr(event, "requires_approval", False)),
     )
 
 
@@ -68,7 +73,10 @@ def event_to_detail(
     is_registered: bool,
     party_size: int = 0,
     is_maybe: bool = False,
+    is_pending: bool = False,
 ) -> EventDetailResponse:
+    pending = is_pending and not is_registered
+    maybe = is_maybe and not is_registered and not pending
     return EventDetailResponse(
         event_id=event.event_id,
         name=event.name,
@@ -87,7 +95,9 @@ def event_to_detail(
         allows_plus_one=event_allows_plus_one(event),
         allows_sharing=event_allows_sharing(event),
         is_featured=bool(getattr(event, "is_featured", False)),
-        is_maybe=is_maybe and not is_registered,
+        is_maybe=maybe,
+        is_pending=pending,
+        requires_approval=bool(getattr(event, "requires_approval", False)),
     )
 
 
@@ -98,6 +108,7 @@ def attendance_to_response(attendance: EventAttendance) -> EventResponse:
         attendance.is_registered,
         attendance.party_size,
         attendance.is_maybe,
+        attendance.is_pending,
     )
 
 
@@ -108,4 +119,5 @@ def attendance_to_detail(attendance: EventAttendance) -> EventDetailResponse:
         attendance.is_registered,
         attendance.party_size,
         attendance.is_maybe,
+        attendance.is_pending,
     )

@@ -48,6 +48,8 @@ class EventResponse(BaseModel):
     allows_sharing: bool = True
     is_featured: bool = False
     is_maybe: bool = False
+    is_pending: bool = False
+    requires_approval: bool = False
 
 
 class EventDetailResponse(EventResponse):

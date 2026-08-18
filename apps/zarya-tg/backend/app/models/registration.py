@@ -23,6 +23,7 @@ class RegistrationStatus(str, Enum):
     ACTIVE = "active"
     CANCELLED = "cancelled"
     MAYBE = "maybe"
+    PENDING = "pending"
 
 
 class Registration(Base):

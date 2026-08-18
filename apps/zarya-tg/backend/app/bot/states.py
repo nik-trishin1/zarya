@@ -11,6 +11,7 @@ class AdminStates(StatesGroup):
     CREATE_LOCATION = State()
     CREATE_DESCRIPTION = State()
     CREATE_CAPACITY = State()
+    CREATE_APPROVAL = State()
     CREATE_AUDIENCE = State()
     CREATE_FEATURED = State()
     CREATE_IMAGE = State()

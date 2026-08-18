@@ -5,6 +5,7 @@ from datetime import date, time
 from app.models.event import Event
 from app.models.user import User
 from app.services.admin_notifications import (
+    build_admin_application_message,
     build_admin_registration_message,
     escape_markdown,
     format_user_mention,
@@ -68,3 +69,12 @@ def test_build_admin_registration_message_with_plus_one():
 def test_build_admin_registration_message_escapes_event_name():
     message = build_admin_registration_message(_user(), _event("Встреча *VIP*"), 2, registered=True)
     assert "*Встреча \\*VIP\\**" in message
+
+
+def test_build_admin_application_message():
+    message = build_admin_application_message(_user(), _event(), 3, party_size=1)
+    assert message == (
+        "@anna подал(а) заявку на *Встреча* *Вс, 28 июня, 19:00*\n"
+        "Гостей в заявке: 1\n"
+        "Всего гостей: 3"
+    )

@@ -40,6 +40,13 @@ def test_edit_confirm_does_not_match_edit_start_pattern():
     assert maybe_decline.match("maybe:decline:7") is not None
     assert maybe_going.match("maybe:going:x") is None
 
+    approve = re.compile(r"^admin:approve:\d+:\d+$")
+    reject = re.compile(r"^admin:reject:\d+:\d+$")
+    assert approve.match("admin:approve:3:9") is not None
+    assert reject.match("admin:reject:3:9") is not None
+    assert approve.match("admin:approve:3") is None
+    assert approve.match("admin:detail:3") is None
+
 
 def test_edit_confirm_handler_matches_without_fsm_state():
     router = Router()

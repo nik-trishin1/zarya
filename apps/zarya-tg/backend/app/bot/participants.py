@@ -19,6 +19,13 @@ def format_maybe_participant_line(index: int, user: User) -> str:
     return f"{index}. {name} - Подумаю"
 
 
+def format_pending_participant_line(index: int, user: User) -> str:
+    name = (user.first_name or "Участник").strip()
+    if user.username:
+        return f"{index}. {name} @{user.username} — на рассмотрении"
+    return f"{index}. {name} — на рассмотрении"
+
+
 def expand_participant_lines(users_with_party: list[tuple[User, int]]) -> list[str]:
     """Expand each registration into party_size numbered lines (ADR-019)."""
     lines: list[str] = []
@@ -37,8 +44,10 @@ def format_participants_message(
     event_name: str,
     users: list[User] | list[tuple[User, int]],
     maybe_users: list[User] | None = None,
+    pending_users: list[User] | list[tuple[User, int]] | None = None,
 ) -> str:
     maybe_users = maybe_users or []
+    pending_users = pending_users or []
 
     # Backward-compatible: plain User list → party_size 1 each
     if users and not isinstance(users[0], tuple):
@@ -46,8 +55,17 @@ def format_participants_message(
     else:
         parties = list(users)  # type: ignore[arg-type]
 
+    if pending_users and not isinstance(pending_users[0], tuple):
+        pending_parties = [(user, 1) for user in pending_users]  # type: ignore[misc]
+    else:
+        pending_parties = list(pending_users)  # type: ignore[arg-type]
+
     active_lines = expand_participant_lines(parties)
     seat_total = len(active_lines)
+
+    pending_lines = []
+    for index, (user, _party_size) in enumerate(pending_parties, start=1):
+        pending_lines.append(format_pending_participant_line(index, user))
 
     index = seat_total + 1
     maybe_lines = []
@@ -55,13 +73,15 @@ def format_participants_message(
         maybe_lines.append(format_maybe_participant_line(index, user))
         index += 1
 
-    if not active_lines and not maybe_lines:
+    if not active_lines and not maybe_lines and not pending_lines:
         return f"Участники: {event_name}\n\nПока никто не зарегистрирован."
 
     body_parts = []
+    if pending_lines:
+        body_parts.append("Заявки:\n" + "\n".join(pending_lines))
     if active_lines:
         body_parts.append("\n".join(active_lines))
     if maybe_lines:
         body_parts.append("\n".join(maybe_lines))
-    body = "\n".join(body_parts)
+    body = "\n\n".join(body_parts)
     return f"Участники: {event_name}\n\n{body}\n\nВсего: {seat_total}"

@@ -79,3 +79,11 @@ def test_format_participants_message_maybe_only():
     message = format_participants_message("Встреча", [], maybe_users=maybe)
     assert "1. Глеб @gleb - Подумаю" in message
     assert message.endswith("Всего: 0")
+
+
+def test_format_participants_message_pending_only():
+    pending = [_user(first_name="Анна", username="ann")]
+    message = format_participants_message("Встреча", [], pending_users=pending)
+    assert "Заявки:" in message
+    assert "1. Анна @ann — на рассмотрении" in message
+    assert message.endswith("Всего: 0")
