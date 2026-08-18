@@ -200,7 +200,7 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
     canTakeSeats(event.registration_count, event.max_participants, 1);
   const hasPlusOne = event.is_registered && event.party_size > 1;
   const goingDisabled =
-    actionLoading || isPending || (!event.is_registered && !canRegisterAlone);
+    actionLoading || (!event.is_registered && !isPending && !canRegisterAlone);
   const canMarkMaybe = !past && !event.is_registered && !isPending;
   const showRsvp = !archiveView && (!past || event.is_registered || isMaybe || isPending);
   const showMaybeCircle = showRsvp && !event.is_registered && !isPending;

@@ -256,6 +256,68 @@ async def test_maybe_then_apply_clears_maybe_and_patch_party_size_active_only():
 
 
 @pytest.mark.asyncio
+async def test_maybe_apply_on_full_approval_event_keeps_maybe():
+    async with async_session() as db:
+        guest = await get_or_create_user(db, telegram_id=930_013, username="fullmb", first_name="Full")
+        other = await get_or_create_user(db, telegram_id=930_014, username="seat", first_name="Seat")
+        event = _future_event(max_participants=1)
+        db.add(event)
+        await db.commit()
+        await db.refresh(event)
+        user = (await db.execute(select(User).where(User.user_id == guest.user_id))).scalar_one()
+        seater = (await db.execute(select(User).where(User.user_id == other.user_id))).scalar_one()
+
+        await mark_maybe(db, user, event.event_id)
+        event.requires_approval = False
+        await db.commit()
+        await register_user(db, seater, event.event_id, party_size=1)
+        event.requires_approval = True
+        await db.commit()
+
+        with pytest.raises(ValueError, match="Event full"):
+            await register_user(db, user, event.event_id, party_size=1)
+        detail = await get_event_detail(db, event.event_id, user)
+        assert detail is not None
+        assert detail.is_maybe is True
+        assert detail.is_pending is False
+
+
+@pytest.mark.asyncio
+async def test_pending_acl_escape_hatch_like_maybe():
+    from sqlalchemy import delete
+
+    from app.models.group_membership import GroupMembership
+    from app.schema_updates import CORE_GROUP_SLUG
+    from app.services.access_groups import add_user_to_group, get_group_by_slug
+
+    async with async_session() as db:
+        group = await get_group_by_slug(db, CORE_GROUP_SLUG)
+        assert group is not None
+        guest = await get_or_create_user(db, telegram_id=930_015, username="out", first_name="Out")
+        await add_user_to_group(db, guest, group, notify=False)
+        event = _future_event(audience_group_id=group.group_id)
+        db.add(event)
+        await db.commit()
+        await db.refresh(event)
+        user = (await db.execute(select(User).where(User.user_id == guest.user_id))).scalar_one()
+
+        attendance = await register_user(db, user, event.event_id)
+        assert attendance.is_pending is True
+
+        await db.execute(
+            delete(GroupMembership).where(
+                GroupMembership.user_id == user.user_id,
+                GroupMembership.group_id == group.group_id,
+            )
+        )
+        await db.commit()
+
+        detail = await get_event_detail(db, event.event_id, user)
+        assert detail is not None
+        assert detail.is_pending is True
+
+
+@pytest.mark.asyncio
 async def test_idempotent_approve_and_reject():
     async with async_session() as db:
         guest = await get_or_create_user(db, telegram_id=930_012, username="id", first_name="Id")

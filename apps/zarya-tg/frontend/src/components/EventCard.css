@@ -70,10 +70,10 @@
 
 .event-card__status--pending {
   background: var(--color-accent);
-  max-width: 68px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: calc(100% - 12px);
+  white-space: normal;
+  line-height: 1.2;
+  text-align: left;
 }
 
 .event-card__body {
