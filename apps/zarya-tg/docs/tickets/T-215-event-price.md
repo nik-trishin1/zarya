@@ -31,7 +31,7 @@
 |-------|-------|
 | ID | T-215 |
 | Title | Optional event price + fact-row emphasis |
-| Status | `todo` |
+| Status | `in_review` |
 | Spec / ADR | [S-215](../specs/S-215-event-price.md), [ADR-026](../decisions/026-event-price.md); ADR-011 / ADR-024 addenda |
 | App | `zarya-tg` |
 | Estimate | M |
@@ -68,13 +68,13 @@ Show an optional per-person ruble price consistently, and make event facts on th
 
 ## Verification (agents)
 
-1. [ ] `PYTHONPATH=. pytest -q` in `apps/zarya-tg/backend`
-2. [ ] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
+1. [x] `PYTHONPATH=. pytest -q` in `apps/zarya-tg/backend`
+2. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 3. [ ] CI green on the PR
-4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
+4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 
-- PR URL:
-- Defaults chosen (if any):
-- Residual risks:
+- PR URL: https://github.com/nik-trishin1/zarya/pull/28
+- Defaults chosen (if any): v1 writes whole RUB (`rubles * 100`) + `RUB`; null pair hides the row (no «Бесплатно»); `update_event` can clear the pair; thousands separator is U+202F; formatter also knows `$` / `€` for later.
+- Residual risks: Formatter drift if a caller bypasses `price_label`; DB CHECK not added on existing Postgres (service layer enforces the pair).

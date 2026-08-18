@@ -30,7 +30,7 @@
 |-------|-------|
 | ID | T-213 |
 | Title | Backend + bot registration approval |
-| Status | `todo` |
+| Status | `in_review` |
 | Spec / ADR | [S-213](../specs/S-213-manual-registration-approval.md), [ADR-025](../decisions/025-manual-registration-approval.md); ADR-005/006/007/012/013/019/022 addenda |
 | App | `zarya-tg` |
 | Estimate | M |
@@ -75,13 +75,13 @@ Persist approval-mode events and pending applications; let admins decide in the 
 
 ## Verification (agents)
 
-1. [ ] `PYTHONPATH=. pytest -q` in `apps/zarya-tg/backend`
-2. [ ] Lint for touched Python as required by CI
+1. [x] `PYTHONPATH=. pytest -q` in `apps/zarya-tg/backend`
+2. [x] Lint for touched Python as required by CI
 3. [ ] CI green on the implementation PR
-4. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
+4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 
-- PR URL:
-- Defaults chosen (if any):
-- Residual risks:
+- PR URL: https://github.com/nik-trishin1/zarya/pull/28
+- Defaults chosen (if any): Approval flag is create-only; pending does not occupy seats; apply when full → 409; maybe-ping «Буду» on approval events → pending.
+- Residual risks: Pending leaking into calendar/reminders/broadcasts; re-apply after reject must create a new admin DM. Human summary was not checked before implement (explicit sequential-ship request).

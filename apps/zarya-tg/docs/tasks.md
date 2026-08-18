@@ -99,6 +99,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 ## Suggested next product decisions
 
-1. **T-213 / T-214 / T-215** Human summary approve (S-213, S-215) — applications «по заявке» + optional event price.
+1. **Review pass on [PR 28](https://github.com/nik-trishin1/zarya/pull/28)** (T-213 / T-214 / T-215) — Human summaries were unchecked; implementation shipped on request. Do not mark `done` until review PASS + CI green.
 2. **T-302** event duplication (Human summary approve) — duplicate from admin archive detail.
 3. Whether **T-301** ownership/edit is next Iteration 3 priority (split required).

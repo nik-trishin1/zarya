@@ -29,7 +29,7 @@
 |-------|-------|
 | ID | T-214 |
 | Title | Mini App registration approval UI |
-| Status | `todo` |
+| Status | `in_review` |
 | Spec / ADR | [S-213](../specs/S-213-manual-registration-approval.md), [ADR-025](../decisions/025-manual-registration-approval.md), [ADR-024](../decisions/024-mini-app-visual-language.md) |
 | App | `zarya-tg` |
 | Estimate | S |
@@ -65,12 +65,12 @@ Make pending applications visible and controllable in the Mini App without treat
 
 ## Verification (agents)
 
-1. [ ] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
+1. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 2. [ ] CI green on the PR
-3. [ ] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
+3. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 
-- PR URL:
-- Defaults chosen (if any):
-- Residual risks:
+- PR URL: https://github.com/nik-trishin1/zarya/pull/28
+- Defaults chosen (if any): Missing `is_pending` treated as false; pending uses accent selected circle (not a third RSVP circle); ticket count includes `/my` pending.
+- Residual risks: Mixing pending with `is_registered` would unlock calendar too early.
