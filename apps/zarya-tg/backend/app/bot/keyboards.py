@@ -25,6 +25,15 @@ def skip_capacity_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def skip_price_keyboard(*, keep_current: bool = False) -> InlineKeyboardMarkup:
+    rows = [
+        [InlineKeyboardButton(text="Без стоимости", callback_data="admin:skip_price")],
+    ]
+    if keep_current:
+        rows.append([InlineKeyboardButton(text="Оставить", callback_data="admin:edit:keep")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
 def skip_image_keyboard(*, keep_current: bool = False) -> InlineKeyboardMarkup:
     label = "Оставить текущую" if keep_current else "Пропустить (использовать заглушку)"
     return InlineKeyboardMarkup(

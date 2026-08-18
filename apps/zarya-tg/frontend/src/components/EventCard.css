@@ -116,6 +116,10 @@
   opacity: 0.85;
 }
 
+.event-card__meta--priced .event-card__meta-row svg {
+  opacity: 1;
+}
+
 .event-card__meta-row span {
   overflow: hidden;
   text-overflow: ellipsis;

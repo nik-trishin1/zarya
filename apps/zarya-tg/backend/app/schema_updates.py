@@ -99,6 +99,20 @@ def apply_schema_updates(connection: Connection) -> None:
         "ALTER TABLE events ADD COLUMN requires_approval BOOLEAN NOT NULL DEFAULT FALSE",
         "ALTER TABLE events ADD COLUMN requires_approval BOOLEAN NOT NULL DEFAULT 0",
     )
+    _add_column_if_missing(
+        connection,
+        "events",
+        "price_amount_minor",
+        "ALTER TABLE events ADD COLUMN price_amount_minor INTEGER",
+        "ALTER TABLE events ADD COLUMN price_amount_minor INTEGER",
+    )
+    _add_column_if_missing(
+        connection,
+        "events",
+        "price_currency",
+        "ALTER TABLE events ADD COLUMN price_currency VARCHAR(3)",
+        "ALTER TABLE events ADD COLUMN price_currency VARCHAR(3)",
+    )
     _seed_event_capacity_limits(connection)
     _seed_core_access_group(connection)
 

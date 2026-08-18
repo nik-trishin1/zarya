@@ -64,3 +64,24 @@ def test_build_new_event_announcement_omits_empty_description():
     link = build_event_startapp_link("zarya_friends_bot", 42)
     assert message.endswith(build_event_share_text("Встреча у озера", link, ""))
     assert "startapp=event_42" in message
+
+
+def test_build_new_event_announcement_inserts_price_after_location():
+    from app.utils.pricing import NARROW_NBSP
+
+    event = _event()
+    event.price_amount_minor = 100_000
+    event.price_currency = "RUB"
+    message = build_new_event_announcement(event, "zarya_friends_bot")
+    price = f"1{NARROW_NBSP}000 ₽"
+    loc_idx = message.index("📍 Москва")
+    price_idx = message.index(price)
+    share_idx = message.index("Встреча у озера\nhttps://")
+    assert loc_idx < price_idx < share_idx
+    assert "Бесплатно" not in message
+
+
+def test_build_new_event_announcement_omits_price_when_unset():
+    message = build_new_event_announcement(_event(), "zarya_friends_bot")
+    assert "₽" not in message
+    assert "Бесплатно" not in message

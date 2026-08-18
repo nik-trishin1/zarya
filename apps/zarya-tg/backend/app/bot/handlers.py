@@ -32,11 +32,13 @@ from app.bot.keyboards import (
     pending_list_keyboard,
     skip_capacity_keyboard,
     skip_image_keyboard,
+    skip_price_keyboard,
 )
 from app.bot.participants import format_participants_message
 from app.bot.parsers import format_capacity_ru, format_date_ru, format_guest_count, format_time_ru, parse_capacity, parse_date, parse_time
 from app.bot.states import AdminStates
 from app.config import get_settings
+from app.utils.pricing import format_event_price, parse_ruble_price
 from sqlalchemy import select
 
 from app.database import async_session
@@ -100,6 +102,28 @@ def is_admin(telegram_id: int) -> bool:
 _COVER_RETRY_HINT = (
     "\n\nЗагрузите другое изображение (JPEG или PNG, до 5 МБ) или нажмите «Пропустить»."
 )
+_PRICE_PROMPT = "Введите стоимость в рублях (например 1000) или нажмите «Без стоимости»"
+_PRICE_RETRY = (
+    "Не удалось распознать сумму. Введите целое число (например 1000) "
+    "или нажмите «Без стоимости»:"
+)
+
+
+def _price_label_from_data(data: dict) -> str | None:
+    return format_event_price(data.get("price_amount_minor"), data.get("price_currency"))
+
+
+def _price_confirm_line(data: dict) -> str:
+    label = _price_label_from_data(data)
+    return f"{label}\n" if label else ""
+
+
+def _event_price_line(event) -> str:
+    label = format_event_price(
+        getattr(event, "price_amount_minor", None),
+        getattr(event, "price_currency", None),
+    )
+    return f"{label}\n" if label else ""
 
 
 async def _save_cover_from_message(message: Message, content: bytes, filename: str) -> str | None:
@@ -203,6 +227,19 @@ async def _goto_edit_location(message: Message, state: FSMContext, *, edit: bool
         text=f"Текущее место: {data['location']}\n\nВведите новое место или нажмите «Оставить»:",
         next_state=AdminStates.EDIT_LOCATION,
         reply_markup=edit_keep_keyboard(),
+        edit=edit,
+    )
+
+
+async def _goto_edit_price(message: Message, state: FSMContext, *, edit: bool = False) -> None:
+    data = await state.get_data()
+    current = _price_label_from_data(data) or "не указана"
+    await _send_edit_prompt(
+        message,
+        state,
+        text=f"Текущая стоимость: {current}\n\n{_PRICE_PROMPT}",
+        next_state=AdminStates.EDIT_PRICE,
+        reply_markup=skip_price_keyboard(keep_current=True),
         edit=edit,
     )
 
@@ -497,8 +534,27 @@ async def create_location(message: Message, state: FSMContext):
         await message.answer("Место слишком короткое. Попробуйте ещё раз:")
         return
     await state.update_data(location=message.text.strip())
+    await state.set_state(AdminStates.CREATE_PRICE)
+    await message.answer(_PRICE_PROMPT, reply_markup=skip_price_keyboard())
+
+
+@router.message(AdminStates.CREATE_PRICE)
+async def create_price(message: Message, state: FSMContext):
+    parsed = parse_ruble_price(message.text or "")
+    if parsed is None:
+        await message.answer(_PRICE_RETRY, reply_markup=skip_price_keyboard())
+        return
+    await state.update_data(price_amount_minor=parsed, price_currency="RUB")
     await state.set_state(AdminStates.CREATE_DESCRIPTION)
     await message.answer("Введите описание события:")
+
+
+@router.callback_query(F.data == "admin:skip_price", AdminStates.CREATE_PRICE)
+async def create_skip_price(callback: CallbackQuery, state: FSMContext):
+    await state.update_data(price_amount_minor=None, price_currency=None)
+    await state.set_state(AdminStates.CREATE_DESCRIPTION)
+    await callback.message.edit_text("Введите описание события:")
+    await callback.answer()
 
 
 @router.message(AdminStates.CREATE_DESCRIPTION)
@@ -693,6 +749,7 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
         f"📌 {data['name']}\n"
         f"📅 {format_date_ru(event_date)}, {format_time_ru(event_time)}\n"
         f"📍 {data['location']}\n"
+        f"{_price_confirm_line(data)}"
         f"📝 {data.get('description', '')}\n"
         f"👥 Лимит мест: {format_capacity_ru(data.get('max_participants'))}\n"
         f"⏳ Запись: {approval_label}\n"
@@ -736,6 +793,8 @@ async def _finish_event_create(
             audience_group_id=audience_group_id,
             is_featured=bool(data.get("is_featured")),
             requires_approval=bool(data.get("requires_approval")),
+            price_amount_minor=data.get("price_amount_minor"),
+            price_currency=data.get("price_currency"),
         )
         users = await get_announcement_recipients(db, audience_group_id)
 
@@ -896,6 +955,7 @@ async def admin_archive_event_detail(callback: CallbackQuery, state: FSMContext)
         f"Событие: {event.name}\n"
         f"Дата: {format_date_ru(event.date)}, {format_time_ru(event.time)}\n"
         f"Место: {event.location}\n"
+        f"{_event_price_line(event)}"
         f"Аудитория: {audience_label(group)}\n"
         f"{format_guest_count(reg_count, event.max_participants)}\n"
         f"Статус: Завершено\n\n"
@@ -952,6 +1012,7 @@ async def admin_event_detail(callback: CallbackQuery, state: FSMContext):
         f"Событие: {event.name}\n"
         f"Дата: {format_date_ru(event.date)}, {format_time_ru(event.time)}\n"
         f"Место: {event.location}\n"
+        f"{_event_price_line(event)}"
         f"Аудитория: {audience_label(group)}\n"
         f"{format_guest_count(reg_count, event.max_participants)}\n\n"
         f"{event.description}"
@@ -1449,6 +1510,8 @@ async def edit_confirm(callback: CallbackQuery, state: FSMContext):
                 location=data["location"],
                 cover_image_url=normalize_cover_image_url(data.get("cover_image_url")),
                 is_featured=bool(data.get("is_featured")),
+                price_amount_minor=data.get("price_amount_minor"),
+                price_currency=data.get("price_currency"),
             )
     except Exception:
         logger.exception("Failed to confirm event edit for event_id=%s", event_id)
@@ -1489,6 +1552,8 @@ async def admin_edit_start(callback: CallbackQuery, state: FSMContext):
         description=event.description,
         cover_image_url=normalize_cover_image_url(event.cover_image_url),
         is_featured=bool(getattr(event, "is_featured", False)),
+        price_amount_minor=getattr(event, "price_amount_minor", None),
+        price_currency=getattr(event, "price_currency", None),
         edit_mode=True,
     )
     if callback.message is None:
@@ -1520,6 +1585,8 @@ async def edit_keep_current(callback: CallbackQuery, state: FSMContext):
     elif current_state == AdminStates.EDIT_TIME.state:
         await _goto_edit_location(callback.message, state, edit=True)
     elif current_state == AdminStates.EDIT_LOCATION.state:
+        await _goto_edit_price(callback.message, state, edit=True)
+    elif current_state == AdminStates.EDIT_PRICE.state:
         await _goto_edit_description(callback.message, state, edit=True)
     elif current_state == AdminStates.EDIT_DESCRIPTION.state:
         await _prompt_edit_featured(callback.message, state, edit=True)
@@ -1567,7 +1634,34 @@ async def edit_location(message: Message, state: FSMContext):
         await message.answer("Место слишком короткое. Попробуйте ещё раз или нажмите «Оставить»:")
         return
     await state.update_data(location=message.text.strip())
+    await _goto_edit_price(message, state)
+
+
+@router.message(AdminStates.EDIT_PRICE)
+async def edit_price(message: Message, state: FSMContext):
+    parsed = parse_ruble_price(message.text or "")
+    if parsed is None:
+        await message.answer(_PRICE_RETRY, reply_markup=skip_price_keyboard(keep_current=True))
+        return
+    await state.update_data(price_amount_minor=parsed, price_currency="RUB")
     await _goto_edit_description(message, state)
+
+
+@router.callback_query(F.data == "admin:skip_price", AdminStates.EDIT_PRICE)
+async def edit_skip_price(callback: CallbackQuery, state: FSMContext):
+    if not is_admin(callback.from_user.id):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+    data = await state.get_data()
+    if not data.get("edit_mode"):
+        await callback.answer("Сессия редактирования истекла", show_alert=True)
+        return
+    await state.update_data(price_amount_minor=None, price_currency=None)
+    if callback.message is None:
+        await callback.answer()
+        return
+    await _goto_edit_description(callback.message, state, edit=True)
+    await callback.answer()
 
 
 @router.message(AdminStates.EDIT_DESCRIPTION)
@@ -1629,6 +1723,7 @@ async def show_edit_confirm(message: Message, state: FSMContext, edit: bool = Fa
         f"📌 {data['name']}\n"
         f"📅 {format_date_ru(event_date)}, {format_time_ru(event_time)}\n"
         f"📍 {data['location']}\n"
+        f"{_price_confirm_line(data)}"
         f"📝 {data.get('description', '')}\n"
         f"🖼️ Слайдер: {featured_label}\n"
     )

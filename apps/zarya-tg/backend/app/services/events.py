@@ -22,6 +22,7 @@ from app.services.access_groups import (
     is_admin_telegram_id,
     user_group_ids,
 )
+from app.utils.pricing import normalize_event_price
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
@@ -575,7 +576,10 @@ async def create_event(
     audience_group_id: int | None = None,
     is_featured: bool = False,
     requires_approval: bool = False,
+    price_amount_minor: int | None = None,
+    price_currency: str | None = None,
 ) -> Event:
+    amount, currency = normalize_event_price(price_amount_minor, price_currency)
     event = Event(
         name=name,
         description=description,
@@ -587,6 +591,8 @@ async def create_event(
         audience_group_id=audience_group_id,
         is_featured=is_featured,
         requires_approval=requires_approval,
+        price_amount_minor=amount,
+        price_currency=currency,
         created_by_admin_id=admin_user.user_id,
     )
     db.add(event)
@@ -596,6 +602,13 @@ async def create_event(
 
 
 async def update_event(db: AsyncSession, event: Event, **kwargs) -> Event:
+    if "price_amount_minor" in kwargs or "price_currency" in kwargs:
+        amount, currency = normalize_event_price(
+            kwargs.pop("price_amount_minor", None),
+            kwargs.pop("price_currency", None),
+        )
+        event.price_amount_minor = amount
+        event.price_currency = currency
     for key, value in kwargs.items():
         if value is not None and hasattr(event, key):
             setattr(event, key, value)

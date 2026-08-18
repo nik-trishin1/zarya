@@ -6,6 +6,7 @@ from app.schemas.event import EventDetailResponse, EventResponse
 from app.services.access_groups import event_allows_plus_one, event_allows_sharing
 from app.services.events import EventAttendance, is_event_full, is_event_past
 from app.services.storage import normalize_cover_image_url
+from app.utils.pricing import format_event_price
 
 
 RU_MONTHS = [
@@ -43,6 +44,8 @@ def event_to_response(
 ) -> EventResponse:
     pending = is_pending and not is_registered
     maybe = is_maybe and not is_registered and not pending
+    price_amount_minor = getattr(event, "price_amount_minor", None)
+    price_currency = getattr(event, "price_currency", None)
     return EventResponse(
         event_id=event.event_id,
         name=event.name,
@@ -64,6 +67,9 @@ def event_to_response(
         is_maybe=maybe,
         is_pending=pending,
         requires_approval=bool(getattr(event, "requires_approval", False)),
+        price_amount_minor=price_amount_minor,
+        price_currency=price_currency,
+        price_label=format_event_price(price_amount_minor, price_currency),
     )
 
 
@@ -77,6 +83,8 @@ def event_to_detail(
 ) -> EventDetailResponse:
     pending = is_pending and not is_registered
     maybe = is_maybe and not is_registered and not pending
+    price_amount_minor = getattr(event, "price_amount_minor", None)
+    price_currency = getattr(event, "price_currency", None)
     return EventDetailResponse(
         event_id=event.event_id,
         name=event.name,
@@ -98,6 +106,9 @@ def event_to_detail(
         is_maybe=maybe,
         is_pending=pending,
         requires_approval=bool(getattr(event, "requires_approval", False)),
+        price_amount_minor=price_amount_minor,
+        price_currency=price_currency,
+        price_label=format_event_price(price_amount_minor, price_currency),
     )
 
 

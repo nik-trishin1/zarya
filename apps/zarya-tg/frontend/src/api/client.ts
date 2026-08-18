@@ -22,6 +22,9 @@ export interface Event {
   is_maybe: boolean;
   is_pending: boolean;
   requires_approval: boolean;
+  price_amount_minor: number | null;
+  price_currency: string | null;
+  price_label: string | null;
 }
 
 export interface RegistrationResponse {
@@ -87,6 +90,15 @@ function normalizeEvent(event: Event): Event {
     is_maybe: event.is_maybe === true && event.is_registered !== true && event.is_pending !== true,
     is_pending: event.is_pending === true && event.is_registered !== true,
     requires_approval: event.requires_approval === true,
+    price_amount_minor:
+      typeof event.price_amount_minor === "number" && Number.isFinite(event.price_amount_minor)
+        ? event.price_amount_minor
+        : null,
+    price_currency: typeof event.price_currency === "string" ? event.price_currency : null,
+    price_label:
+      typeof event.price_label === "string" && event.price_label.trim() !== ""
+        ? event.price_label
+        : null,
   };
 }
 

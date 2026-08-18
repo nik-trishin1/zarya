@@ -16,6 +16,7 @@ import {
   IconPause,
   IconPin,
   IconShare,
+  IconTag,
   IconUsers,
 } from "./icons";
 import { buildEventShareLink, formatShareMessage } from "../utils/deepLink";
@@ -239,6 +240,12 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
             <div className="event-details__row">
               <IconPin size={18} />
               <span>{event.location}</span>
+            </div>
+          ) : null}
+          {event.price_label ? (
+            <div className="event-details__row event-details__row--price">
+              <IconTag size={18} />
+              <span>{event.price_label}</span>
             </div>
           ) : null}
           <div className="event-details__row">

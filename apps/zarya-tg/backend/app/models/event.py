@@ -32,6 +32,8 @@ class Event(Base):
     )
     is_featured: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     requires_approval: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    price_amount_minor: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    price_currency: Mapped[Optional[str]] = mapped_column(String(3), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

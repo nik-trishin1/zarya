@@ -1,7 +1,7 @@
 import type { Event } from "../api/client";
 import { CoverImage } from "./CoverImage";
 import { formatEventDate } from "../utils/format";
-import { IconClock, IconPin } from "./icons";
+import { IconClock, IconPin, IconTag } from "./icons";
 import "./EventCard.css";
 
 interface EventCardProps {
@@ -14,6 +14,7 @@ export function EventCard({ event, onClick, completed = false }: EventCardProps)
   const showGoing = !completed && event.is_registered;
   const showMaybe = !completed && !event.is_registered && event.is_maybe;
   const showPending = !completed && !event.is_registered && event.is_pending;
+  const priceLabel = event.price_label;
 
   return (
     <button
@@ -31,7 +32,7 @@ export function EventCard({ event, onClick, completed = false }: EventCardProps)
       </div>
       <div className="event-card__body">
         <h2 className="event-card__title">{event.name}</h2>
-        <div className="event-card__meta">
+        <div className={`event-card__meta${priceLabel ? " event-card__meta--priced" : ""}`}>
           <div className="event-card__meta-row">
             <IconClock size={14} />
             <span>{formatEventDate(event.date, event.time)}</span>
@@ -40,6 +41,12 @@ export function EventCard({ event, onClick, completed = false }: EventCardProps)
             <div className="event-card__meta-row">
               <IconPin size={14} />
               <span>{event.location}</span>
+            </div>
+          ) : null}
+          {priceLabel ? (
+            <div className="event-card__meta-row">
+              <IconTag size={14} />
+              <span>{priceLabel}</span>
             </div>
           ) : null}
         </div>

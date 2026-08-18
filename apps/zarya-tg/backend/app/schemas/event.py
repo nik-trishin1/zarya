@@ -50,6 +50,9 @@ class EventResponse(BaseModel):
     is_maybe: bool = False
     is_pending: bool = False
     requires_approval: bool = False
+    price_amount_minor: int | None = None
+    price_currency: str | None = None
+    price_label: str | None = None
 
 
 class EventDetailResponse(EventResponse):

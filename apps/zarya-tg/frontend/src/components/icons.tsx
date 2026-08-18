@@ -98,6 +98,15 @@ export function IconUsers(props: IconProps) {
   );
 }
 
+export function IconTag(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12.5 3H4v8.5L13.2 20.7a2 2 0 0 0 2.8 0l4.7-4.7a2 2 0 0 0 0-2.8L12.5 3z" />
+      <circle cx="7.25" cy="7.25" r="1.1" />
+    </Svg>
+  );
+}
+
 export function IconChevronLeft(props: IconProps) {
   return (
     <Svg {...props}>

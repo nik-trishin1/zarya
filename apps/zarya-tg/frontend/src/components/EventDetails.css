@@ -51,6 +51,9 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  background: var(--color-card);
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
 }
 
 .event-details__row {
@@ -58,14 +61,20 @@
   align-items: flex-start;
   gap: 10px;
   font-size: var(--font-size-body);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+  font-weight: 500;
   line-height: 1.4;
 }
 
 .event-details__row svg {
   flex-shrink: 0;
   margin-top: 1px;
-  color: var(--color-text-secondary);
+  color: var(--color-accent);
+}
+
+.event-details__row--price {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .event-details__description {

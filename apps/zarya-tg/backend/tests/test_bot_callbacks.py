@@ -47,6 +47,10 @@ def test_edit_confirm_does_not_match_edit_start_pattern():
     assert approve.match("admin:approve:3") is None
     assert approve.match("admin:detail:3") is None
 
+    skip_price = re.compile(r"^admin:skip_price$")
+    assert skip_price.match("admin:skip_price") is not None
+    assert skip_price.match("admin:skip_capacity") is None
+
 
 def test_edit_confirm_handler_matches_without_fsm_state():
     router = Router()

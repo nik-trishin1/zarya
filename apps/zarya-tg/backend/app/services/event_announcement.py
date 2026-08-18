@@ -7,6 +7,7 @@ from app.models.event import Event
 from app.models.user import User
 from app.services.telegram_delivery import deliver_bot_messages_to_users
 from app.utils.formatting import format_event_date
+from app.utils.pricing import format_event_price
 from app.utils.telegram_links import build_event_share_text, build_event_startapp_link
 
 MAX_DESCRIPTION_LENGTH = 500
@@ -17,6 +18,12 @@ def build_new_event_announcement(event: Event, bot_username: str) -> str:
     header = f"🌅 Новое событие!\n\n📌 {event.name} · {format_event_date(event.date, event.time)}"
     location_line = f"📍 {event.location}"
     parts = [header, location_line]
+    price_label = format_event_price(
+        getattr(event, "price_amount_minor", None),
+        getattr(event, "price_currency", None),
+    )
+    if price_label:
+        parts.append(price_label)
 
     link = build_event_startapp_link(
         bot_username,
