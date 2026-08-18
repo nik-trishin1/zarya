@@ -23,6 +23,7 @@ Announcement format:
 
 📌 {name} · {date, time}
 📍 {location}
+{price line if set — ADR-026}
 
 {description if present}
 
@@ -45,3 +46,7 @@ Recipients are all users who have ever `/start`ed the bot or opened the Mini App
 - Large user bases may take several seconds to fan out; acceptable for ~20-user MVP.
 - Users who blocked the bot are counted in `blocked`; delivery is skipped on retry until they unblock.
 - Bot username is resolved via `get_me()` at send time; no new env var required. Production bot: **@zarya_friends_bot** (`zarya_friends_bot`).
+
+## Addendum (ADR-026, 2026-08-18)
+
+When `price_amount_minor` is set, insert a price line **after location**, using the shared formatter (`1 000 ₽` in v1). Omit the line when price is null. Same line on the admin create-confirm preview. Details: [ADR-026](026-event-price.md).

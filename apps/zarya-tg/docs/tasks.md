@@ -1,6 +1,6 @@
 # zarya — Task Backlog
 
-> Refreshed 2026-08-14. Tickets: [`docs/tickets/`](tickets/). Process: [`process/ai-factory/`](../../../process/ai-factory/).
+> Refreshed 2026-08-18. Tickets: [`docs/tickets/`](tickets/). Process: [`process/ai-factory/`](../../../process/ai-factory/).
 
 ## Status Legend
 
@@ -29,6 +29,9 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 | ID | Title | Blocker | Links |
 |----|-------|---------|-------|
+| **T-213** | Backend + bot registration approval | Approve S-213 / ADR-025 Human summary | [ticket](tickets/T-213-approval-backend-bot.md) · [S-213](specs/S-213-manual-registration-approval.md) · [ADR-025](decisions/025-manual-registration-approval.md) |
+| **T-214** | Mini App registration approval UI | Approve S-213; implement after T-213 | [ticket](tickets/T-214-approval-mini-app.md) · [S-213](specs/S-213-manual-registration-approval.md) · [ADR-025](decisions/025-manual-registration-approval.md) |
+| **T-215** | Event price + fact-row emphasis | Approve S-215 / ADR-026 Human summary | [ticket](tickets/T-215-event-price.md) · [S-215](specs/S-215-event-price.md) · [ADR-026](decisions/026-event-price.md) |
 | **T-302** | Admin event duplication | Approve (may need thin ADR addendum) | [ticket](tickets/T-302-event-duplication.md) · [ADR-014](decisions/014-event-ownership-and-inline-editing.md) |
 
 ### Needs split / more design before enqueue
@@ -96,5 +99,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 ## Suggested next product decisions
 
-1. **T-302** event duplication (Human summary approve) — duplicate from admin archive detail.
-2. Whether **T-301** ownership/edit is next Iteration 3 priority (split required).
+1. **T-213 / T-214 / T-215** Human summary approve (S-213, S-215) — applications «по заявке» + optional event price.
+2. **T-302** event duplication (Human summary approve) — duplicate from admin archive detail.
+3. Whether **T-301** ownership/edit is next Iteration 3 priority (split required).

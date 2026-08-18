@@ -12,7 +12,7 @@ Registered participants should receive an automatic Telegram reminder about one 
 - Background scheduler in `run.py`: ticks every **60 minutes**, active **08:00–22:00 Moscow time**.
 - Reminder window: event starts in **23–25 hours** from tick time (one-hour scheduler granularity).
 - Track `events.reminder_sent_at` to send once per event.
-- Recipients: users with registration status `active` **or** `maybe` (ADR-022). Shared helper with participant broadcast. Overlap with maybe cascade `−24h` pings is accepted.
+- Recipients: users with registration status `active` **or** `maybe` (ADR-022). **Not** `pending` (ADR-025). Shared helper with participant broadcast. Overlap with maybe cascade `−24h` pings is accepted.
 - Message text:
 
 ```
@@ -37,3 +37,7 @@ Registered participants should receive an automatic Telegram reminder about one 
 - Late registrants after `reminder_sent_at` is set do not receive a reminder.
 - Requires `BOT_TOKEN` and backend process running (same Railway service as API/bot).
 - Zero registrants: event is still marked reminded to avoid retry loops.
+
+## Addendum (ADR-025, 2026-08-18)
+
+Pending applications must not receive «Ждем вас уже завтра!». Reminder cancel still applies only to users who actually got the going/maybe reminder (`active` or `maybe`).

@@ -22,3 +22,7 @@ Delivery failures are logged and do not block the registration API response.
 - Admins get real-time visibility in the same bot they use for `/admin`
 - No user-facing push/email (still out of scope)
 - Requires `BOT_TOKEN` and `ADMIN_TELEGRAM_IDS` on the backend (already required for admin panel)
+
+## Addendum (ADR-025, 2026-08-18)
+
+On events with `requires_approval`, a **new application** (`pending`) is not «будет на». Send a DM with **«Принять» / «Отклонить»** instead (copy in ADR-025). User cancel of a pending row still uses cancel wording, without decision buttons. Open events keep this ADR unchanged. User DMs on accept/reject are specified in ADR-025 (exception to “no user-facing push” for the approval gate only).

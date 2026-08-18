@@ -45,6 +45,7 @@ Archive cards stay muted (ADR-023); they do not show going/maybe overlays.
 - Cover remains ~200px full-width (not ~40vh).
 - Telegram **`BackButton` is not used.** Prod incident 2026-08-14: showing native BackButton on details coincided with event pages failing to open and Mini App reloads. Keep the in-app 🏠 overlay (same as before T-221). Do not call `BackButton.show()`.
 - Title, then icon rows: date/time, location, seats (`formatEventSeats`). Then description.
+  **Addendum (ADR-026):** when a price is set, insert it after location and before seats. Accent the whole fact block (primary text, accent icons, card padding); price row slightly heavier. List cards may add a third meta line for price only. Details: [ADR-026](026-event-price.md).
 - **RSVP row:** two circles (~56px hit target) with icon + caption:
   - **«Буду»** — check icon
   - **«Подумаю»** — pause icon
@@ -92,3 +93,4 @@ Icon + two-line Russian copy (Luma-style). Home: keep the meaning of «Нет п
 - ADR-002 toggle stays; labels become words.
 - Implementation is frontend-only, split in S-024 tickets (home cards, details RSVP, tokens/chrome).
 - Human summary on the spec/tickets must be approved before factory enqueue (DoR).
+- Fact-row weight and optional price line: [ADR-026](026-event-price.md) / [S-215](../specs/S-215-event-price.md).

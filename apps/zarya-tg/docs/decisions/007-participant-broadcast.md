@@ -16,7 +16,7 @@ Add «Написать участникам» to the event management menu in th
 2. Bot shows preview with recipient count
 3. Admin confirms → message sent to each recipient for that event
 
-**Recipients (ADR-022):** users with registration status `active` **or** `maybe` (not `cancelled`). Same message body for both; one DM per user; order by `registered_at` ASC. Preview «Получателей: N» counts both.
+**Recipients (ADR-022):** users with registration status `active` **or** `maybe` (not `cancelled`, not `pending` — ADR-025). Same message body for both; one DM per user; order by `registered_at` ASC. Preview «Получателей: N» counts both.
 
 Message format:
 
@@ -32,3 +32,7 @@ Message format:
 - Must not reuse a widened recipient list for ADR-013 going reminders (active-only)
 - Undelivered messages (blocked bot) are counted and reported to admin
 - Manual flow only; no automatic send on event edit
+
+## Addendum (ADR-025, 2026-08-18)
+
+`pending` applicants are **not** broadcast recipients in v1 (avoid «ждём вас» copy reaching unconfirmed / unpaid people). A dedicated «написать заявителям» tool is out of scope.

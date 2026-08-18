@@ -44,6 +44,8 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
 
    Inline keyboard: **«Буду»** → register `active` with `party_size=1` (capacity permitting; if full, stay `maybe`, keep schedule, tell the user); **«Не смогу»** → set `cancelled`. Callbacks must not open the Mini App.
 
+   **Addendum (ADR-025):** on `requires_approval` events, **«Буду»** creates `pending`, not `active` (same 409-if-full behaviour).
+
 7. **Relation to ADR-013.** Going reminders stay on the shared recipient helper. **Decision (2026-08-12):** `get_event_registered_users` includes `active` **and** `maybe`, so maybe users may also receive «Ждем вас уже завтра!» with «Не смогу прийти». That overlap with the maybe `−24h` cascade ping is accepted. Reminder cancel must clear `active` or `maybe`.
 
    The maybe cascade still uses its own schedule, copy, and **«Буду» / «Не смогу»** buttons (not `events.reminder_sent_at`).
@@ -84,3 +86,7 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
 - Schema: `maybe` status plus a per-registration ping schedule (child rows preferred) via `create_all` + idempotent `schema_updates` as needed.
 - ADR-007 recipient set expands to active + maybe (see that ADR).
 - Implementation ticket: [T-211](../tickets/T-211-maybe-rsvp-delayed-ping.md).
+
+## Addendum (ADR-025, 2026-08-18)
+
+Fourth status `pending` (manual approval). Do not offer «Подумаю» while `pending` or `active`. Applying clears unsent maybe pings. `pending` is excluded from calendar, 24h reminders, and participant broadcasts; it **is** included in «Мои регистрации». Group ACL escape hatch treats `pending` like `maybe`. Details: [ADR-025](025-manual-registration-approval.md).

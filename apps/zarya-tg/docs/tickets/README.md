@@ -6,7 +6,7 @@ Project-specific tickets live here. **Templates and DoR are portable** — use:
 - [`process/ai-factory/DEFINITION_OF_READY.md`](../../../../process/ai-factory/DEFINITION_OF_READY.md)
 - [`process/ai-factory/SPEC_TEMPLATE.md`](../../../../process/ai-factory/SPEC_TEMPLATE.md)
 
-Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-14).
+Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-18).
 
 ## Index
 
@@ -14,6 +14,9 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-14).
 
 | ID | Title | Status | DoR |
 |----|-------|--------|-----|
+| [T-213](T-213-approval-backend-bot.md) | Backend + bot registration approval | `todo` | no — Human summary |
+| [T-214](T-214-approval-mini-app.md) | Mini App registration approval UI | `todo` | no — Human summary; after T-213 |
+| [T-215](T-215-event-price.md) | Event price + fact-row emphasis | `todo` | no — Human summary |
 | [T-212](T-212-almost-full-maybe-nudge.md) | Almost-full nudge for maybe RSVPs | `todo` | no — low priority; needs ADR addendum |
 | [T-203](T-203-past-events-archive.md) | Past events archive | `done` | yes — DoR approved 2026-08-12 |
 | [T-302](T-302-event-duplication.md) | Event duplication | `todo` | partial |

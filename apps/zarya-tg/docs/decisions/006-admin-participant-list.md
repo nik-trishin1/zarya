@@ -18,3 +18,7 @@ Add «Участники» to the event management keyboard. Show a numbered lis
 
 - Admins can audit registrations without SQL or the Mini App
 - User-facing participant list remains out of scope
+
+## Addendum (ADR-025, 2026-08-18)
+
+For `requires_approval` events, show a **Заявки** block **above** confirmed (active, seat-expanded) and maybe lines. Each pending line: `N. Имя @username — на рассмотрении` plus **Принять** / **Отклонить**. `Всего` footer remains **active seats only**. Maybe formatting (ADR-022) unchanged.
