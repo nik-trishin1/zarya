@@ -32,7 +32,8 @@ For a **large product hypothesis** (new segment/Job, value proposition, position
 | `apps/zarya-tg/docs/research/` | UX analysis, benchmarks |
 | `apps/zarya-tg/docs/research/nmt/` | Next Move Theory hypothesis artifacts (not decisions) |
 | `Next-Move-Theory-Canon/` | Vendored AJTBD / NMT theses (skills read this exact path) |
-| `.cursor/skills/` | Cursor skills (`product-hypothesis`, `nmt-*`) |
+| `.cursor/skills/` | Cursor skills (`product-hypothesis`, `nmt-*`, adapted Matt Pocock productivity) |
+| `.cursor/skills/matt-pocock-productivity/` | Adopt/skip notes + MIT attribution for productivity skills |
 | `.cursor/rules/` | Cursor AI behavior rules (includes copies from `process/cursor-rules/`) |
 | `.github/workflows/ci.yml` | PR gates: pytest, lint/build, Railway log scan |
 
@@ -61,7 +62,7 @@ Code, comments, commit messages, and documentation are written in English. User-
 | `self-check.mdc` | Always Apply | Verify output before finalizing |
 | `anti-bias.mdc` | Always Apply | Check for cognitive biases |
 | `git-hygiene.mdc` | Always Apply | Commit and branch conventions |
-| `handoff-summary.mdc` | Apply Intelligently | Produce session handoff notes |
+| `handoff-summary.mdc` | Apply Intelligently | Session handoffs → prefer `.cursor/skills/handoff/` |
 | `context-management.mdc` | Apply Intelligently | Manage context budget |
 | `spec-driven-dev.mdc` | Apply Intelligently | Plan before coding |
 | `next-move-theory.mdc` | Apply Intelligently | Large product hypotheses via Next Move Theory |
@@ -78,6 +79,19 @@ Code, comments, commit messages, and documentation are written in English. User-
 | `nmt-craft-value-proposition` | Value hypotheses + RAT cards |
 | `nmt-product-requirements` | Build-oriented spec (still a hypothesis) |
 | `nmt-craft-go-to-market` | Landing / ads / growth communication |
+
+## Cursor skills for workflow (productivity)
+
+Adapted from Matt Pocock's productivity bucket. Details / skips: `.cursor/skills/matt-pocock-productivity/README.md`.
+
+| Skill | When |
+|-------|------|
+| `grill-me` / `grilling` | Stress-test a plan or design tree **before** DoR; never on factory-queued tickets or instead of NMT |
+| `handoff` | Compact session for a fresh agent → `apps/zarya-tg/docs/handoffs/` |
+| `to-questionnaire` | Async stakeholder gaps blocking Human summary / DoR → `apps/zarya-tg/docs/questionnaires/` |
+| `writing-for-agents` | Editing skills, `AGENTS.md`, or `CLAUDE.md` |
+
+Not installed: `teach`, `wait-what` (see productivity README).
 
 ## Commit Convention
 

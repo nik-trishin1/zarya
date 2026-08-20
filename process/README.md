@@ -10,6 +10,8 @@ Copy or submodule it into any repo to get the same AI-assisted → AI-Factory wo
 | [`next-move-theory/`](next-move-theory/) | How to vendor and use Next Move Theory for large product hypotheses |
 | [`cursor-rules/`](cursor-rules/) | Cursor `.mdc` rules to copy into `.cursor/rules/` |
 
+Workflow productivity skills (grill / handoff / questionnaire / writing-for-agents) live under [`.cursor/skills/`](../.cursor/skills/) with adopt/skip notes in [`.cursor/skills/matt-pocock-productivity/README.md`](../.cursor/skills/matt-pocock-productivity/README.md). They are project-wired adaptations, not a portable `process/` package.
+
 ## Adopt in another project
 
 1. Copy `process/` to the new repo root (or keep as a shared package).

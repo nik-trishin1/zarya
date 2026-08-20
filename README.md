@@ -19,7 +19,7 @@ zarya/
 ├── Next-Move-Theory-Canon/  # Vendored AJTBD / NMT theses
 ├── .cursor/
 │   ├── rules/         # Cursor AI behavior rules
-│   └── skills/        # product-hypothesis + nmt-* skills
+│   └── skills/        # product-hypothesis, nmt-*, productivity workflow skills
 ├── .github/
 │   └── workflows/     # CI (pytest, lint/build, Railway log scan)
 └── .gitignore

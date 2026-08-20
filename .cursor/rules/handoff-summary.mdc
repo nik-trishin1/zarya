@@ -3,6 +3,10 @@ description: Produce compact handoff snapshots for long tasks and multi-session 
 ---
 # Handoff Summary
 
-For long tasks and multi-step initiatives, produce a short handoff note containing: the current goal, what has already been done, which decisions have been made, active risks or blockers, and the next one to three steps with the key files involved.
+For long tasks and multi-step initiatives, produce a short handoff note.
+
+**Preferred path:** read and follow `.cursor/skills/handoff/SKILL.md` (writes to `apps/zarya-tg/docs/handoffs/`, references existing specs/tickets/ADRs, suggests next skills, redacts secrets).
+
+If the skill cannot be used, still include: the current goal, what has already been done, which decisions have been made, active risks or blockers, and the next one to three steps with the key files involved.
 
 Do not copy the full conversation. Retain only the context needed for a clean continuation of work in a new session.

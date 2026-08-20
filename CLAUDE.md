@@ -1,6 +1,6 @@
 # zarya — Claude Code notes
 
-Primary agent instructions for this repo are in `AGENTS.md`. The marked block below is the vendored Next Move Theory rules (Ivan Zamesin, CC BY-NC-SA 4.0). Cursor uses `.cursor/skills/product-hypothesis/` plus `.cursor/rules/next-move-theory.mdc`. Install and update: `process/next-move-theory/README.md`.
+Primary agent instructions for this repo are in `AGENTS.md`. The marked block below is the vendored Next Move Theory rules (Ivan Zamesin, CC BY-NC-SA 4.0). Cursor uses `.cursor/skills/product-hypothesis/` plus `.cursor/rules/next-move-theory.mdc`. Install and update: `process/next-move-theory/README.md`. Adapted productivity workflow skills (`grilling`, `handoff`, etc.): `.cursor/skills/matt-pocock-productivity/README.md`.
 
 <!-- Next-Move-Theory-Rules:start -->
 # Next Move Theory — rules for your AI agent
