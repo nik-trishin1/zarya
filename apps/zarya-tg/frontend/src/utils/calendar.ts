@@ -1,4 +1,4 @@
-import { getTelegramWebApp } from "./telegram";
+import { openExternalUrl } from "./telegram";
 
 /**
  * Open a pre-filled “add event” screen via HTTPS calendar URL.
@@ -7,10 +7,5 @@ import { getTelegramWebApp } from "./telegram";
  * `downloadFile` shows a .ics save dialog instead of the add-event UI.
  */
 export function openPrefilledCalendar(googleUrl: string): void {
-  const tg = getTelegramWebApp();
-  if (typeof tg?.openLink === "function") {
-    tg.openLink(googleUrl);
-    return;
-  }
-  window.open(googleUrl, "_blank", "noopener,noreferrer");
+  openExternalUrl(googleUrl);
 }

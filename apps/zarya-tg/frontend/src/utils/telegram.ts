@@ -32,3 +32,26 @@ export function toAbsoluteUrl(path: string): string {
   }
   return `${window.location.origin}${path.startsWith("/") ? path : `/${path}`}`;
 }
+
+function isTelegramHost(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host === "t.me" || host.endsWith(".t.me");
+  } catch {
+    return false;
+  }
+}
+
+/** Open an http(s) URL in the system browser; t.me links stay inside Telegram when possible. */
+export function openExternalUrl(url: string): void {
+  const tg = getTelegramWebApp();
+  if (isTelegramHost(url) && typeof tg?.openTelegramLink === "function") {
+    tg.openTelegramLink(url);
+    return;
+  }
+  if (typeof tg?.openLink === "function") {
+    tg.openLink(url);
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+}
