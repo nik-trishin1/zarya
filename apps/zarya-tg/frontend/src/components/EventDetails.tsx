@@ -27,6 +27,7 @@ import {
   isEventPast,
 } from "../utils/format";
 import { hapticImpact, openTelegramShareLink } from "../utils/telegram";
+import { LinkifiedText } from "./LinkifiedText";
 import "./EventDetails.css";
 
 interface EventDetailsProps {
@@ -254,7 +255,7 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
           </div>
         </div>
 
-        <p className="event-details__description">{event.description}</p>
+        <LinkifiedText className="event-details__description" text={event.description} />
 
         <div className="event-details__actions">
           {archiveView ? null : (

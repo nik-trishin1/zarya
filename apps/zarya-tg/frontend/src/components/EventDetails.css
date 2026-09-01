@@ -85,6 +85,16 @@
   white-space: pre-wrap;
 }
 
+.event-details__description .linkified-text__link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+.event-details__description .linkified-text__link:active {
+  opacity: 0.75;
+}
+
 .event-details__actions {
   display: flex;
   flex-direction: column;
