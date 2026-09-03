@@ -71,8 +71,10 @@ from app.services.events import (
 )
 from app.services.admin_notifications import (
     notify_admins_application,
+    notify_admins_registration_change,
     notify_user_application_decision,
 )
+from app.services.event_announcement import send_new_event_announcement
 from app.services.participant_broadcast import (
     build_broadcast_preview,
     send_participant_broadcast,
@@ -382,6 +384,14 @@ async def maybe_ping_going(callback: CallbackQuery):
             attendance.event,
             attendance.registration_count,
             party_size=1,
+        )
+    elif attendance.is_registered:
+        await notify_admins_registration_change(
+            user,
+            attendance.event,
+            attendance.registration_count,
+            registered=True,
+            party_size=attendance.party_size or 1,
         )
 
     await callback.answer(
@@ -765,12 +775,35 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
         await message.answer(text, reply_markup=markup)
 
 
+async def _answer_create_callback(callback: CallbackQuery) -> None:
+    """Answer immediately so Telegram does not retry a long create+broadcast."""
+    try:
+        await callback.answer()
+    except TelegramBadRequest:
+        pass
+
+
+async def _edit_create_progress(callback: CallbackQuery, text: str) -> None:
+    if callback.message is None:
+        return
+    try:
+        await callback.message.edit_text(text)
+    except TelegramBadRequest:
+        pass
+
+
 async def _finish_event_create(
     callback: CallbackQuery,
     state: FSMContext,
     *,
     notify: bool,
 ) -> None:
+    await _answer_create_callback(callback)
+    await _edit_create_progress(
+        callback,
+        "Создаём событие и рассылаем анонс…" if notify else "Создаём событие…",
+    )
+
     data = await state.get_data()
     audience_group_id = data.get("audience_group_id")
     async with async_session() as db:
@@ -827,8 +860,11 @@ async def _finish_event_create(
 
     await state.clear()
     await state.set_state(AdminStates.MENU)
-    await callback.message.edit_text(result, reply_markup=admin_menu_keyboard())
-    await callback.answer()
+    if callback.message is not None:
+        try:
+            await callback.message.edit_text(result, reply_markup=admin_menu_keyboard())
+        except TelegramBadRequest:
+            await callback.message.answer(result, reply_markup=admin_menu_keyboard())
 
 
 @router.callback_query(F.data == "admin:create:confirm")

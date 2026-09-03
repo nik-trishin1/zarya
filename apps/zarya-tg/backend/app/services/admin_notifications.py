@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import logging
 import re
 
@@ -27,9 +28,9 @@ def escape_markdown(text: str) -> str:
 
 def format_user_mention(user: User) -> str:
     if user.username:
-        return f"@{user.username}"
+        return "@" + user.username
     display_name = (user.first_name or "Участник").strip()
-    return escape_markdown(display_name)
+    return html.escape(display_name)
 
 
 def build_admin_registration_message(
@@ -41,8 +42,8 @@ def build_admin_registration_message(
     party_size: int = 1,
 ) -> str:
     mention = format_user_mention(user)
-    event_name = escape_markdown(event.name)
-    date_str = escape_markdown(format_event_date(event.date, event.time))
+    event_name = html.escape(event.name)
+    date_str = html.escape(format_event_date(event.date, event.time))
     if not registered:
         action = "отменил(а) регистрацию на"
     elif party_size > 1:
@@ -50,7 +51,7 @@ def build_admin_registration_message(
     else:
         action = "будет на"
     return (
-        f"{mention} {action} *{event_name}* *{date_str}*\n"
+        f"{mention} {action} <b>{event_name}</b> <b>{date_str}</b>\n"
         f"Всего гостей: {reg_count}"
     )
 
@@ -63,10 +64,10 @@ def build_admin_application_message(
     party_size: int = 1,
 ) -> str:
     mention = format_user_mention(user)
-    event_name = escape_markdown(event.name)
-    date_str = escape_markdown(format_event_date(event.date, event.time))
+    event_name = html.escape(event.name)
+    date_str = html.escape(format_event_date(event.date, event.time))
     return (
-        f"{mention} подал(а) заявку на *{event_name}* *{date_str}*\n"
+        f"{mention} подал(а) заявку на <b>{event_name}</b> <b>{date_str}</b>\n"
         f"Гостей в заявке: {party_size}\n"
         f"Всего гостей: {reg_count}"
     )
@@ -114,7 +115,7 @@ async def notify_admins_registration_change(
                     message,
                     user=admin_user,
                     context=context,
-                    parse_mode=ParseMode.MARKDOWN,
+                    parse_mode=ParseMode.HTML,
                 )
     finally:
         await bot.session.close()
@@ -149,7 +150,7 @@ async def notify_admins_application(
                     message,
                     user=admin_user,
                     context=context,
-                    parse_mode=ParseMode.MARKDOWN,
+                    parse_mode=ParseMode.HTML,
                     reply_markup=markup,
                 )
     finally:

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import logging
+from collections.abc import Awaitable
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy import select
@@ -39,6 +42,14 @@ from app.utils.calendar_tokens import create_calendar_token, verify_calendar_tok
 from app.utils.formatting import attendance_to_response, format_event_date
 
 router = APIRouter(tags=["registrations"])
+logger = logging.getLogger(__name__)
+
+
+async def _notify_admins_safely(coro: Awaitable[None]) -> None:
+    try:
+        await coro
+    except Exception:
+        logger.exception("Admin registration notification failed")
 
 
 async def _require_registered_event(
@@ -137,32 +148,38 @@ async def register_for_event(
     date_str = format_event_date(attendance.event.date, attendance.event.time)
     if attendance.is_pending:
         message = "Заявка отправлена. Ждём подтверждения."
-        await notify_admins_application(
-            user,
-            attendance.event,
-            attendance.registration_count,
-            party_size=party_size,
+        await _notify_admins_safely(
+            notify_admins_application(
+                user,
+                attendance.event,
+                attendance.registration_count,
+                party_size=party_size,
+            )
         )
     elif attendance.party_size > 1:
         message = (
             f"Вы зарегистрированы на {attendance.event.name} на {date_str} "
             f"(+{attendance.party_size - 1})"
         )
-        await notify_admins_registration_change(
-            user,
-            attendance.event,
-            attendance.registration_count,
-            registered=True,
-            party_size=attendance.party_size,
+        await _notify_admins_safely(
+            notify_admins_registration_change(
+                user,
+                attendance.event,
+                attendance.registration_count,
+                registered=True,
+                party_size=attendance.party_size,
+            )
         )
     else:
         message = f"Вы зарегистрированы на {attendance.event.name} на {date_str}"
-        await notify_admins_registration_change(
-            user,
-            attendance.event,
-            attendance.registration_count,
-            registered=True,
-            party_size=attendance.party_size,
+        await _notify_admins_safely(
+            notify_admins_registration_change(
+                user,
+                attendance.event,
+                attendance.registration_count,
+                registered=True,
+                party_size=attendance.party_size,
+            )
         )
     return RegistrationResponse(
         message=message,
@@ -191,12 +208,14 @@ async def update_registration_party_size(
     else:
         message = f"+1 убран с регистрации на {attendance.event.name}"
 
-    await notify_admins_registration_change(
-        user,
-        attendance.event,
-        attendance.registration_count,
-        registered=True,
-        party_size=attendance.party_size,
+    await _notify_admins_safely(
+        notify_admins_registration_change(
+            user,
+            attendance.event,
+            attendance.registration_count,
+            registered=True,
+            party_size=attendance.party_size,
+        )
     )
     return RegistrationResponse(
         message=message,
@@ -247,12 +266,14 @@ async def cancel_event_registration(
         raise _registration_error(e) from e
 
     if was_going or was_pending:
-        await notify_admins_registration_change(
-            user,
-            attendance.event,
-            attendance.registration_count,
-            registered=False,
-            party_size=0,
+        await _notify_admins_safely(
+            notify_admins_registration_change(
+                user,
+                attendance.event,
+                attendance.registration_count,
+                registered=False,
+                party_size=0,
+            )
         )
     message = (
         "Решил, что не пойду"

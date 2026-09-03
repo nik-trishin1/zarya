@@ -85,3 +85,9 @@ def test_build_new_event_announcement_omits_price_when_unset():
     message = build_new_event_announcement(_event(), "zarya_friends_bot")
     assert "₽" not in message
     assert "Бесплатно" not in message
+
+
+def test_handlers_module_wires_announcement_sender():
+    from app.bot import handlers
+
+    assert callable(handlers.send_new_event_announcement)

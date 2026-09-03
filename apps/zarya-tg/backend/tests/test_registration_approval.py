@@ -345,7 +345,7 @@ def test_application_copy():
     )
     user = User(user_id=1, telegram_id=100, username="anna", first_name="Anna")
     message = build_admin_application_message(user, event, 0, party_size=2)
-    assert "подал(а) заявку на *Фест*" in message
+    assert "подал(а) заявку на <b>Фест</b>" in message
     assert "Гостей в заявке: 2" in message
     assert build_user_approval_message(event) == (
         "Ваше участие на Фест · Вс, 28 июня, 19:00 подтверждено!"
