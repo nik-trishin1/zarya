@@ -22,8 +22,8 @@
 
 **Smoke check after merge:** Create `1000` → details and card show `1 000 ₽` between place and guests; announce has the line after place; «Без стоимости» hides it; edit can change or clear; fact icons use accent color
 
-**Reviewer decision:** `[ ] Approved to implement` · `[ ] Needs changes` · Reviewer: ____ · Date: ____  
-**DoR:** `[ ] Not ready` — Human summary + S-215 must be approved first
+**Reviewer decision:** `[x] Approved to implement` · Reviewer: Nikita · Date: 2026-09-16  
+**DoR:** `[x] Approved` — shipped in production; Nikita confirmed working (explicit override of waiting for separate review PASS)
 
 ---
 
@@ -31,7 +31,7 @@
 |-------|-------|
 | ID | T-215 |
 | Title | Optional event price + fact-row emphasis |
-| Status | `in_review` |
+| Status | `done` |
 | Spec / ADR | [S-215](../specs/S-215-event-price.md), [ADR-026](../decisions/026-event-price.md); ADR-011 / ADR-024 addenda |
 | App | `zarya-tg` |
 | Estimate | M |
@@ -78,3 +78,4 @@ Show an optional per-person ruble price consistently, and make event facts on th
 - PR URL: https://github.com/nik-trishin1/zarya/pull/28
 - Defaults chosen (if any): v1 writes whole RUB (`rubles * 100`) + `RUB`; null pair hides the row (no «Бесплатно»); `update_event` can clear the pair; thousands separator is U+202F; formatter also knows `$` / `€` for later.
 - Residual risks: Formatter drift if a caller bypasses `price_label`; DB CHECK not added on existing Postgres (service layer enforces the pair).
+- Done note: Marked `done` 2026-09-16 after Nikita confirmed production behavior; Human summary Approved retroactively (override of waiting for separate review PASS).

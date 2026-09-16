@@ -6,7 +6,7 @@ Project-specific tickets live here. **Templates and DoR are portable** — use:
 - [`process/ai-factory/DEFINITION_OF_READY.md`](../../../../process/ai-factory/DEFINITION_OF_READY.md)
 - [`process/ai-factory/SPEC_TEMPLATE.md`](../../../../process/ai-factory/SPEC_TEMPLATE.md)
 
-Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-18).
+Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-09-16).
 
 ## Index
 
@@ -14,11 +14,7 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-18).
 
 | ID | Title | Status | DoR |
 |----|-------|--------|-----|
-| [T-213](T-213-approval-backend-bot.md) | Backend + bot registration approval | `in_review` | implemented on PR 28; Human summary still unchecked |
-| [T-214](T-214-approval-mini-app.md) | Mini App registration approval UI | `in_review` | implemented on PR 28; Human summary still unchecked |
-| [T-215](T-215-event-price.md) | Event price + fact-row emphasis | `in_review` | implemented on PR 28; Human summary still unchecked |
 | [T-212](T-212-almost-full-maybe-nudge.md) | Almost-full nudge for maybe RSVPs | `todo` | no — low priority; needs ADR addendum |
-| [T-203](T-203-past-events-archive.md) | Past events archive | `done` | yes — DoR approved 2026-08-12 |
 | [T-302](T-302-event-duplication.md) | Event duplication | `todo` | partial |
 | [T-301](T-301-event-ownership-editing.md) | Ownership + in-app edit | `todo` | no — split required (ADR-014) |
 | [T-204](T-204-event-categories.md) | Categories / filters | `todo` | no — ADR missing |
@@ -45,6 +41,10 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-08-18).
 | [T-209](T-209-is-featured-bot.md) | Backend `is_featured` + bot create/edit | `done` | yes |
 | [T-210](T-210-home-poster-slider.md) | Frontend home poster slider | `done` | yes |
 | [T-211](T-211-maybe-rsvp-delayed-ping.md) | Maybe RSVP («Подумаю») + delayed bot ping | `done` | yes |
+| [T-203](T-203-past-events-archive.md) | Past events archive | `done` | yes — DoR approved 2026-08-12 |
 | [T-220](T-220-luma-event-cards.md) | Luma-style event cards + date headers | `done` | yes |
 | [T-221](T-221-circular-rsvp-details.md) | Circular RSVP + event details chrome | `done` | yes |
 | [T-222](T-222-tokens-header-empty.md) | Tokens, header chrome, empty states | `done` | yes |
+| [T-213](T-213-approval-backend-bot.md) | Backend + bot registration approval | `done` | yes — production confirmed 2026-09-16 (PR #28) |
+| [T-214](T-214-approval-mini-app.md) | Mini App registration approval UI | `done` | yes — production confirmed 2026-09-16 (PR #28) |
+| [T-215](T-215-event-price.md) | Event price + fact-row emphasis | `done` | yes — production confirmed 2026-09-16 (PR #28) |

@@ -21,8 +21,8 @@
 
 **Smoke check after merge:** Create approval event → POST register → `is_pending`, seats unchanged → admin Принять → `active` + user DM exact copy; Отклонить then POST again → pending again; open event still goes `active` immediately
 
-**Reviewer decision:** `[ ] Approved to implement` · `[ ] Needs changes` · Reviewer: ____ · Date: ____  
-**DoR:** `[ ] Not ready` — Human summary + S-213 must be approved first
+**Reviewer decision:** `[x] Approved to implement` · Reviewer: Nikita · Date: 2026-09-16  
+**DoR:** `[x] Approved` — shipped in production; Nikita confirmed working (explicit override of waiting for separate review PASS)
 
 ---
 
@@ -30,7 +30,7 @@
 |-------|-------|
 | ID | T-213 |
 | Title | Backend + bot registration approval |
-| Status | `in_review` |
+| Status | `done` |
 | Spec / ADR | [S-213](../specs/S-213-manual-registration-approval.md), [ADR-025](../decisions/025-manual-registration-approval.md); ADR-005/006/007/012/013/019/022 addenda |
 | App | `zarya-tg` |
 | Estimate | M |
@@ -84,4 +84,5 @@ Persist approval-mode events and pending applications; let admins decide in the 
 
 - PR URL: https://github.com/nik-trishin1/zarya/pull/28
 - Defaults chosen (if any): Approval flag is create-only; pending does not occupy seats; apply when full → 409; maybe-ping «Буду» on approval events → pending.
-- Residual risks: Pending leaking into calendar/reminders/broadcasts; re-apply after reject must create a new admin DM. Human summary was not checked before implement (explicit sequential-ship request).
+- Residual risks: Pending leaking into calendar/reminders/broadcasts; re-apply after reject must create a new admin DM.
+- Done note: Marked `done` 2026-09-16 after Nikita confirmed production behavior; Human summary Approved retroactively (override of waiting for separate review PASS).
