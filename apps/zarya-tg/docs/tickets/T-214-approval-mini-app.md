@@ -20,8 +20,8 @@
 
 **Smoke check after merge:** Approval event → «Записаться» → overlay «На рассмотрении», guest count unchanged, event under «Мои», no calendar → after accept (API) UI looks like a normal going RSVP
 
-**Reviewer decision:** `[ ] Approved to implement` · `[ ] Needs changes` · Reviewer: ____ · Date: ____  
-**DoR:** `[ ] Not ready` — Human summary + S-213 must be approved; implement after T-213 API exists
+**Reviewer decision:** `[x] Approved to implement` · Reviewer: Nikita · Date: 2026-09-16  
+**DoR:** `[x] Approved` — shipped in production; Nikita confirmed working (explicit override of waiting for separate review PASS)
 
 ---
 
@@ -29,7 +29,7 @@
 |-------|-------|
 | ID | T-214 |
 | Title | Mini App registration approval UI |
-| Status | `in_review` |
+| Status | `done` |
 | Spec / ADR | [S-213](../specs/S-213-manual-registration-approval.md), [ADR-025](../decisions/025-manual-registration-approval.md), [ADR-024](../decisions/024-mini-app-visual-language.md) |
 | App | `zarya-tg` |
 | Estimate | S |
@@ -74,3 +74,4 @@ Make pending applications visible and controllable in the Mini App without treat
 - PR URL: https://github.com/nik-trishin1/zarya/pull/28
 - Defaults chosen (if any): Missing `is_pending` treated as false; pending uses accent selected circle (not a third RSVP circle); ticket count includes `/my` pending.
 - Residual risks: Mixing pending with `is_registered` would unlock calendar too early.
+- Done note: Marked `done` 2026-09-16 after Nikita confirmed production behavior; Human summary Approved retroactively (override of waiting for separate review PASS).
