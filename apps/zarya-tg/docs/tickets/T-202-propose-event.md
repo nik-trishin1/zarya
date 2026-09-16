@@ -4,18 +4,21 @@
 ## Human summary (review this first)
 
 **Will do:**
-- (Later) Let users propose events; admin approves or rejects
+- Nothing in product for now — **deferred** per [ADR-016](../decisions/016-defer-user-event-proposals.md)
+- Concierge path only: participants message the admin; admin creates events via existing `/admin` FSM
 
 **Will not do:**
-- Anything until ADR-016 exists
+- Mini App proposal form
+- Draft event / proposal entities
+- Approve/reject publish pipeline (options B/C)
 
-**Touched areas:** Mini App + admin moderation (future)
+**Touched areas:** Docs only (ADR-016 + backlog)
 
-**Risk:** High without ADR — **blocked**
+**Risk:** None for product code
 
 **Smoke check after merge:** N/A
 
-**Reviewer decision:** `[ ] Approved to implement` — blocked on ADR-016
+**Reviewer decision:** Product path deferred until clear demand — see ADR-016 (2026-09-16)
 
 ---
 
@@ -23,25 +26,31 @@
 |-------|-------|
 | ID | T-202 |
 | Title | User event proposals with admin approve/reject |
-| Status | `blocked` |
-| Spec / ADR | ADR-016 (**to be written**) — not DoR |
+| Status | `cancelled` |
+| Spec / ADR | [ADR-016](../decisions/016-defer-user-event-proposals.md) (Accepted — defer product / concierge A) |
 | App | `zarya-tg` |
-| Estimate | L (split after ADR) |
+| Estimate | — |
 
 ## Goal
 
-Any registered user can submit an event proposal; admin approves (publish + announce) or rejects (delete draft).
+~~Any registered user can submit an event proposal; admin approves (publish + announce) or rejects (delete draft).~~
+
+**Cancelled / deferred until demand (2026-09-16):** Keep concierge (message admin). Do not build Mini App form, drafts, or approve/reject. Revisit only if there is clear demand for “create my own events.” ADR-014 / T-301 stay separate.
 
 ## Acceptance Criteria
 
-- [ ] Draft ADR-016 covering: draft model fields, Mini App proposal UI, admin approve/reject flows, announcement on publish
-- [ ] Only then: split into implement tickets with concrete AC
+- [x] ADR-016 records deferral (concierge A; non-goals B/C; revisit on demand)
+- [x] Ticket + backlog marked cancelled with deferred-until-demand rationale
+- [ ] ~~Draft ADR-016 covering full draft model + Mini App UI + approve/reject~~ (not now)
+- [ ] ~~Split into implement tickets~~ (only if ADR revisits)
 
 ## Out of Scope
 
 - Public web proposals
 - Paid featured listings
+- Product options B and C until demand justifies a new ADR
 
 ## Implementation Notes
 
-- Blocked on ADR-016. Not factory-ready.
+- Repo has no `deferred` status; use `cancelled` with explicit “deferred until demand” (same pattern as T-205).
+- Not factory-ready. No product code.
