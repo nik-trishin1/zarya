@@ -44,7 +44,6 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 | **T-204** | Event categories + filter chips | Category ADR | [ticket](tickets/T-204-event-categories.md) |
 | **T-206** | Admin analytics dashboard | Metrics + channel ADR | [ticket](tickets/T-206-analytics-dashboard.md) |
 | **T-201** | Access codes (circle tier) | ADR-015 (after ADR-020 groups) | [ticket](tickets/T-201-access-codes.md) |
-| **T-202** | Propose your own event | ADR-016 | [ticket](tickets/T-202-propose-event.md) |
 | **T-303** | Invite system | Invite ADR | [ticket](tickets/T-303-invite-system.md) |
 | **T-304** | Public web version (zarya.org) | Web ADR | [ticket](tickets/T-304-web-version.md) |
 
@@ -52,6 +51,7 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 | ID | Title | Reason | Links |
 |----|-------|--------|-------|
+| **T-202** | Propose your own event | Deferred until demand — concierge A (ADR-016); no Mini App form / drafts / approve pipeline | [ticket](tickets/T-202-propose-event.md) · [ADR-016](decisions/016-defer-user-event-proposals.md) |
 | **T-205** | English i18n | Russian-only (ADR-003) | [ticket](tickets/T-205-english-i18n.md) |
 
 ### Ops / launch (Phase 4 leftovers)
@@ -101,4 +101,8 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 1. **T-302** event duplication (Human summary approve) — duplicate from admin archive detail.
 2. Whether **T-301** ownership/edit is next Iteration 3 priority (split required).
+<<<<<<< HEAD
 3. **T-202** propose-event remains Needs ADR (ADR-016) — design work is separate; not factory-ready.
+=======
+3. Do **not** enqueue T-202 product work — deferred to concierge (ADR-016) until clear demand.
+>>>>>>> 4226eec (docs(zarya-tg): ADR-016 defer T-202 propose-event)

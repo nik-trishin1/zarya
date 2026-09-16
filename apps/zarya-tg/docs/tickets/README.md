@@ -20,7 +20,6 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-09-16).
 | [T-204](T-204-event-categories.md) | Categories / filters | `todo` | no — ADR missing |
 | [T-206](T-206-analytics-dashboard.md) | Analytics dashboard | `todo` | no — ADR missing |
 | [T-201](T-201-access-codes.md) | Access codes | `blocked` | no — ADR-015 after ADR-020 |
-| [T-202](T-202-propose-event.md) | Propose event | `blocked` | no — ADR-016 missing |
 | [T-303](T-303-invite-system.md) | Invite system | `blocked` | no |
 | [T-304](T-304-web-version.md) | Public web version | `blocked` | no |
 
@@ -28,6 +27,7 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-09-16).
 
 | ID | Title | Status | DoR |
 |----|-------|--------|-----|
+| [T-202](T-202-propose-event.md) | Propose event | `cancelled` | n/a — deferred until demand (ADR-016, concierge A) |
 | [T-205](T-205-english-i18n.md) | English i18n | `cancelled` | n/a (Russian-only, ADR-003) |
 
 ### Done
