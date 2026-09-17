@@ -13,6 +13,7 @@ Project notes for the factory process. **Portable standards live in** [`process/
 | CI + Railway logs | `process/ai-factory/CI.md` |
 | zarya tickets | [`../tickets/`](../tickets/) |
 | Pilot review | [`PILOT_REVIEW.md`](PILOT_REVIEW.md) |
+| Course notes (2026-09-11) — planning input | [`../research/ai-factory-course-2026-09-11/`](../research/ai-factory-course-2026-09-11/) |
 
 ## Operator next steps
 
