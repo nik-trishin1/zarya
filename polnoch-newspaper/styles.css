@@ -654,6 +654,94 @@ h2 {
   color: var(--muted);
 }
 
+/* Page 3: set type, not a photograph. Do not flex-grow. */
+
+.archive-quote {
+  margin: 6mm 0 0;
+  flex: 0 0 auto;
+  padding: 1mm 0 1mm 5.5mm;
+  border-left: 1.6pt solid var(--amber);
+}
+
+.archive-quote p {
+  margin: 0;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 12pt;
+  line-height: 15.6pt;
+  color: var(--ink);
+}
+
+.archive-quote span {
+  display: block;
+  margin: 0 0 2.4mm;
+  font-family: "Noto Sans", sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 8.2pt;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--amber);
+}
+
+/* Page 5: small tilted xerox of the magazine only. */
+
+.scan-wrap {
+  margin: 6mm 0 0 6mm;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 52mm;
+}
+
+.scan-wrap .scan {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.scan-wrap figcaption {
+  margin: 2.2mm 0 0 3mm;
+  width: max-content;
+  white-space: nowrap;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 6.6pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Page 7: compact xerox schematic, not a plate. */
+
+.schematic {
+  margin: 8mm 0 2mm;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 112mm;
+  padding: 3.2mm 4mm 2.8mm;
+  background: #e4ddcf;
+  border: 0.55pt solid #cfc6b6;
+  transform: rotate(-2.4deg);
+  transform-origin: left center;
+}
+
+.schematic svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.schematic figcaption {
+  margin: 1.6mm 0 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 6.6pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3c3934;
+}
+
 /* Page 7 */
 
 .board p.line {
