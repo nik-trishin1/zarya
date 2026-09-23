@@ -38,7 +38,12 @@ def export_pdf() -> None:
         f"--print-to-pdf={PDF}",
         HTML.as_uri(),
     ]
-    subprocess.run(cmd, check=True, timeout=90)
+    try:
+        subprocess.run(cmd, check=True, timeout=25)
+    except subprocess.TimeoutExpired:
+        # Headless Chrome writes the PDF and then lingers. Keep the file.
+        if not PDF.exists() or PDF.stat().st_size < 1000:
+            raise
     if not PDF.exists() or PDF.stat().st_size < 1000:
         raise SystemExit("PDF export failed")
 
