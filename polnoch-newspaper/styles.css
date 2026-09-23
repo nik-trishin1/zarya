@@ -49,13 +49,15 @@
 }
 
 :root {
-  --bg: #0a0d17;
-  --bg-2: #161d31;
-  --ink: #f3f0e8;
-  --muted: #bec4d1;
-  --line: #495167;
-  --amber: #e4a44b;
+  /* Light paper: ink goes to type and accents, not to full-page fills. */
+  --bg: #ffffff;
+  --bg-2: #ffffff;
+  --ink: #0a0d17;
+  --muted: #495167;
+  --line: #c5cad6;
+  --amber: #c9842a;
   --clay: #d86f57;
+  --on-amber: #0a0d17;
   --side: 16mm;
   --top: 15mm;
 }
@@ -68,7 +70,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: #05070d;
+  background: #e8e6e0;
   color: var(--ink);
 }
 
@@ -82,8 +84,7 @@ body {
   width: 210mm;
   height: 297mm;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 50% 18%, #141b2e 0%, var(--bg) 58%);
+  background: var(--bg);
   color: var(--ink);
   break-after: page;
   page-break-after: always;
@@ -296,10 +297,11 @@ h2 {
   font-size: 13pt;
 }
 
-/* Cover */
+/* Cover — dark photo stays; type stays light on top of it. */
 
 .cover {
-  background: var(--bg);
+  background: #0a0d17;
+  color: #f3f0e8;
 }
 
 .cover-bg {
@@ -324,6 +326,10 @@ h2 {
   top: 13mm;
 }
 
+.cover .kicker {
+  color: #e4a44b;
+}
+
 .cover h1 {
   margin: 1.2mm 0 1.6mm;
   font-family: "Oswald", "Noto Sans", sans-serif;
@@ -331,7 +337,7 @@ h2 {
   font-size: 56pt;
   line-height: 0.86;
   letter-spacing: 0.045em;
-  color: var(--ink);
+  color: #f3f0e8;
 }
 
 .cover .date {
@@ -340,7 +346,7 @@ h2 {
   font-weight: 700;
   font-size: 12pt;
   letter-spacing: 0.14em;
-  color: var(--amber);
+  color: #e4a44b;
 }
 
 .cover .place {
@@ -349,7 +355,7 @@ h2 {
   font-weight: 400;
   font-size: 10pt;
   letter-spacing: 0.04em;
-  color: var(--muted);
+  color: #bec4d1;
 }
 
 .cover-mid {
@@ -362,7 +368,7 @@ h2 {
   font-weight: 700;
   font-size: 9.5pt;
   letter-spacing: 0.12em;
-  color: var(--amber);
+  color: #e4a44b;
 }
 
 .cover-mid::before,
@@ -389,7 +395,7 @@ h2 {
   font-weight: 700;
   font-size: 7.4pt;
   letter-spacing: 0.08em;
-  color: var(--muted);
+  color: #bec4d1;
 }
 
 .cover-signal {
@@ -397,7 +403,7 @@ h2 {
   font-family: "Inter", "Noto Sans", sans-serif;
   font-size: 10pt;
   line-height: 13pt;
-  color: var(--ink);
+  color: #f3f0e8;
 }
 
 /* Page 3 strata */
@@ -484,7 +490,7 @@ h2 {
   width: 112mm;
   height: 86mm;
   padding: 2.2mm;
-  background: #101524;
+  background: var(--bg-2);
   border: 0.5pt solid var(--line);
   border-radius: 2mm;
   transform: rotate(-1.4deg);
@@ -631,7 +637,7 @@ h2 {
   display: flex;
   flex-direction: column;
   padding: 2.2mm;
-  background: #101524;
+  background: var(--bg-2);
   border: 0.5pt solid var(--line);
   border-radius: 2mm;
 }
@@ -719,8 +725,8 @@ h2 {
   align-self: flex-start;
   width: 112mm;
   padding: 3.2mm 4mm 2.8mm;
-  background: #e4ddcf;
-  border: 0.55pt solid #cfc6b6;
+  background: #f7f2e8;
+  border: 0.55pt solid var(--line);
   transform: rotate(-2.4deg);
   transform-origin: left center;
 }
@@ -855,7 +861,7 @@ h2 {
   margin-top: auto;
   width: 100%;
   background: var(--amber);
-  color: var(--bg);
+  color: var(--on-amber);
   border-radius: 3mm;
   padding: 4.5mm 5mm 5mm;
 }
@@ -874,7 +880,7 @@ h2 {
   font-size: 12pt;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--bg);
+  color: var(--on-amber);
 }
 
 .bang {
@@ -889,7 +895,7 @@ h2 {
 .letter .greet,
 .letter .open {
   font-family: "Noto Sans", sans-serif;
-  color: var(--bg);
+  color: var(--on-amber);
 }
 
 .letter .ask {
@@ -908,7 +914,7 @@ h2 {
 
 .lines i {
   display: block;
-  border-bottom: 0.9pt solid var(--bg);
+  border-bottom: 0.9pt solid var(--on-amber);
   height: 0;
 }
 
@@ -941,6 +947,6 @@ h2 {
 
   .page {
     margin: 0 auto 8mm;
-    box-shadow: 0 0 0 0.4pt #495167;
+    box-shadow: 0 0 0 0.4pt #b8bcc8;
   }
 }
