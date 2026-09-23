@@ -741,6 +741,10 @@ h2 {
   color: #3c3934;
 }
 
+.schematic + .folio {
+  margin-top: auto;
+}
+
 /* Page 7 */
 
 .board p.line {
