@@ -685,31 +685,30 @@ h2 {
   color: var(--amber);
 }
 
-/* Page 5: small tilted xerox of the magazine only. */
-
-.scan-wrap {
-  margin: 6mm 0 0 6mm;
-  flex: 0 0 auto;
-  align-self: flex-start;
-  width: 52mm;
+.archive-quote cite {
+  display: block;
+  margin-top: 3.2mm;
+  font-family: "Noto Sans", sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 7.2pt;
+  letter-spacing: 0.04em;
+  color: var(--muted);
 }
 
-.scan-wrap .scan {
+/* Page 5: small orbit mark, not a photograph. */
+
+.orbit-mark {
+  margin: 8mm 0 0 2mm;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 28mm;
+}
+
+.orbit-mark svg {
   display: block;
   width: 100%;
   height: auto;
-}
-
-.scan-wrap figcaption {
-  margin: 2.2mm 0 0 3mm;
-  width: max-content;
-  white-space: nowrap;
-  font-family: "Noto Sans", sans-serif;
-  font-weight: 700;
-  font-size: 6.6pt;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
 }
 
 /* Page 7: compact xerox schematic, not a plate. */
