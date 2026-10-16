@@ -7,6 +7,7 @@ A community platform for organizing and attending social events — built around
 | App | Description | Stack |
 |-----|-------------|-------|
 | [zarya-tg](apps/zarya-tg/) | Telegram Mini App (MVP) | React + FastAPI + PostgreSQL |
+| [link-qr](apps/link-qr/) | Personal short links + QR + UTM click stats | FastAPI + Jinja2 + PostgreSQL |
 
 ## Repository Structure
 
@@ -15,7 +16,8 @@ zarya/
 ├── AGENTS.md          # AI agent instructions (read first)
 ├── process/           # Portable AI-Factory + Next Move Theory wiring
 ├── apps/
-│   └── zarya-tg/      # Telegram Mini App
+│   ├── zarya-tg/      # Telegram Mini App
+│   └── link-qr/       # Personal short-link + QR + UTM analytics
 ├── Next-Move-Theory-Canon/  # Vendored AJTBD / NMT theses
 ├── .cursor/
 │   ├── rules/         # Cursor AI behavior rules

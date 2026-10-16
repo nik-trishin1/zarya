@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Новая ссылка</h1>
+  <p>Короткая ссылка + QR + клики по UTM. Public base: <span class="mono">{{ public_base_url }}</span></p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post" action="/links">
+    <label>
+      Destination URL
+      <input type="url" name="destination_url" required
+             placeholder="https://example.com/page"
+             value="{{ form.destination_url if form else '' }}">
+    </label>
+    <label>
+      Custom slug (опционально)
+      <input type="text" name="slug" pattern="[A-Za-z0-9]([A-Za-z0-9_-]{0,62}[A-Za-z0-9])?"
+             placeholder="lecture-april"
+             value="{{ form.slug if form else '' }}">
+    </label>
+    <p>Default UTM (подставятся, если в клике нет своих):</p>
+    <div class="row">
+      <label>utm_source
+        <input type="text" name="utm_source" value="{{ form.utm_source if form else '' }}">
+      </label>
+      <label>utm_medium
+        <input type="text" name="utm_medium" value="{{ form.utm_medium if form else '' }}">
+      </label>
+    </div>
+    <div class="row">
+      <label>utm_campaign
+        <input type="text" name="utm_campaign" value="{{ form.utm_campaign if form else '' }}">
+      </label>
+      <label>utm_content
+        <input type="text" name="utm_content" value="{{ form.utm_content if form else '' }}">
+      </label>
+    </div>
+    <label>utm_term
+      <input type="text" name="utm_term" value="{{ form.utm_term if form else '' }}">
+    </label>
+    <button type="submit">Создать</button>
+  </form>
+{% endblock %}

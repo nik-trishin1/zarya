@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Вход</h1>
+  <p>Введите ADMIN_TOKEN, чтобы создавать ссылки и смотреть статистику.</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post" action="/login">
+    <label>
+      Токен
+      <input type="password" name="admin_token" required autocomplete="current-password">
+    </label>
+    <button type="submit">Войти</button>
+  </form>
+{% endblock %}

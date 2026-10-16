@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Статистика · {{ link.slug }}</h1>
+  <div class="box">
+    <p>Short URL: <span class="mono"><a href="{{ short_url }}">{{ short_url }}</a></span></p>
+    <p>Destination: <span class="mono">{{ link.destination_url }}</span></p>
+    {% if default_utm %}
+      <p>Default UTM:
+        <span class="mono">
+          {% for k, v in default_utm.items() %}{{ k }}={{ v }}{% if not loop.last %}; {% endif %}{% endfor %}
+        </span>
+      </p>
+    {% endif %}
+    <p>Всего кликов: <strong>{{ total }}</strong></p>
+    <img class="qr" src="{{ qr_url }}" alt="QR">
+  </div>
+
+  {% for field, rows in breakdowns.items() %}
+    <h2 style="font-size:1.15rem;margin:1.5rem 0 0.25rem;">{{ field }}</h2>
+    {% if rows %}
+      <table>
+        <thead><tr><th>Значение</th><th>Клики</th></tr></thead>
+        <tbody>
+          {% for row in rows %}
+            <tr><td class="mono">{{ row.value }}</td><td>{{ row.count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>Пока нет кликов.</p>
+    {% endif %}
+  {% endfor %}
+
+  <div class="actions">
+    <a class="button" href="/">Новая ссылка</a>
+  </div>
+{% endblock %}
