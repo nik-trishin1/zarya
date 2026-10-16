@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Ссылка создана</h1>
+  <div class="box">
+    <p>Short URL</p>
+    <p class="mono"><a href="{{ short_url }}">{{ short_url }}</a></p>
+  </div>
+  <div class="box">
+    <p>QR</p>
+    <img class="qr" src="{{ qr_url }}" alt="QR code for {{ link.slug }}">
+    <p class="mono">{{ qr_url }}</p>
+  </div>
+  <div class="actions">
+    <a class="button" href="{{ stats_url }}">Статистика</a>
+    <a class="button" href="/">Ещё ссылка</a>
+  </div>
+{% endblock %}
