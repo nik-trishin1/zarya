@@ -16,7 +16,7 @@ When the task is a **large product bet** (who to serve, which Jobs to compete fo
 
 ## Why this exists
 
-Ivan Zamesin's **Advanced Jobs To Be Done / Next Move Theory** diverges from Christensen / Ulwick / Moesta JTBD. The working theses and canon routing table are in `AGENTS.md` between `<!-- Next-Move-Theory-Rules:start -->` and `<!-- Next-Move-Theory-Rules:end -->`. How this repo installs and updates them: `process/next-move-theory/README.md`.
+Ivan Zamesin's **Advanced Jobs To Be Done / Next Move Theory** diverges from Christensen / Ulwick / Moesta JTBD. The working theses are in `Next-Move-Theory-Canon/Advanced-Jobs-To-Be-Done/ajtbd-key-theses.md` (read on demand; no longer inlined in `AGENTS.md` / `CLAUDE.md`). How this repo installs and updates them: `process/next-move-theory/README.md`.
 
 ## Cursor-specific behavior
 

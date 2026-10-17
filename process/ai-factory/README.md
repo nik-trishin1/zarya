@@ -23,6 +23,7 @@ Humans review that summary **before** enqueueing implementation. Agents treat an
 | [`DEFINITION_OF_READY.md`](DEFINITION_OF_READY.md) | Gate before factory queue |
 | [`REVIEW_PASS.md`](REVIEW_PASS.md) | Separate post-implement review |
 | [`ORCHESTRATOR.md`](ORCHESTRATOR.md) | Cursor Automation / Cloud Agent wiring |
+| [`SKILL_INSTALL.md`](SKILL_INSTALL.md) | Audit SOP for third-party skills; Superpowers/GSD not default |
 | [`CI.md`](CI.md) | Required CI gates including optional Railway log scan |
 | [`scripts/check-railway-logs.sh`](scripts/check-railway-logs.sh) | Portable Railway deploy/HTTP log scanner |
 

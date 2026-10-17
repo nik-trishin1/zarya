@@ -21,7 +21,7 @@ The official installer writes these paths (keep the canon folder name exact — 
 | `.agents/skills/nmt-*` | Codex skills (`$nmt-…`) |
 | `.cursor/skills/nmt-*` | Same Codex-flavored skills, copied for Cursor discovery |
 | `.cursor/skills/product-hypothesis/` | Cursor front door / router (this repo) |
-| `AGENTS.md` / `CLAUDE.md` | Rules block between `<!-- Next-Move-Theory-Rules:… -->` markers |
+| `AGENTS.md` / `CLAUDE.md` | Installer injects a rules block between `<!-- Next-Move-Theory-Rules:… -->` markers; zarya removes it (token cost) — see Install / update |
 | `NextMoveTheory-README.md` | Upstream README, renamed so it does not clobber the project README |
 
 Cursor-specific extras in this repo:
@@ -66,6 +66,8 @@ bash process/next-move-theory/sync-cursor-skills.sh
 The first command refreshes the canon, `.claude/skills`, `.agents/skills`, `NextMoveTheory-README.md`, `.nmt-version`, and the marked rules blocks (project text outside the markers is kept). The second copies Codex skills into `.cursor/skills/` and **does not** delete `product-hypothesis`.
 
 Alternatively invoke the vendored `nmt-upgrade` skill, then run the sync script.
+
+**After every install/upgrade:** delete the re-injected `<!-- Next-Move-Theory-Rules:start -->` … `end` block from `AGENTS.md` and `CLAUDE.md` (~7–8k tokens per turn, duplicated). The same theses stay available on demand via `.cursor/rules/next-move-theory.mdc` and `Next-Move-Theory-Canon/Advanced-Jobs-To-Be-Done/ajtbd-key-theses.md`.
 
 ## Skills (invoke by asking, or by reading the SKILL.md)
 

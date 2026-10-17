@@ -80,7 +80,7 @@ Producer pipeline (jump in where the user already is):
 
 ## Step 2 — non-negotiables (AJTBD, not generic JTBD)
 
-These are restated from the injected Next Move Theory block in `AGENTS.md`. If unsure, **open the canon file** named in that routing table.
+Short form of `Next-Move-Theory-Canon/Advanced-Jobs-To-Be-Done/ajtbd-key-theses.md`. If unsure, **open that canon file** (it maps to the deeper files).
 
 - A **Job** is a desired transition (situation → expected outcome), not "progress," not a persona, not a feature. Primary element: `I want to + verb`. One verb per Job.
 - **Value** is greater energy efficiency for that Job vs the brain's prediction. Success criteria specify value. Feature ≠ value.
