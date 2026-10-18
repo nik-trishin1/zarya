@@ -1,0 +1,16 @@
+---
+description: Lock user-facing copy to the owning ADR and a failing test
+alwaysApply: true
+---
+
+# Copy contract
+
+User-facing Russian copy comes from the ADR or PRD that owns the string. A handoff is a history note. When a handoff and an ADR disagree, follow the ADR.
+
+When changing guest counts, event descriptions, bot prompts, or announcement order:
+
+1. Pin the exact string in a test that fails if it drifts. Guest count and the description step live in `apps/zarya-tg/backend/tests/test_copy_contract.py`. Announcement order lives in `tests/test_event_announcement.py`.
+2. A required bot step stays on that step until `plain_user_text` is non-empty. A photo caption counts as text.
+3. When a test and an ADR disagree, change the test so it matches the ADR.
+
+The 2026-10-18 production miss is written up in `apps/zarya-tg/docs/postmortems/2026-10-18-incorrect-event-copy.md`.
