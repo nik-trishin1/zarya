@@ -5,7 +5,7 @@ Usage (from apps/zarya-tg/backend):
   PYTHONPATH=. python -m app.scripts.add_group_members --group core --telegram-ids 123,456
   PYTHONPATH=. python -m app.scripts.add_group_members --group core --user-ids 1,2,3
 
-Does not run automatically (roster seed at app startup uses CORE_SEED_USER_IDS).
+Does not run automatically. Startup seeds Core from CORE_SEED_USER_IDS and Test from TEST_SEED_USERNAMES.
 """
 
 from __future__ import annotations

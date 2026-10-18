@@ -7,7 +7,7 @@ import pytest
 
 from app.database import async_session, engine, Base
 from app.models.event import Event
-from app.schema_updates import CORE_GROUP_SLUG
+from app.schema_updates import CORE_GROUP_SLUG, TEST_GROUP_SLUG, TEST_SEED_USERNAMES
 from app.services.access_groups import (
     add_user_to_group,
     build_group_welcome_message,
@@ -71,6 +71,71 @@ async def test_seed_core_roster_adds_configured_users():
         assert already2 == 2
         assert missing2 == 0
         welcome2.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_test_group_seeded():
+    async with async_session() as db:
+        group = await get_group_by_slug(db, TEST_GROUP_SLUG)
+        assert group is not None
+        assert group.name == "Test"
+        assert group.group_id != (await get_group_by_slug(db, CORE_GROUP_SLUG)).group_id
+
+
+@pytest.mark.asyncio
+async def test_seed_test_roster_adds_configured_usernames_only():
+    import uuid
+
+    async with async_session() as db:
+        suffix = uuid.uuid4().int % 1_000_000
+        nikita_name = f"niktrishin{suffix}"
+        lera_name = f"lerakayde{suffix}"
+        nikita = await get_or_create_user(
+            db,
+            telegram_id=971_000_000 + suffix,
+            username=nikita_name.upper(),
+            first_name="Nikita",
+        )
+        lera = await get_or_create_user(
+            db,
+            telegram_id=972_000_000 + suffix,
+            username=lera_name,
+            first_name="Lera",
+        )
+        outsider = await get_or_create_user(
+            db,
+            telegram_id=973_000_000 + suffix,
+            username=f"someone{suffix}",
+            first_name="Other",
+        )
+        from app.services.access_groups import seed_test_roster
+
+        handles = (f"@{nikita_name}", lera_name, f"missing{suffix}")
+        with patch("app.services.access_groups.send_group_welcome", return_value=True) as welcome:
+            added, already, missing = await seed_test_roster(db, usernames=handles, notify=True)
+        assert added == 2
+        assert already == 0
+        assert missing == 1
+        assert welcome.call_count == 2
+
+        group = await get_group_by_slug(db, TEST_GROUP_SLUG)
+        assert group is not None
+        recipients = await get_announcement_recipients(db, group.group_id)
+        recipient_ids = {user.user_id for user in recipients}
+        assert nikita.user_id in recipient_ids
+        assert lera.user_id in recipient_ids
+        assert outsider.user_id not in recipient_ids
+
+        with patch("app.services.access_groups.send_group_welcome", return_value=True) as welcome2:
+            added2, already2, missing2 = await seed_test_roster(db, usernames=handles, notify=True)
+        assert added2 == 0
+        assert already2 == 2
+        assert missing2 == 1
+        welcome2.assert_not_called()
+
+
+def test_test_seed_usernames_are_the_operators():
+    assert TEST_SEED_USERNAMES == ("niktrishin", "lerakayde")
 
 
 @pytest.mark.asyncio

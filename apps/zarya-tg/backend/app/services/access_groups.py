@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 
 from aiogram import Bot
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -12,7 +12,14 @@ from app.models.event import Event
 from app.models.group_membership import GroupMembership
 from app.models.user import User
 from app.services.telegram_delivery import deliver_bot_message
-from app.schema_updates import CORE_GROUP_NAME, CORE_GROUP_SLUG, CORE_SEED_USER_IDS
+from app.schema_updates import (
+    CORE_GROUP_NAME,
+    CORE_GROUP_SLUG,
+    CORE_SEED_USER_IDS,
+    TEST_GROUP_NAME,
+    TEST_GROUP_SLUG,
+    TEST_SEED_USERNAMES,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,15 +57,19 @@ async def get_group_by_slug(db: AsyncSession, slug: str) -> AccessGroup | None:
     return result.scalar_one_or_none()
 
 
-async def ensure_core_group(db: AsyncSession) -> AccessGroup:
-    group = await get_group_by_slug(db, CORE_GROUP_SLUG)
+async def ensure_group(db: AsyncSession, slug: str, name: str) -> AccessGroup:
+    group = await get_group_by_slug(db, slug)
     if group is not None:
         return group
-    group = AccessGroup(slug=CORE_GROUP_SLUG, name=CORE_GROUP_NAME)
+    group = AccessGroup(slug=slug, name=name)
     db.add(group)
     await db.commit()
     await db.refresh(group)
     return group
+
+
+async def ensure_core_group(db: AsyncSession) -> AccessGroup:
+    return await ensure_group(db, CORE_GROUP_SLUG, CORE_GROUP_NAME)
 
 
 async def user_group_ids(db: AsyncSession, user_id: int) -> set[int]:
@@ -218,6 +229,78 @@ def audience_label(group: AccessGroup | None) -> str:
     return group.name
 
 
+def normalize_telegram_username(value: str) -> str:
+    return value.strip().lstrip("@").lower()
+
+
+async def _users_by_ids(
+    db: AsyncSession, user_ids: tuple[int, ...] | list[int], *, label: str
+) -> tuple[list[User], int]:
+    found: list[User] = []
+    missing = 0
+    for user_id in user_ids:
+        result = await db.execute(select(User).where(User.user_id == user_id))
+        user = result.scalar_one_or_none()
+        if user is None:
+            missing += 1
+            logger.warning("%s roster: user_id=%s not found, skipped", label, user_id)
+            continue
+        found.append(user)
+    return found, missing
+
+
+async def _users_by_usernames(
+    db: AsyncSession, usernames: tuple[str, ...] | list[str], *, label: str
+) -> tuple[list[User], int]:
+    found: list[User] = []
+    seen: set[int] = set()
+    missing = 0
+    for raw in usernames:
+        username = normalize_telegram_username(raw)
+        if not username:
+            continue
+        result = await db.execute(select(User).where(func.lower(User.username) == username))
+        matches = list(result.scalars().all())
+        if not matches:
+            missing += 1
+            logger.warning("%s roster: username=%s not found, skipped", label, username)
+            continue
+        for user in matches:
+            if user.user_id in seen:
+                continue
+            seen.add(user.user_id)
+            found.append(user)
+    return found, missing
+
+
+async def _apply_roster(
+    db: AsyncSession,
+    group: AccessGroup,
+    users: list[User],
+    *,
+    missing: int,
+    notify: bool,
+    label: str,
+) -> tuple[int, int, int]:
+    added = 0
+    already = 0
+    for user in users:
+        _, created = await add_user_to_group(db, user, group, source="admin", notify=notify)
+        if created:
+            added += 1
+        else:
+            already += 1
+    logger.info(
+        "%s roster seed: added=%s already=%s missing=%s notify=%s",
+        label,
+        added,
+        already,
+        missing,
+        notify,
+    )
+    return added, already, missing
+
+
 async def seed_core_roster(
     db: AsyncSession,
     *,
@@ -231,26 +314,22 @@ async def seed_core_roster(
     """
     group = await ensure_core_group(db)
     ids = tuple(user_ids) if user_ids is not None else CORE_SEED_USER_IDS
-    added = 0
-    already = 0
-    missing = 0
-    for user_id in ids:
-        result = await db.execute(select(User).where(User.user_id == user_id))
-        user = result.scalar_one_or_none()
-        if user is None:
-            missing += 1
-            logger.warning("Core roster: user_id=%s not found, skipped", user_id)
-            continue
-        _, created = await add_user_to_group(db, user, group, source="admin", notify=notify)
-        if created:
-            added += 1
-        else:
-            already += 1
-    logger.info(
-        "Core roster seed: added=%s already=%s missing=%s notify=%s",
-        added,
-        already,
-        missing,
-        notify,
-    )
-    return added, already, missing
+    users, missing = await _users_by_ids(db, ids, label="Core")
+    return await _apply_roster(db, group, users, missing=missing, notify=notify, label="Core")
+
+
+async def seed_test_roster(
+    db: AsyncSession,
+    *,
+    usernames: tuple[str, ...] | list[str] | None = None,
+    notify: bool = True,
+) -> tuple[int, int, int]:
+    """Ensure Test membership for configured Telegram usernames.
+
+    Returns (added, already_member, missing_user).
+    Welcome DMs are sent only for newly created memberships when notify=True.
+    """
+    group = await ensure_group(db, TEST_GROUP_SLUG, TEST_GROUP_NAME)
+    handles = tuple(usernames) if usernames is not None else TEST_SEED_USERNAMES
+    users, missing = await _users_by_usernames(db, handles, label="Test")
+    return await _apply_roster(db, group, users, missing=missing, notify=notify, label="Test")

@@ -76,3 +76,12 @@ Codes will redeem into `group_memberships` with `source=access_code`. T-201 rema
 - Creating a Core event with notify after seed of `user_id=1` only messages Core members (initially that one user if no further roster).
 - Agent / CI smoke must not run production «notify all» against the live bot; prefer unit tests and scoped group notify for manual post-release checks.
 - Future access-code UI plugs into the same membership rows.
+
+## Addendum (2026-10-18): Test audience
+
+Operators need a second named group, **Test**, so a new-event post or a group broadcast can be checked on a fixed pair of people before it goes to Core or to everyone.
+
+- Seed `slug=test`, `name=Test`, same way as Core. The bot audience picker and «Написать группе» list every access group, so Test appears without a new screen.
+- Roster is Telegram usernames `niktrishin` and `lerakayde` (`TEST_SEED_USERNAMES`), applied at startup by `seed_test_roster`. Match is case-insensitive and ignores a leading `@`.
+- Same welcome rule as Core: one DM on first join, nothing on later restarts. A handle that is not in `users` yet is skipped and retried on the next startup (the person must `/start` the bot first).
+- Test uses the existing group rules: posts go only to members, the event is hidden from everyone else, no +1, no share. Admins still see the event in the Mini App without being auto-added to the recipient list.

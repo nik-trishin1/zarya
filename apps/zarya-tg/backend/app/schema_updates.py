@@ -6,6 +6,8 @@ from sqlalchemy.engine import Connection
 
 CORE_GROUP_SLUG = "core"
 CORE_GROUP_NAME = "Core"
+TEST_GROUP_SLUG = "test"
+TEST_GROUP_NAME = "Test"
 # Internal users.user_id values for Core (ops-provided). Membership is applied at
 # app startup via access_groups.seed_core_roster (welcome DM for newly added only).
 CORE_SEED_USER_IDS: tuple[int, ...] = (
@@ -27,6 +29,12 @@ CORE_SEED_USER_IDS: tuple[int, ...] = (
     20,
     22,
     26,
+)
+# Telegram usernames (no @) for the Test audience. Resolved at startup via
+# access_groups.seed_test_roster. A handle is skipped until that user has /start'd the bot.
+TEST_SEED_USERNAMES: tuple[str, ...] = (
+    "niktrishin",
+    "lerakayde",
 )
 # Back-compat alias used by older tests/docs.
 OPERATOR_SEED_USER_ID = 1
@@ -114,7 +122,8 @@ def apply_schema_updates(connection: Connection) -> None:
         "ALTER TABLE events ADD COLUMN price_currency VARCHAR(3)",
     )
     _seed_event_capacity_limits(connection)
-    _seed_core_access_group(connection)
+    _seed_access_group(connection, CORE_GROUP_SLUG, CORE_GROUP_NAME)
+    _seed_access_group(connection, TEST_GROUP_SLUG, TEST_GROUP_NAME)
 
 
 def _seed_event_capacity_limits(connection: Connection) -> None:
@@ -129,8 +138,8 @@ def _seed_event_capacity_limits(connection: Connection) -> None:
     )
 
 
-def _seed_core_access_group(connection: Connection) -> None:
-    """Ensure Core group row exists. Roster membership is applied at app startup."""
+def _seed_access_group(connection: Connection, slug: str, name: str) -> None:
+    """Ensure one access-group row exists. Roster membership is applied at app startup."""
     inspector = inspect(connection)
     tables = set(inspector.get_table_names())
     if "access_groups" not in tables:
@@ -138,10 +147,10 @@ def _seed_core_access_group(connection: Connection) -> None:
 
     existing = connection.execute(
         text("SELECT group_id FROM access_groups WHERE slug = :slug"),
-        {"slug": CORE_GROUP_SLUG},
+        {"slug": slug},
     ).fetchone()
     if existing is None:
         connection.execute(
             text("INSERT INTO access_groups (slug, name) VALUES (:slug, :name)"),
-            {"slug": CORE_GROUP_SLUG, "name": CORE_GROUP_NAME},
+            {"slug": slug, "name": name},
         )
