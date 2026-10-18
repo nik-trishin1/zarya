@@ -83,6 +83,7 @@
   line-height: 1.5;
   margin: 20px 0 24px;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .event-details__description .linkified-text__link {

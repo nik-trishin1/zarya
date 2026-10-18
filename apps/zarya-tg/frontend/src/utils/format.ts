@@ -131,7 +131,7 @@ export function canTakeSeats(
 
 export function formatEventSeats(registrationCount: number, maxParticipants: number | null | undefined): string {
   if (hasGuestLimit(maxParticipants)) {
-    return `Гостей: ${registrationCount} из ${maxParticipants} + Плюша`;
+    return `Гостей: ${registrationCount} из ${maxParticipants}`;
   }
-  return `Гостей: ${registrationCount} + Плюша`;
+  return `Гостей: ${registrationCount}`;
 }

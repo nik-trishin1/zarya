@@ -36,7 +36,7 @@ This document captures key context and completed work so a new session/chat can 
 
 - Capacity and UI
   - Event capacity limit (`max_participants`, `is_full`) with blocking at full.
-  - Guest count label on frontend: always shows “+ Плюша”, e.g. “Гостей: 1 из 20 + Плюша” or “Гостей: 1 + Плюша”.
+  - Guest count label matches ADR-012: «Гостей: X из Y» or «Гостей: N».
 
 - Deploy/Infra
   - `.dockerignore` added for backend and frontend to slim Railway builds.
@@ -49,7 +49,7 @@ This document captures key context and completed work so a new session/chat can 
   - `frontend/src/utils/deepLink.ts` — deep link builders (startapp + startApp), optional short name.
   - `frontend/src/utils/telegram.ts` — `openTelegramShareLink` via `t.me/share/url`.
   - `frontend/src/components/EventDetails.tsx` — share button and message format.
-  - `frontend/src/utils/format.ts` — guest count label (“+ Плюша”).
+  - `frontend/src/utils/format.ts` — guest count label (ADR-012).
 
 - Backend
   - `backend/app/services/telegram_links.py` — unified deep link + share text helpers.

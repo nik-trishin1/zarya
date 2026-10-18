@@ -35,7 +35,16 @@ from app.bot.keyboards import (
     skip_price_keyboard,
 )
 from app.bot.participants import format_participants_message
-from app.bot.parsers import format_capacity_ru, format_date_ru, format_guest_count, format_time_ru, parse_capacity, parse_date, parse_time
+from app.bot.parsers import (
+    format_capacity_ru,
+    format_date_ru,
+    format_guest_count,
+    format_time_ru,
+    parse_capacity,
+    parse_date,
+    parse_time,
+    plain_user_text,
+)
 from app.bot.states import AdminStates
 from app.config import get_settings
 from app.utils.pricing import format_event_price, parse_ruble_price
@@ -126,6 +135,11 @@ def _event_price_line(event) -> str:
         getattr(event, "price_currency", None),
     )
     return f"{label}\n" if label else ""
+
+
+def _description_line(description: str | None) -> str:
+    text = (description or "").strip()
+    return text if text else "—"
 
 
 async def _save_cover_from_message(message: Message, content: bytes, filename: str) -> str | None:
@@ -569,7 +583,11 @@ async def create_skip_price(callback: CallbackQuery, state: FSMContext):
 
 @router.message(AdminStates.CREATE_DESCRIPTION)
 async def create_description(message: Message, state: FSMContext):
-    await state.update_data(description=(message.text or "").strip())
+    description = plain_user_text(message.text, message.caption)
+    if not description:
+        await message.answer("Введите описание события текстом:")
+        return
+    await state.update_data(description=description)
     await state.set_state(AdminStates.CREATE_CAPACITY)
     await message.answer(
         "Введите лимит мест (число) или выберите «Без лимита»:",
@@ -760,7 +778,7 @@ async def show_create_confirm(message: Message, state: FSMContext, edit: bool = 
         f"📅 {format_date_ru(event_date)}, {format_time_ru(event_time)}\n"
         f"📍 {data['location']}\n"
         f"{_price_confirm_line(data)}"
-        f"📝 {data.get('description', '')}\n"
+        f"📝 {_description_line(data.get('description'))}\n"
         f"👥 Лимит мест: {format_capacity_ru(data.get('max_participants'))}\n"
         f"⏳ Запись: {approval_label}\n"
         f"🔐 Аудитория: {audience_name}\n"
@@ -994,8 +1012,8 @@ async def admin_archive_event_detail(callback: CallbackQuery, state: FSMContext)
         f"{_event_price_line(event)}"
         f"Аудитория: {audience_label(group)}\n"
         f"{format_guest_count(reg_count, event.max_participants)}\n"
-        f"Статус: Завершено\n\n"
-        f"{event.description}"
+        f"Статус: Завершено\n"
+        f"Описание: {_description_line(event.description)}"
     )
     await state.set_state(AdminStates.ARCHIVE_DETAIL)
     await state.update_data(event_id=event_id, archive_context=True)
@@ -1050,8 +1068,8 @@ async def admin_event_detail(callback: CallbackQuery, state: FSMContext):
         f"Место: {event.location}\n"
         f"{_event_price_line(event)}"
         f"Аудитория: {audience_label(group)}\n"
-        f"{format_guest_count(reg_count, event.max_participants)}\n\n"
-        f"{event.description}"
+        f"{format_guest_count(reg_count, event.max_participants)}\n"
+        f"Описание: {_description_line(event.description)}"
     )
     await state.set_state(AdminStates.MANAGE_DETAIL)
     await state.update_data(event_id=event_id)
@@ -1702,7 +1720,14 @@ async def edit_skip_price(callback: CallbackQuery, state: FSMContext):
 
 @router.message(AdminStates.EDIT_DESCRIPTION)
 async def edit_description(message: Message, state: FSMContext):
-    await state.update_data(description=(message.text or "").strip())
+    description = plain_user_text(message.text, message.caption)
+    if not description:
+        await message.answer(
+            "Введите описание текстом или нажмите «Оставить»:",
+            reply_markup=edit_keep_keyboard(),
+        )
+        return
+    await state.update_data(description=description)
     await _prompt_edit_featured(message, state)
 
 
@@ -1760,7 +1785,7 @@ async def show_edit_confirm(message: Message, state: FSMContext, edit: bool = Fa
         f"📅 {format_date_ru(event_date)}, {format_time_ru(event_time)}\n"
         f"📍 {data['location']}\n"
         f"{_price_confirm_line(data)}"
-        f"📝 {data.get('description', '')}\n"
+        f"📝 {_description_line(data.get('description'))}\n"
         f"🖼️ Слайдер: {featured_label}\n"
     )
     await state.set_state(AdminStates.EDIT_CONFIRM)

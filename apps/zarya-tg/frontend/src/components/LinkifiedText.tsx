@@ -15,7 +15,7 @@ export function LinkifiedText({ text, className }: LinkifiedTextProps) {
   const segments = linkifyText(trimmed);
 
   return (
-    <p className={className}>
+    <div className={className}>
       {segments.map((segment, index) => {
         if (segment.type === "text") {
           return <span key={index}>{segment.value}</span>;
@@ -35,6 +35,6 @@ export function LinkifiedText({ text, className }: LinkifiedTextProps) {
           </a>
         );
       })}
-    </p>
+    </div>
   );
 }

@@ -56,6 +56,11 @@ def format_capacity_ru(max_participants: int | None) -> str:
     return str(max_participants)
 
 
+def plain_user_text(text: str | None, caption: str | None = None) -> str:
+    """Plain body of a Telegram message. Captions count: a photo-only send has no text."""
+    return (text or caption or "").strip()
+
+
 def format_guest_count(reg_count: int, max_participants: int | None) -> str:
     if max_participants is not None:
         return f"Гостей: {reg_count} из {max_participants}"

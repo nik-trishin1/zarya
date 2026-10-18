@@ -53,8 +53,21 @@ def test_build_new_event_announcement_ends_with_share_block():
     assert "📌 Встреча у озера ·" in message
     assert "📍 Москва" in message
     link = build_event_startapp_link("zarya_friends_bot", 42)
-    assert message.endswith(build_event_share_text("Встреча у озера", link, "Возьмите плед."))
+    share = build_event_share_text("Встреча у озера", link, "")
+    assert message.endswith(share)
+    assert message.index("Возьмите плед.") < message.index(link)
     assert message.count("Возьмите плед.") == 1
+
+
+def test_build_new_event_announcement_keeps_link_after_long_description():
+    event = _event()
+    event.description = "А" * 800
+    message = build_new_event_announcement(event, "zarya_friends_bot")
+    link = build_event_startapp_link("zarya_friends_bot", 42)
+    assert message.index("А") < message.index(link)
+    assert message.endswith(link)
+    assert "А" * 499 in message
+    assert "А" * 500 not in message
 
 
 def test_build_new_event_announcement_omits_empty_description():

@@ -25,12 +25,19 @@ def build_new_event_announcement(event: Event, bot_username: str) -> str:
     if price_label:
         parts.append(price_label)
 
+    description = (event.description or "").strip()
+    if len(description) > MAX_DESCRIPTION_LENGTH:
+        description = description[: MAX_DESCRIPTION_LENGTH - 1].rstrip() + "…"
+    if description:
+        parts.append(description)
+
     link = build_event_startapp_link(
         bot_username,
         event.event_id,
         app_short_name=get_settings().bot_app_short_name or None,
     )
-    parts.append(build_event_share_text(event.name, link, event.description or ""))
+    # Link block stays last so a Telegram preview does not cover the description.
+    parts.append(build_event_share_text(event.name, link, ""))
 
     message = "\n\n".join(parts)
     if len(message) > TELEGRAM_MESSAGE_LIMIT:
