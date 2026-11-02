@@ -18,6 +18,10 @@ Process only: verify and document. No feature work from this list. Status as of 
 | 8 | Triage bugs from the pilot | **unknown** (blocked by 7) | One backlog line per bug in [`tasks.md`](tasks.md); bugfixes skip NMT/DoR. |
 | 9 | Optional: Cursor Automation `factory-implement` | **gap (optional)** | Not created. Prompt and operator checklist: [`process/ai-factory/ORCHESTRATOR.md`](../../../process/ai-factory/ORCHESTRATOR.md). Dry-run on one DoR ticket first; no ticket is DoR-ready today (`tasks.md`). |
 
+## After ship (each product change with a user-visible claim)
+
+- [ ] Open a followthrough row ([`process/ai-factory/FOLLOWTHROUGH.md`](../../../process/ai-factory/FOLLOWTHROUGH.md)): baseline, expected effect, check-by date, owner. Record the verdict `keep` / `tweak` / `rollback` after the check.
+
 ## Order
 
 1 → 5 (owner, short) → 6 → 7 → 8. Item 9 waits until a DoR-ready ticket exists.

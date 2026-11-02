@@ -21,8 +21,9 @@ AI-Factory (`process/ai-factory/`) + Next Move Theory (`.cursor/skills/product-h
    - [ ] License allows use.
    An LLM audit prompt or scanner may help find issues; its verdict is advisory. The human owns the security decision.
 3. **Install** into a branch, not `main`. Vendored copy with attribution (like `matt-pocock-productivity/`), not a live fetch.
-4. **A/B on one real task.** Same ticket with and without the skill. Compare: tokens, review-pass result, rework, conflicts with existing skills.
+4. **A/B on one real task, from a clean slate.** Run each arm in a fresh cloud agent or CI job with no local skills, caches, or env from the author's machine; "works for me" does not count. Same ticket with and without the skill. Compare: tokens, review-pass result, rework, conflicts with existing skills.
 5. **Decide and record.** Keep, adapt, or remove. Add a short note (why, result, owner) next to the skill; keep it out of always-applied rules.
+6. **Reflect.** When a human corrects the same agent mistake twice, turn it into a precise rule or skill update (same SOP: one change per PR, no always-apply bloat) instead of repeating it in chat.
 
 ## Rules
 

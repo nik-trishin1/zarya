@@ -8,6 +8,8 @@ Minimum gates before a factory ticket can be `done`.
 2. **Lint + production build** for the touched frontend/app layer.
 3. **PR template** checklist filled (ticket link, verification, review pass).
 
+CI is the clean slate: a fresh runner with no author-machine state. A green local run does not replace a green CI run.
+
 ## Railway runtime log scan (recommended)
 
 When the project deploys on Railway, CI should also **pull recent deploy (and optionally HTTP) logs** and fail on error signatures. This catches production/staging breakage that unit tests miss.
