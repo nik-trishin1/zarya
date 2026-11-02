@@ -33,6 +33,12 @@ Reply with: PASS / FAIL, findings, and required fixes before merge.
 Do not implement fixes unless asked.
 ```
 
+## Clean slate and verified findings
+
+- **Clean slate.** "Works on the author's machine" is not shipped. Reviewers run checks from a fresh checkout (new cloud agent or CI), not the implementer's working tree or env.
+- **Verify, don't rubber-stamp.** Every reviewer finding (agent, Bugbot, or human) is reproduced by execution (test, command, log) or disproven with evidence before it is accepted or dismissed. Unverified findings are noted as such and do not block merge on their own.
+- **Reflect.** If the same correction appears in two reviews, update a rule or skill (see `SKILL_INSTALL.md` step 6), not only the chat.
+
 ## Rule
 
 Implementation agents set ticket status to `in_review` and request this pass.
