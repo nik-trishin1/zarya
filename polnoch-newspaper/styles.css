@@ -1,0 +1,952 @@
+/* Screen proof for the Polnoch festival newspaper. Sizes are print units. */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("fonts/Oswald-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Noto Sans";
+  src: url("fonts/NotoSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Noto Sans";
+  src: url("fonts/NotoSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  /* Light paper: ink goes to type and accents, not to full-page fills. */
+  --bg: #ffffff;
+  --bg-2: #ffffff;
+  --ink: #0a0d17;
+  --muted: #495167;
+  --line: #c5cad6;
+  --amber: #c9842a;
+  --clay: #d86f57;
+  --on-amber: #0a0d17;
+  --side: 16mm;
+  --top: 15mm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #e8e6e0;
+  color: var(--ink);
+}
+
+@page {
+  size: 210mm 297mm;
+  margin: 0;
+}
+
+.page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  break-after: page;
+  page-break-after: always;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.page:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.sheet {
+  height: 100%;
+  padding: var(--top) var(--side) 12mm;
+  display: flex;
+  flex-direction: column;
+}
+
+.kicker {
+  margin: 0 0 3.2mm;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 7.4pt;
+  line-height: 1.3;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.kicker-row {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  margin: 0 0 3.2mm;
+}
+
+.kicker-row .kicker {
+  margin: 0;
+}
+
+h2 {
+  margin: 0 0 6mm;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 26pt;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.prose p {
+  margin: 0 0 3.2mm;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-weight: 400;
+  font-size: 10pt;
+  line-height: 13.2pt;
+  color: var(--ink);
+  hyphens: manual;
+}
+
+.clip {
+  font-weight: 500;
+  color: var(--amber);
+}
+
+.drop {
+  float: left;
+  margin: 0.4mm 1.6mm 0 0;
+  font-family: "Oswald", "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 32pt;
+  line-height: 0.78;
+  color: var(--amber);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9mm;
+  align-items: start;
+}
+
+.card {
+  position: relative;
+  background: var(--bg-2);
+  border: 0.5pt solid var(--line);
+  border-radius: 3mm;
+  padding: 3.4mm 4mm 3.6mm;
+}
+
+.card-kicker {
+  margin: 0 0 2.6mm;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 7.2pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.card p,
+.card li {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 10pt;
+  line-height: 13pt;
+  color: var(--ink);
+}
+
+.params {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: param;
+}
+
+.params li {
+  counter-increment: param;
+  display: grid;
+  grid-template-columns: 5.5mm 1fr;
+  gap: 1.5mm;
+  margin: 0 0 2.2mm;
+  font-family: "Noto Sans", sans-serif;
+  font-size: 10pt;
+  line-height: 13pt;
+  color: var(--ink);
+}
+
+.params li:last-child {
+  margin-bottom: 0;
+}
+
+.params li::before {
+  content: counter(param);
+  color: var(--amber);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.grow {
+  flex: 1 1 auto;
+}
+
+.closer {
+  margin-top: auto;
+  padding-top: 5mm;
+  text-align: center;
+}
+
+.closer p {
+  margin: 1.6mm 0 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 11pt;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.closer.strata p {
+  text-transform: none;
+  letter-spacing: 0.03em;
+  font-size: 7.6pt;
+  color: var(--muted);
+}
+
+.folio {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 4mm;
+  padding-top: 1.8mm;
+  border-top: 0.4pt solid var(--line);
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 6.8pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.reg {
+  display: inline-grid;
+  place-items: center;
+  width: 6.2mm;
+  height: 6.2mm;
+  border: 0.45pt solid var(--amber);
+  color: var(--amber);
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 9pt;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.reg.quiet {
+  width: 5.2mm;
+  height: 5.2mm;
+  font-size: 8pt;
+  opacity: 0.9;
+  position: absolute;
+  top: 2.4mm;
+  right: 2.4mm;
+}
+
+.reg.strong {
+  width: 9mm;
+  height: 9mm;
+  font-size: 13pt;
+}
+
+/* Cover — dark photo stays; type stays light on top of it. */
+
+.cover {
+  background: #0a0d17;
+  color: #f3f0e8;
+}
+
+.cover-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.cover-top,
+.cover-mid,
+.cover-bottom {
+  position: absolute;
+  left: 16mm;
+  right: 16mm;
+  z-index: 1;
+}
+
+.cover-top {
+  top: 13mm;
+}
+
+.cover .kicker {
+  color: #e4a44b;
+}
+
+.cover h1 {
+  margin: 1.2mm 0 1.6mm;
+  font-family: "Oswald", "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 56pt;
+  line-height: 0.86;
+  letter-spacing: 0.045em;
+  color: #f3f0e8;
+}
+
+.cover .date {
+  margin: 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 12pt;
+  letter-spacing: 0.14em;
+  color: #e4a44b;
+}
+
+.cover .place {
+  margin: 1.2mm 0 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 400;
+  font-size: 10pt;
+  letter-spacing: 0.04em;
+  color: #bec4d1;
+}
+
+.cover-mid {
+  top: 74mm;
+  display: flex;
+  align-items: center;
+  gap: 3.5mm;
+  margin: 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 9.5pt;
+  letter-spacing: 0.12em;
+  color: #e4a44b;
+}
+
+.cover-mid::before,
+.cover-mid::after {
+  content: "";
+  flex: 1;
+  height: 0.45pt;
+  background: rgba(228, 164, 75, 0.7);
+}
+
+.cover-bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16mm 16mm 9mm;
+  background: linear-gradient(to top, rgba(10, 13, 23, 0.88) 0%, rgba(10, 13, 23, 0.45) 58%, rgba(10, 13, 23, 0) 100%);
+}
+
+.cover-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 7.4pt;
+  letter-spacing: 0.08em;
+  color: #bec4d1;
+}
+
+.cover-signal {
+  margin: 2.4mm 0 0;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-size: 10pt;
+  line-height: 13pt;
+  color: #f3f0e8;
+}
+
+/* Page 3 strata */
+
+.strata svg {
+  display: block;
+  width: 100%;
+  height: 16mm;
+}
+
+.strata p {
+  margin: 1.4mm 0 0;
+  text-align: center;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 7.4pt;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.observe {
+  margin-top: 5mm;
+}
+
+.observe p {
+  margin: 0;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-size: 10pt;
+  line-height: 13.2pt;
+  color: var(--ink);
+}
+
+/* Page 4 collage */
+
+.lab-head {
+  display: flex;
+  flex-direction: column;
+}
+
+.scissors {
+  width: 5.5mm;
+  height: 5.5mm;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.workshop .when {
+  margin: 0 0 1mm;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 10pt;
+  letter-spacing: 0.06em;
+  color: var(--amber);
+}
+
+.workshop .what {
+  margin: 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 14pt;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.workshop .who {
+  margin: 1.4mm 0 0;
+  font-family: "Noto Sans", sans-serif;
+  font-size: 9.5pt;
+  line-height: 12pt;
+  color: var(--muted);
+}
+
+.collage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 108mm;
+  margin-top: 7mm;
+}
+
+.frame {
+  position: absolute;
+  top: 0;
+  right: 2mm;
+  width: 112mm;
+  height: 86mm;
+  padding: 2.2mm;
+  background: var(--bg-2);
+  border: 0.5pt solid var(--line);
+  border-radius: 2mm;
+  transform: rotate(-1.4deg);
+}
+
+.frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.globe {
+  position: absolute;
+  left: 0;
+  bottom: 12mm;
+  width: 74mm;
+  height: 74mm;
+}
+
+.expedition {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 6.8pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Page 5 coordinates */
+
+.shared {
+  margin: 0 0 2.4mm;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-size: 10pt;
+  line-height: 13pt;
+  color: var(--ink);
+}
+
+.coords {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.coords li {
+  display: grid;
+  grid-template-columns: 24mm 1fr;
+  gap: 3mm;
+  padding: 1.7mm 0;
+  border-top: 0.4pt solid var(--line);
+  font-family: "Noto Sans", sans-serif;
+  font-size: 10.5pt;
+  line-height: 13pt;
+}
+
+.coords li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.coords strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.coords span {
+  color: var(--muted);
+}
+
+/* Schedule */
+
+.day {
+  margin: 0 0 4.5mm;
+}
+
+.day h3 {
+  margin: 0 0 1.5mm;
+  padding-bottom: 1.2mm;
+  border-bottom: 0.5pt solid var(--amber);
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 16pt;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.slot {
+  display: grid;
+  grid-template-columns: 34mm 1fr;
+  column-gap: 4mm;
+  align-items: baseline;
+  padding: 1.55mm 0;
+  border-bottom: 0.35pt solid rgba(73, 81, 103, 0.85);
+}
+
+.slot time {
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 10.5pt;
+  line-height: 13pt;
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.slot span {
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 400;
+  font-size: 10.5pt;
+  line-height: 13pt;
+  color: var(--ink);
+}
+
+.schedule-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8mm;
+  padding-top: 5mm;
+}
+
+.schedule-foot .card {
+  max-width: 128mm;
+}
+
+.schedule-foot .card p {
+  margin: 0;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-size: 10pt;
+  line-height: 13.2pt;
+}
+
+.plate {
+  margin-top: 4.5mm;
+  flex: 1 1 auto;
+  min-height: 46mm;
+  display: flex;
+  flex-direction: column;
+  padding: 2.2mm;
+  background: var(--bg-2);
+  border: 0.5pt solid var(--line);
+  border-radius: 2mm;
+}
+
+.plate img {
+  display: block;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 40mm;
+  object-fit: cover;
+}
+
+.plate figcaption {
+  margin: 1.5mm 0 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 6.8pt;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Page 3: set type, not a photograph. Do not flex-grow. */
+
+.archive-quote {
+  margin: 6mm 0 0;
+  flex: 0 0 auto;
+  padding: 1mm 0 1mm 5.5mm;
+  border-left: 1.6pt solid var(--amber);
+}
+
+.archive-quote p {
+  margin: 0;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 12pt;
+  line-height: 15.6pt;
+  color: var(--ink);
+}
+
+.archive-quote span {
+  display: block;
+  margin: 0 0 2.4mm;
+  font-family: "Noto Sans", sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 8.2pt;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--amber);
+}
+
+.archive-quote cite {
+  display: block;
+  margin-top: 3.2mm;
+  font-family: "Noto Sans", sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 7.2pt;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* Page 5: small orbit mark, not a photograph. */
+
+.orbit-mark {
+  margin: 8mm 0 0 2mm;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 28mm;
+}
+
+.orbit-mark svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Page 7: compact xerox schematic, not a plate. */
+
+.schematic {
+  margin: 8mm 0 2mm;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 112mm;
+  padding: 3.2mm 4mm 2.8mm;
+  background: #f7f2e8;
+  border: 0.55pt solid var(--line);
+  transform: rotate(-2.4deg);
+  transform-origin: left center;
+}
+
+.schematic svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.schematic figcaption {
+  margin: 1.6mm 0 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 6.6pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3c3934;
+}
+
+.schematic + .folio {
+  margin-top: auto;
+}
+
+/* Page 7 */
+
+.board p.line {
+  margin: 0;
+  padding: 1.8mm 0;
+  border-top: 0.4pt solid var(--line);
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 10pt;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+
+.board p.line:last-child {
+  border-bottom: 0.4pt solid var(--line);
+}
+
+.service p {
+  margin: 0;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-size: 10pt;
+  line-height: 13.2pt;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4.5mm;
+  margin-top: 5mm;
+}
+
+/* Page 8 protocols */
+
+.protocol {
+  margin: 0 0 3.6mm;
+  padding-bottom: 3mm;
+  border-bottom: 0.35pt solid rgba(73, 81, 103, 0.9);
+}
+
+.protocol h3 {
+  margin: 0 0 1.3mm;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 8pt;
+  letter-spacing: 0.04em;
+  color: var(--amber);
+}
+
+.protocol blockquote {
+  margin: 0 0 1.3mm;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-size: 10.5pt;
+  line-height: 13.4pt;
+  color: var(--ink);
+}
+
+.protocol blockquote p {
+  margin: 0 0 1.2mm;
+}
+
+.protocol blockquote p:last-child {
+  margin: 0;
+}
+
+.decision {
+  margin: 0;
+  font-family: "Inter", "Noto Sans", sans-serif;
+  font-style: italic;
+  font-size: 8pt;
+  line-height: 10.4pt;
+  color: var(--muted);
+}
+
+.proto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  grid-auto-flow: column;
+  gap: 0 8mm;
+  align-items: start;
+}
+
+.letter-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4mm;
+  min-height: 100%;
+}
+
+.bath {
+  margin-top: 3.2mm;
+}
+
+.bath .card-kicker {
+  margin-bottom: 1.4mm;
+}
+
+.bath p {
+  margin: 0;
+  font-family: "Noto Serif", serif;
+  font-size: 10pt;
+  line-height: 12.8pt;
+  color: var(--ink);
+}
+
+.letter {
+  margin-top: auto;
+  width: 100%;
+  background: var(--amber);
+  color: var(--on-amber);
+  border-radius: 3mm;
+  padding: 4.5mm 5mm 5mm;
+}
+
+.letter-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 3mm;
+}
+
+.letter h3 {
+  margin: 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 12pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-amber);
+}
+
+.bang {
+  font-family: "Oswald", "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 22pt;
+  line-height: 0.7;
+  color: #7a3426;
+}
+
+.letter .ask,
+.letter .greet,
+.letter .open {
+  font-family: "Noto Sans", sans-serif;
+  color: var(--on-amber);
+}
+
+.letter .ask {
+  margin: 2.2mm 0 1mm;
+  max-width: 150mm;
+  font-size: 11pt;
+  line-height: 14pt;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8mm;
+  margin: 4mm 0 3.5mm;
+}
+
+.lines i {
+  display: block;
+  border-bottom: 0.9pt solid var(--on-amber);
+  height: 0;
+}
+
+.letter .open {
+  margin: 0;
+  font-size: 8.5pt;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+.signal {
+  margin: 3mm 0 0;
+  font-family: "Noto Sans", sans-serif;
+  font-weight: 700;
+  font-size: 6.8pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.signal b {
+  color: var(--clay);
+  font-weight: 700;
+}
+
+@media screen {
+  body {
+    padding: 10mm 0;
+  }
+
+  .page {
+    margin: 0 auto 8mm;
+    box-shadow: 0 0 0 0.4pt #b8bcc8;
+  }
+}
