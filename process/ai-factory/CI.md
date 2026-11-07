@@ -7,6 +7,7 @@ Minimum gates before a factory ticket can be `done`.
 1. **Automated tests** for the touched backend/services layer (e.g. `pytest`).
 2. **Lint + production build** for the touched frontend/app layer.
 3. **PR template** checklist filled (ticket link, verification, review pass).
+4. **Copy contract** when the PR changes user-facing strings: a test fails if that string drifts from the spec. Lint and a production build do not check copy. In zarya-tg the guest line and the description step are pinned in `apps/zarya-tg/backend/tests/test_copy_contract.py`.
 
 CI is the clean slate: a fresh runner with no author-machine state. A green local run does not replace a green CI run.
 
