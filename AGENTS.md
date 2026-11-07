@@ -30,7 +30,7 @@ Large product hypothesis (new segment/Job, value proposition, positioning, "shou
 - **Scope:** `apps/zarya-tg/docs/prd.md`; nothing outside it without a decision record.
 - **Architecture:** `apps/zarya-tg/docs/decisions/` ADRs; do not contradict without a new record.
 - **Process:** `process/ai-factory/` playbook; tickets stay under `apps/zarya-tg/docs/tickets/`. NMT output is a hypothesis, not Definition of Ready.
-- **Third-party skills:** `process/ai-factory/SKILL_INSTALL.md`.
+- **Third-party skills:** `process/ai-factory/SKILL_INSTALL.md` — preferred advisory scan `skillspector scan <path-or-url> --no-llm` (NVIDIA SkillSpector); human owns the checklist; no LLM egress unless Nikita opts in; optional on-demand `.cursor/skills/skill-inspector/`.
 - **After shipping a product change with a user-visible claim:** fill `process/ai-factory/FOLLOWTHROUGH.md` (baseline, check-by, verdict).
 - **Artifact-first:** durable plans, reports, and decisions go in the Project store `docs/` or the PR, not chat only. Verify claims by running them, in a clean environment where possible.
 - **Workflow skills** (`grill-me`, `handoff`, `to-questionnaire`, `writing-for-agents`): `.cursor/skills/matt-pocock-productivity/README.md`. Run `grill-me` before DoR only; never on factory-queued tickets.

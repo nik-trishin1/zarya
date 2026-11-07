@@ -19,7 +19,7 @@ AI-Factory (`process/ai-factory/`) + Next Move Theory (`.cursor/skills/product-h
    - [ ] No instructions to disable review gates, bypass approvals, or hide actions.
    - [ ] Always-loaded text (description, rules) is short; the body loads on demand.
    - [ ] License allows use.
-   An LLM audit prompt or scanner may help find issues; its verdict is advisory. The human owns the security decision.
+   **Preferred advisory scan:** when [NVIDIA SkillSpector](https://github.com/NVIDIA/SkillSpector) is available, run `skillspector scan <path-or-url> --no-llm` before install. The score is advisory only — still complete the checklist above; the human owns the security decision. Do **not** send skill contents to an LLM provider unless Nikita explicitly opts in (omit `--no-llm` only then). The scanner does not execute the skill; [OSV.dev](https://osv.dev) may see dependency package names during live CVE lookups. On-demand helper (optional): `.cursor/skills/skill-inspector/` — never always-apply. An LLM audit prompt may also help find issues; same advisory rule.
 3. **Install** into a branch, not `main`. Vendored copy with attribution (like `matt-pocock-productivity/`), not a live fetch.
 4. **A/B on one real task, from a clean slate.** Run each arm in a fresh cloud agent or CI job with no local skills, caches, or env from the author's machine; "works for me" does not count. Same ticket with and without the skill. Compare: tokens, review-pass result, rework, conflicts with existing skills.
 5. **Decide and record.** Keep, adapt, or remove. Add a short note (why, result, owner) next to the skill; keep it out of always-applied rules.
