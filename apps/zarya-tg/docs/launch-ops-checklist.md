@@ -20,7 +20,7 @@ Process only: verify and document. No feature work from this list. Status as of 
 
 ## After ship (each product change with a user-visible claim)
 
-- [ ] Open a followthrough row ([`process/ai-factory/FOLLOWTHROUGH.md`](../../../process/ai-factory/FOLLOWTHROUGH.md)): baseline, expected effect, check-by date, owner. Record the verdict `keep` / `tweak` / `rollback` after the check.
+- [ ] Open a followthrough row in Project store `docs/followthrough/<change-id>.md` (template: [`process/ai-factory/FOLLOWTHROUGH.md`](../../../process/ai-factory/FOLLOWTHROUGH.md)): baseline, expected effect, check-by date, owner. Link that path from the PR and ticket; record the verdict `keep` / `tweak` / `rollback` in the same store file after the check (do not leave the only copy in a closed PR body).
 
 ## Order
 
