@@ -28,6 +28,7 @@ Checks:
 4. Are user-facing strings in the product language? Comments in English (if that is the repo rule)?
 5. Are tests/lint/CI adequate?
 6. If Railway log scan ran — any new runtime errors related to this change?
+7. Do changed user-facing strings match the owning ADR or PRD, with a test that fails if they drift? Lint and a green build do not check copy.
 
 Reply with: PASS / FAIL, findings, and required fixes before merge.
 Do not implement fixes unless asked.
