@@ -25,6 +25,14 @@ AI-Factory (`process/ai-factory/`) + Next Move Theory (`.cursor/skills/product-h
 5. **Decide and record.** Keep, adapt, or remove. Add a short note (why, result, owner) next to the skill; keep it out of always-applied rules.
 6. **Reflect.** When a human corrects the same agent mistake twice, turn it into a precise rule or skill update (same SOP: one change per PR, no always-apply bloat) instead of repeating it in chat.
 
+## After install / remove / rename
+
+Refresh the Project store inventory so Nikita’s skill map stays current (the inventory lives outside git):
+
+1. Update Project store `docs/skills-knowledge.md` (tables, counts, Out-of-boundary).
+2. If the inventory’s claim set changed materially, re-run `.cursor/skills/quality-check/` on the inventory and refresh `docs/skills-audit-quality-check.md` (or replace the dated audit input).
+3. Keep product SoT under `apps/zarya-tg/docs/`; do not copy the full inventory there.
+
 ## Rules
 
 - One skill per PR; no bundles.
