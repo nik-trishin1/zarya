@@ -24,7 +24,7 @@ Humans review that summary **before** enqueueing implementation. Agents treat an
 | [`REVIEW_PASS.md`](REVIEW_PASS.md) | Separate post-implement review |
 | [`ORCHESTRATOR.md`](ORCHESTRATOR.md) | Cursor Automation / Cloud Agent wiring |
 | [`SKILL_INSTALL.md`](SKILL_INSTALL.md) | Audit SOP for third-party skills; Superpowers/GSD not default |
-| [`FOLLOWTHROUGH.md`](FOLLOWTHROUGH.md) | Post-ship check for product changes that claim an effect (baseline, check-by, verdict) |
+| [`FOLLOWTHROUGH.md`](FOLLOWTHROUGH.md) | Post-ship check for product changes that claim an effect (baseline, check-by, verdict). Preferred home: Project store `docs/followthrough/<change-id>.md` |
 | [`CI.md`](CI.md) | Required CI gates including optional Railway log scan |
 | [`scripts/check-railway-logs.sh`](scripts/check-railway-logs.sh) | Portable Railway deploy/HTTP log scanner |
 
@@ -36,4 +36,4 @@ Humans review that summary **before** enqueueing implementation. Agents treat an
 4. Agent implements → local checks → PR.
 5. CI green (tests + lint/build + Railway log scan when configured).
 6. Separate review pass → human merges.
-7. After ship, if the change claims a user-visible effect: followthrough row (`FOLLOWTHROUGH.md`), verdict `keep` / `tweak` / `rollback`.
+7. After ship, if the change claims a user-visible effect: followthrough row in Project store `docs/followthrough/<change-id>.md` (`FOLLOWTHROUGH.md`), link from PR/ticket, verdict `keep` / `tweak` / `rollback` in that file.
