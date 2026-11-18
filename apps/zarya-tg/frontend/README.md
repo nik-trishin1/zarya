@@ -1,73 +1,35 @@
-# React + TypeScript + Vite
+# zarya-tg frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 18 + TypeScript Telegram Mini App (Vite). Local: `npm install && npm run dev` (see app root `scripts/dev-local.sh`).
 
-Currently, two official plugins are available:
+## Module map
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Path | Role |
+|------|------|
+| `src/main.tsx` | Vite entry; mounts `App` |
+| `src/App.tsx` | Shell: header, screen switch, selected-event overlay |
+| `src/routes.tsx` | Home / registrations screen bodies + empty states |
+| `src/hooks/useEventsCache.ts` | Screen data fetch, per-screen cache, registration count |
+| `src/hooks/useTelegram.ts` | Telegram WebApp ready/theme/safe-area |
+| `src/api/client.ts` | REST client + `Event` types |
+| `src/components/Header.tsx` | Top bar + 🎫/🏠 nav pill |
+| `src/components/EventCard.tsx` | List row (home / my / archive) |
+| `src/components/PosterSlider.tsx` | Featured home posters |
+| `src/components/EventDetails.tsx` | Event overlay orchestrator (fetch + handlers) |
+| `src/components/EventDetailsHeader.tsx` | Title, fact rows, description |
+| `src/components/EventDetailsRegistration.tsx` | RSVP circles + +1 chip |
+| `src/components/EventDetailsActions.tsx` | Cancel / share / calendar |
+| `src/components/CoverImage.tsx` | Cover / placeholder image |
+| `src/components/LinkifiedText.tsx` | Description linkify |
+| `src/components/icons.tsx` | Shared SVG icons |
+| `src/utils/deepLink.ts` | Start param + share links |
+| `src/utils/format.ts` | Dates, seats, day groups |
+| `src/utils/telegram.ts` | Init data, haptics, share sheet |
+| `src/utils/calendar.ts` | `.ics` / prefilled calendar |
+| `src/utils/theme.ts` | Theme CSS variables |
+| `src/utils/linkify.ts` | URL detection for descriptions |
 
-## React Compiler
+## Scripts
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `npm run lint` — ESLint
+- `npm run build` — `tsc -b` + Vite production build
