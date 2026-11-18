@@ -1,0 +1,10 @@
+# Vendored Next Move Theory (load via explicit path when needed)
+Next-Move-Theory-Canon/
+.agents/
+.claude/
+NextMoveTheory-README.md
+
+# Design deliverables / media (not needed for agent code search)
+apps/zarya-tg/docs/deliverables/
+apps/zarya-tg/docs/assets/
+**/*.png

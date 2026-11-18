@@ -22,7 +22,7 @@ The official installer writes these paths (keep the canon folder name exact — 
 | `.cursor/skills/nmt-*` | Same Codex-flavored skills, copied for Cursor discovery |
 | `.cursor/skills/product-hypothesis/` | Cursor front door / router (this repo) |
 | `AGENTS.md` / `CLAUDE.md` | Installer injects a rules block between `<!-- Next-Move-Theory-Rules:… -->` markers; zarya removes it (token cost) — see Install / update |
-| `NextMoveTheory-README.md` | Upstream README, renamed so it does not clobber the project README |
+| `process/next-move-theory/NextMoveTheory-README.md` | Upstream README, renamed and kept here so it does not clobber the project README |
 
 Cursor-specific extras in this repo:
 
@@ -63,7 +63,7 @@ curl -fsSL https://nextmovetheory.com/install.sh | bash
 bash process/next-move-theory/sync-cursor-skills.sh
 ```
 
-The first command refreshes the canon, `.claude/skills`, `.agents/skills`, `NextMoveTheory-README.md`, `.nmt-version`, and the marked rules blocks (project text outside the markers is kept). The second copies Codex skills into `.cursor/skills/` and **does not** delete `product-hypothesis`.
+The first command refreshes the canon, `.claude/skills`, `.agents/skills`, root `NextMoveTheory-README.md`, `.nmt-version`, and the marked rules blocks (project text outside the markers is kept). After install, move the root README into this folder (`process/next-move-theory/NextMoveTheory-README.md`) — root `.cursorignore` excludes the root copy if the installer recreates it. The second copies Codex skills into `.cursor/skills/` and **does not** delete `product-hypothesis`.
 
 Alternatively invoke the vendored `nmt-upgrade` skill, then run the sync script.
 
