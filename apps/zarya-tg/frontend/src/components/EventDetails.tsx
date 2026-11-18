@@ -8,26 +8,12 @@ import {
   registerForEvent,
   updateRegistrationPartySize,
 } from "../api/client";
-import { CoverImage } from "./CoverImage";
-import {
-  IconCalendar,
-  IconCheck,
-  IconClock,
-  IconPause,
-  IconPin,
-  IconShare,
-  IconTag,
-  IconUsers,
-} from "./icons";
 import { buildEventShareLink, formatShareMessage } from "../utils/deepLink";
-import {
-  canTakeSeats,
-  formatEventDate,
-  formatEventSeats,
-  isEventPast,
-} from "../utils/format";
 import { hapticImpact, openTelegramShareLink } from "../utils/telegram";
-import { LinkifiedText } from "./LinkifiedText";
+import { CoverImage } from "./CoverImage";
+import { EventDetailsActions } from "./EventDetailsActions";
+import { EventDetailsHeader } from "./EventDetailsHeader";
+import { EventDetailsRegistration } from "./EventDetailsRegistration";
 import "./EventDetails.css";
 
 interface EventDetailsProps {
@@ -176,213 +162,35 @@ export function EventDetails({ eventId, readOnly = false, onClose, onRegistratio
     );
   }
 
-  const past = event.is_past ?? isEventPast(event.date);
-  const isMaybe = event.is_maybe === true && !event.is_registered && !event.is_pending;
-  const isPending = event.is_pending === true && !event.is_registered;
-  const requiresApproval = event.requires_approval === true;
   const archiveView = readOnly;
-  const goingBlocked = past || (event.is_full ?? false);
-  const allowsPlusOne = event.allows_plus_one !== false;
-  const allowsSharing = event.allows_sharing !== false;
-  const canRegisterAlone =
-    !past &&
-    !(event.is_full ?? false) &&
-    canTakeSeats(event.registration_count, event.max_participants, 1);
-  const canRegisterPlusOne =
-    allowsPlusOne &&
-    !past &&
-    !(event.is_full ?? false) &&
-    canTakeSeats(event.registration_count, event.max_participants, 2);
-  const canAddPlusOne =
-    allowsPlusOne &&
-    event.is_registered &&
-    event.party_size === 1 &&
-    !past &&
-    canTakeSeats(event.registration_count, event.max_participants, 1);
-  const hasPlusOne = event.is_registered && event.party_size > 1;
-  const goingDisabled =
-    actionLoading || (!event.is_registered && !isPending && !canRegisterAlone);
-  const canMarkMaybe = !past && !event.is_registered && !isPending;
-  const showRsvp = !archiveView && (!past || event.is_registered || isMaybe || isPending);
-  const showMaybeCircle = showRsvp && !event.is_registered && !isPending;
-  const goingCaption = isPending
-    ? "На рассмотрении"
-    : requiresApproval && !event.is_registered
-      ? "Записаться"
-      : "Буду";
-  const showPlusOneChip = allowsPlusOne && !isPending;
-
-  const plusOneDisabled = event.is_registered
-    ? actionLoading || past || (!hasPlusOne && !canAddPlusOne)
-    : actionLoading || !canRegisterPlusOne;
-  const plusOneTitle = event.is_registered
-    ? !hasPlusOne && !canAddPlusOne
-      ? "Недостаточно мест для +1"
-      : undefined
-    : !canRegisterPlusOne
-      ? "Недостаточно мест для +1"
-      : undefined;
 
   return (
     <div className="event-details">
       {backControl}
 
+      {/* Cover stays outside `.event-details__body` (same layout as before the split). */}
       <CoverImage url={event.cover_image_url} className="event-details__cover" />
 
       <div className="event-details__body">
-        <h2 className="event-details__title">{event.name}</h2>
-
-        <div className="event-details__rows">
-          <div className="event-details__row">
-            <IconClock size={18} />
-            <span>{formatEventDate(event.date, event.time)}</span>
-          </div>
-          {event.location ? (
-            <div className="event-details__row">
-              <IconPin size={18} />
-              <span>{event.location}</span>
-            </div>
-          ) : null}
-          {event.price_label ? (
-            <div className="event-details__row event-details__row--price">
-              <IconTag size={18} />
-              <span>{event.price_label}</span>
-            </div>
-          ) : null}
-          <div className="event-details__row">
-            <IconUsers size={18} />
-            <span>{formatEventSeats(event.registration_count, event.max_participants)}</span>
-          </div>
-        </div>
-
-        <LinkifiedText className="event-details__description" text={event.description} />
+        <EventDetailsHeader event={event} />
 
         <div className="event-details__actions">
           {archiveView ? null : (
             <>
-              {past && !event.is_registered && !isPending && (
-                <div className="event-details__past">Событие прошло</div>
-              )}
-              {goingBlocked && !past && !event.is_registered && !isMaybe && !isPending && (
-                <div className="event-details__past">Мест нет</div>
-              )}
-
-              {showRsvp && (
-                <div className="rsvp">
-                  <div className="rsvp__row">
-                    <div className="rsvp__option">
-                      <button
-                        type="button"
-                        className={`rsvp__circle rsvp__circle--going${event.is_registered ? " rsvp__circle--selected" : ""}${isPending ? " rsvp__circle--pending rsvp__circle--selected" : ""}`}
-                        onClick={() => {
-                          if (!event.is_registered && !isPending) {
-                            void handleRegister(1);
-                          }
-                        }}
-                        disabled={goingDisabled}
-                        aria-pressed={event.is_registered || isPending}
-                        aria-label={goingCaption}
-                      >
-                        <IconCheck size={24} />
-                      </button>
-                      <span className="rsvp__caption">{goingCaption}</span>
-                      {showPlusOneChip && (
-                        <button
-                          type="button"
-                          className={`rsvp__chip${hasPlusOne ? " rsvp__chip--active" : ""}`}
-                          onClick={() => {
-                            if (event.is_registered) {
-                              void handlePartySizeChange(hasPlusOne ? 1 : 2);
-                            } else {
-                              void handleRegister(2);
-                            }
-                          }}
-                          disabled={plusOneDisabled}
-                          title={plusOneTitle}
-                          aria-label={hasPlusOne ? "Убрать +1" : "+1"}
-                        >
-                          {hasPlusOne ? "Убрать +1" : "+1"}
-                        </button>
-                      )}
-                    </div>
-
-                    {showMaybeCircle && (
-                      <div className="rsvp__option">
-                        <button
-                          type="button"
-                          className={`rsvp__circle rsvp__circle--maybe${isMaybe ? " rsvp__circle--selected" : ""}`}
-                          onClick={() => {
-                            if (!isMaybe) {
-                              void handleMaybe();
-                            }
-                          }}
-                          disabled={actionLoading || (!isMaybe && !canMarkMaybe)}
-                          aria-pressed={isMaybe}
-                          aria-label="Подумаю"
-                        >
-                          <IconPause size={22} />
-                        </button>
-                        <span className="rsvp__caption">Подумаю</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {event.is_registered && (
-                <>
-                  <button
-                    type="button"
-                    className="btn btn--ghost"
-                    onClick={() => void handleCancel()}
-                    disabled={actionLoading}
-                  >
-                    Отменить регистрацию
-                  </button>
-                  <div className="event-details__icon-row">
-                    {allowsSharing && (
-                      <button
-                        type="button"
-                        className="icon-btn"
-                        onClick={() => void handleShare()}
-                        aria-label="Поделиться"
-                      >
-                        <IconShare size={18} />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="icon-btn"
-                      onClick={() => void handleCalendar()}
-                      aria-label="В календарь"
-                    >
-                      <IconCalendar size={18} />
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {isPending && (
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={() => void handleCancel()}
-                  disabled={actionLoading}
-                >
-                  Отменить заявку
-                </button>
-              )}
-
-              {isMaybe && (
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={() => void handleCancel()}
-                  disabled={actionLoading}
-                >
-                  Решил, что не пойду
-                </button>
-              )}
+              <EventDetailsRegistration
+                event={event}
+                actionLoading={actionLoading}
+                onRegister={(partySize) => void handleRegister(partySize)}
+                onPartySizeChange={(partySize) => void handlePartySizeChange(partySize)}
+                onMaybe={() => void handleMaybe()}
+              />
+              <EventDetailsActions
+                event={event}
+                actionLoading={actionLoading}
+                onCancel={() => void handleCancel()}
+                onShare={() => void handleShare()}
+                onCalendar={() => void handleCalendar()}
+              />
             </>
           )}
         </div>
