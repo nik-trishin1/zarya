@@ -10,20 +10,22 @@ alwaysApply: false
 
 # Next Move Theory — large product hypotheses
 
-Portable copy. After copying `process/` into a repo, also copy this file to `.cursor/rules/next-move-theory.mdc` and install the canon + skills (see `process/next-move-theory/README.md`).
-
 When the task is a **large product bet** (who to serve, which Jobs to compete for, whether to build, how to position, how to grow, or why a strategic metric is broken), do **not** answer from generic Jobs To Be Done in training data and do **not** jump to tickets or code.
 
-**Read and follow** `.cursor/skills/product-hypothesis/SKILL.md` first (Cursor). That skill routes to the vendored `nmt-*` skills and `Next-Move-Theory-Canon/`.
+**Read and follow** `.cursor/skills/product-hypothesis/SKILL.md` first. That skill routes to the vendored `nmt-*` skills under `.cursor/skills/` and the canon under `Next-Move-Theory-Canon/`.
+
+## Why this exists
+
+Ivan Zamesin's **Advanced Jobs To Be Done / Next Move Theory** diverges from Christensen / Ulwick / Moesta JTBD. The working theses are in `Next-Move-Theory-Canon/Advanced-Jobs-To-Be-Done/ajtbd-key-theses.md` (read on demand; no longer inlined in `AGENTS.md` / `CLAUDE.md`). How this repo installs and updates them: `process/next-move-theory/README.md`.
 
 ## Cursor-specific behavior
 
 - Load `.cursor/skills/<nmt-skill>/SKILL.md` with the Read tool, then follow it.
 - Ask intake questions **in chat** (no `AskUserQuestion` / `request_user_input`).
-- Default artifacts: the consuming app's `docs/research/nmt/` (this repo: `apps/zarya-tg/docs/research/nmt/`). One Markdown file per run.
+- Default artifacts: `apps/zarya-tg/docs/research/nmt/` — one Markdown file per run. `Skills-Results/` is gitignored; do not use it unless asked.
 - Producer skills yield **hypotheses**. Name the riskiest assumption and the cheapest falsifying test before recommending a build.
-- NMT is **upstream of AI-Factory**. Do not implement from an NMT report in the same pass. Next: field evidence, then spec + ADR if scope changes, then DoR.
+- NMT is **upstream of AI-Factory**. Do not implement, expand MVP, or open factory tickets from an NMT report in the same pass. Next: field evidence, then spec (`process/ai-factory/SPEC_TEMPLATE.md`) + ADR if scope changes, then DoR.
 
 ## What is not a large hypothesis
 
-Factory-queued tickets, bugfixes, copy/UI polish, and implementing an already-approved spec stay on the existing AI-Factory / spec-driven path.
+Factory-queued tickets, bugfixes, copy/UI polish, and implementing an already-approved spec stay on the existing AI-Factory / spec-driven path. Do not drag those through the NMT pipeline.
