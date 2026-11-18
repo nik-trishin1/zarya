@@ -1,0 +1,28 @@
+---
+description: zarya always-on — factory loop, MVP bounds, git, clarify
+alwaysApply: true
+---
+# zarya core
+
+Monorepo for the **zarya** community platform. MVP: `apps/zarya-tg/` (Telegram Mini App). Stack: React 18 + TypeScript + Telegram Web App SDK · FastAPI + aiogram · PostgreSQL (Railway) · Docker.
+
+**Truth:** scope/AC `apps/zarya-tg/docs/prd.md` + ADRs in `docs/decisions/`; tickets `docs/tickets/`; playbook `process/ai-factory/`. Large product bets → NMT (`process/next-move-theory/`, `.cursor/skills/product-hypothesis/`) as research only until a spec/ADR — never silent MVP expansion. Paths: `frontend/`, `backend/`; queue `docs/tasks.md`.
+
+**MVP in:** event browse/register/cancel, .ics export, admin bot, Russian UI, reminders / announcements / broadcasts (ADRs 005/011/013/017).
+**MVP out** (need ADR): access codes / circle-tier, profiles, participant-list visibility, English i18n, T-304 public web.
+
+## Factory ticket loop
+
+1. Linked spec/ADR + approved **Human summary**; DoR (`DEFINITION_OF_READY.md`).
+2. Implement only that ticket; document safe defaults in the PR; no scope expand.
+3. Verify per ticket + `CI.md` (tests / lint / build; Railway log scan when configured).
+4. PR → ticket `in_review` → separate `REVIEW_PASS.md` (other agent, Bugbot, or human). Same-session self-check ≠ review. As reviewer: PASS/FAIL + findings only — no fixes unless asked.
+5. `done` only after review PASS + CI green.
+
+**Clarify vs factory:** Unclear target/intent → ask 1–2 questions before state-changing work. Factory-queued DoR tickets: prefer safe defaults consistent with the approved summary/spec/ADR (note under “Defaults chosen”); stop only if that would violate them.
+
+**Before finalize:** matches ticket/PRD AC + Human summary; Russian UI / English code+comments+commits; no secrets; next step clear. Flag uncertainty — do not paper over it.
+
+## Git
+
+Conventional commits `type(scope): …` (`feat|fix|chore|docs|refactor|test|style`); atomic; English; never secrets / `.env`. Branches `feat|fix|chore/…`; `main` always deployable. Check `git status` before commit.

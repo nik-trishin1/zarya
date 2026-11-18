@@ -15,7 +15,7 @@ artifacts (research, briefs, reports, strategies, ticket/spec reviews).
 
 After this protocol, request a separate review pass via
 `process/ai-factory/REVIEW_PASS.md`. Lightweight always-on checks:
-`.cursor/rules/self-check.mdc`. There is no `outbound-copy-review` in this
+`.cursor/rules/zarya-core.mdc` (finalize checks). There is no `outbound-copy-review` in this
 repo; Russian UI/bot copy stays Russian.
 
 Update from upstream (or re-sync from elavis):
