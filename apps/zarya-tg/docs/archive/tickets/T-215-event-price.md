@@ -32,7 +32,7 @@
 | ID | T-215 |
 | Title | Optional event price + fact-row emphasis |
 | Status | `done` |
-| Spec / ADR | [S-215](../specs/S-215-event-price.md), [ADR-026](../decisions/026-event-price.md); ADR-011 / ADR-024 addenda |
+| Spec / ADR | [S-215](../../specs/S-215-event-price.md), [ADR-026](../../decisions/026-event-price.md); ADR-011 / ADR-024 addenda |
 | App | `zarya-tg` |
 | Estimate | M |
 
@@ -71,7 +71,7 @@ Show an optional per-person ruble price consistently, and make event facts on th
 1. [x] `PYTHONPATH=. pytest -q` in `apps/zarya-tg/backend`
 2. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 3. [ ] CI green on the PR
-4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
+4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 

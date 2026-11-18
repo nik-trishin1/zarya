@@ -16,7 +16,7 @@
 - Put maybe users into calendar export or «Мои регистрации»
 - party_size / +1 while still maybe
 - Admin DM notify on mark «Подумаю» (ADR-005 stays going/cancel only)
-- Almost-full urgency nudges (deferred to [T-212](T-212-almost-full-maybe-nudge.md))
+- Almost-full urgency nudges (deferred to [T-212](../../tickets/T-212-almost-full-maybe-nudge.md))
 
 **Touched areas:** registrations model/API, Mini App event details + list badges, bot scheduler + inline callbacks, admin participant list, participant broadcast + 24h reminder recipients
 
@@ -34,7 +34,7 @@
 | ID | T-211 |
 | Title | Maybe RSVP («Подумаю») + delayed bot ping |
 | Status | `done` |
-| Spec / ADR | [ADR-022](../decisions/022-maybe-rsvp-delayed-ping.md); broadcast [ADR-007](../decisions/007-participant-broadcast.md); capacity [ADR-012](../decisions/012-event-capacity-limit.md); 24h reminder [ADR-013](../decisions/013-event-reminder-24h.md); party size [ADR-019](../decisions/019-registration-party-size.md); admin list [ADR-006](../decisions/006-admin-participant-list.md) |
+| Spec / ADR | [ADR-022](../../decisions/022-maybe-rsvp-delayed-ping.md); broadcast [ADR-007](../../decisions/007-participant-broadcast.md); capacity [ADR-012](../../decisions/012-event-capacity-limit.md); 24h reminder [ADR-013](../../decisions/013-event-reminder-24h.md); party size [ADR-019](../../decisions/019-registration-party-size.md); admin list [ADR-006](../../decisions/006-admin-participant-list.md) |
 | App | `zarya-tg` |
 | Estimate | M |
 
@@ -62,7 +62,7 @@ Let users park interest with «Подумаю» without taking a seat; nudge the
 - party_size / +1 while still maybe
 - Maybe in calendar export or «Мои регистрации»
 - Admin notify on mark maybe (ADR-005)
-- Almost-full / urgency nudges ([T-212](T-212-almost-full-maybe-nudge.md))
+- Almost-full / urgency nudges ([T-212](../../tickets/T-212-almost-full-maybe-nudge.md))
 - Dedicated maybe-only broadcast tool
 - Separate interest table
 

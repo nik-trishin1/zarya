@@ -28,7 +28,7 @@
 | ID | T-207 |
 | Title | Registration party size (+1) |
 | Status | `done` |
-| Spec / ADR | [ADR-019](../decisions/019-registration-party-size.md), capacity [ADR-012](../decisions/012-event-capacity-limit.md), admin list [ADR-006](../decisions/006-admin-participant-list.md) |
+| Spec / ADR | [ADR-019](../../decisions/019-registration-party-size.md), capacity [ADR-012](../../decisions/012-event-capacity-limit.md), admin list [ADR-006](../../decisions/006-admin-participant-list.md) |
 | App | `zarya-tg` |
 | Estimate | M |
 

@@ -85,7 +85,7 @@ Existing 24h reminders (ADR-013) only target **active** registrants, once per ev
 - Event API needs explicit RSVP for the current user (`maybe` vs going vs none); keep `is_registered == (status == active)` so calendar and existing clients stay correct.
 - Schema: `maybe` status plus a per-registration ping schedule (child rows preferred) via `create_all` + idempotent `schema_updates` as needed.
 - ADR-007 recipient set expands to active + maybe (see that ADR).
-- Implementation ticket: [T-211](../tickets/T-211-maybe-rsvp-delayed-ping.md).
+- Implementation ticket: [T-211](../archive/tickets/T-211-maybe-rsvp-delayed-ping.md).
 
 ## Addendum (ADR-025, 2026-08-18)
 

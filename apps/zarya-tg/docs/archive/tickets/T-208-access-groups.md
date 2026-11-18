@@ -33,7 +33,7 @@
 | ID | T-208 |
 | Title | Access groups for closed events |
 | Status | `done` |
-| Spec / ADR | [ADR-020](../decisions/020-access-groups.md) |
+| Spec / ADR | [ADR-020](../../decisions/020-access-groups.md) |
 | App | `zarya-tg` |
 | Estimate | L |
 

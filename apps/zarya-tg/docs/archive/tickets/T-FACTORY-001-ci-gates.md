@@ -30,7 +30,7 @@
 | ID | T-FACTORY-001 |
 | Title | CI gates + Railway log scan |
 | Status | `done` |
-| Spec / ADR | [process/ai-factory/CI.md](../../../../process/ai-factory/CI.md) |
+| Spec / ADR | [process/ai-factory/CI.md](../../../../../process/ai-factory/CI.md) |
 | Estimate | S |
 
 ## Goal

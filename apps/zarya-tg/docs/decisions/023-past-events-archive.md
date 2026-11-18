@@ -49,4 +49,4 @@ Iteration 2 ticket T-203 adds a read-only archive without restoring past events 
 
 - `get_upcoming_events` / `get_all_events_admin` stay upcoming-only; add parallel **past** queries for archive surfaces.
 - T-302 can attach «Дублировать» to admin archive detail without schema changes (load event by id).
-- Implementation: [T-203](../tickets/T-203-past-events-archive.md).
+- Implementation: [T-203](../archive/tickets/T-203-past-events-archive.md).

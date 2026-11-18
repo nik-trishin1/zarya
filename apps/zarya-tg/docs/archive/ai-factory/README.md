@@ -1,6 +1,6 @@
 # AI-Factory (zarya-tg)
 
-Project notes for the factory process. **Portable standards live in** [`process/ai-factory/`](../../../../process/ai-factory/).
+Project notes for the factory process. **Portable standards live in** [`process/ai-factory/`](../../../../../process/ai-factory/).
 
 | Doc | Location |
 |-----|----------|
@@ -11,7 +11,7 @@ Project notes for the factory process. **Portable standards live in** [`process/
 | Review pass | `process/ai-factory/REVIEW_PASS.md` |
 | Orchestrator | `process/ai-factory/ORCHESTRATOR.md` |
 | CI + Railway logs | `process/ai-factory/CI.md` |
-| zarya tickets | [`../tickets/`](../tickets/) |
+| zarya tickets | [`../../tickets/`](../../tickets/) |
 | Pilot review | [`PILOT_REVIEW.md`](PILOT_REVIEW.md) |
 
 ## Operator next steps

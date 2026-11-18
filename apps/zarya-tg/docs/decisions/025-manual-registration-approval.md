@@ -119,4 +119,4 @@ Unchanged: register → `active`; ADR-005 «будет на» / cancel copy; no 
 - Fourth RSVP status; all `active`-only helpers (capacity, calendar, `is_registered`) must ignore `pending`.
 - «Мои регистрации» / ticket badge must include upcoming `pending` as well as `active` (distinct badge).
 - ADR-005, ADR-006, ADR-007, ADR-013, ADR-022: see addenda on those files.
-- Spec: [S-213](../specs/S-213-manual-registration-approval.md). Tickets: [T-213](../tickets/T-213-approval-backend-bot.md), [T-214](../tickets/T-214-approval-mini-app.md).
+- Spec: [S-213](../specs/S-213-manual-registration-approval.md). Tickets: [T-213](../archive/tickets/T-213-approval-backend-bot.md), [T-214](../archive/tickets/T-214-approval-mini-app.md).

@@ -35,7 +35,7 @@
 | ID | T-220 |
 | Title | Luma-style event cards + date headers |
 | Status | `done` |
-| Spec / ADR | [S-024](../specs/S-024-mini-app-visual-refresh.md), [ADR-024](../decisions/024-mini-app-visual-language.md), [ADR-021](../decisions/021-home-featured-slider.md), [ADR-023](../decisions/023-past-events-archive.md) |
+| Spec / ADR | [S-024](../../specs/S-024-mini-app-visual-refresh.md), [ADR-024](../../decisions/024-mini-app-visual-language.md), [ADR-021](../../decisions/021-home-featured-slider.md), [ADR-023](../../decisions/023-past-events-archive.md) |
 | App | `zarya-tg` |
 | Estimate | M |
 
@@ -72,7 +72,7 @@ Make the chronological event list scannable like Luma’s compact rows without c
 1. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 2. [ ] Manual smoke: 0/1/N featured; going/maybe/plain/archive cards; 1-day vs 2-day lists
 3. [x] CI green on the PR
-4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md)) — PASS 2026-08-14 (second agent; product Telegram smoke still recommended)
+4. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../../process/ai-factory/REVIEW_PASS.md)) — PASS 2026-08-14 (second agent; product Telegram smoke still recommended)
 
 ## Handoff (when done)
 

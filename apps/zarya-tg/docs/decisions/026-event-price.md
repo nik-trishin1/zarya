@@ -90,4 +90,4 @@ RSVP green/amber remain RSVP-only (ADR-024).
 - Event JSON grows two nullable fields (and a label if centralized).
 - ADR-011 announcement template gains an optional price line.
 - ADR-024 details fact order and weight change; list cards may grow a third meta line.
-- Spec: [S-215](../specs/S-215-event-price.md). Ticket: [T-215](../tickets/T-215-event-price.md).
+- Spec: [S-215](../specs/S-215-event-price.md). Ticket: [T-215](../archive/tickets/T-215-event-price.md).

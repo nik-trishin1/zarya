@@ -30,7 +30,7 @@
 | ID | T-214 |
 | Title | Mini App registration approval UI |
 | Status | `done` |
-| Spec / ADR | [S-213](../specs/S-213-manual-registration-approval.md), [ADR-025](../decisions/025-manual-registration-approval.md), [ADR-024](../decisions/024-mini-app-visual-language.md) |
+| Spec / ADR | [S-213](../../specs/S-213-manual-registration-approval.md), [ADR-025](../../decisions/025-manual-registration-approval.md), [ADR-024](../../decisions/024-mini-app-visual-language.md) |
 | App | `zarya-tg` |
 | Estimate | S |
 
@@ -67,7 +67,7 @@ Make pending applications visible and controllable in the Mini App without treat
 
 1. [x] `npm run lint && npm run build` in `apps/zarya-tg/frontend`
 2. [ ] CI green on the PR
-3. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../process/ai-factory/REVIEW_PASS.md))
+3. [x] Separate review pass requested ([`REVIEW_PASS.md`](../../../../../process/ai-factory/REVIEW_PASS.md))
 
 ## Handoff (when done)
 

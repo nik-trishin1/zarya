@@ -41,7 +41,7 @@
 | ID | T-203 |
 | Title | Past events archive («Архив» / «Завершено») |
 | Status | `done` |
-| Spec / ADR | [ADR-023](../decisions/023-past-events-archive.md), extends [ADR-018](../decisions/018-hide-past-events.md) |
+| Spec / ADR | [ADR-023](../../decisions/023-past-events-archive.md), extends [ADR-018](../../decisions/018-hide-past-events.md) |
 | App | `zarya-tg` |
 | Estimate | M |
 
@@ -71,7 +71,7 @@ Users and admins can browse completed events without cluttering active lists.
 
 - `/admin` menu: add **«Архив»** (or under manage — product default: sibling to «Управлять событиями»)
 - List past events newest-first; tap → same detail layout as manage but **without** edit/delete/broadcast actions; keep **«Участники»**
-- Event rows remain keyed by `event_id` for future [T-302](T-302-event-duplication.md) «Дублировать» on this screen
+- Event rows remain keyed by `event_id` for future [T-302](../../tickets/T-302-event-duplication.md) «Дублировать» on this screen
 
 ## Acceptance Criteria
 
