@@ -10,12 +10,14 @@ from aiogram.exceptions import TelegramForbiddenError
 from aiogram.types import InlineKeyboardMarkup
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.database import async_session
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
+TELEGRAM_MESSAGE_LIMIT = 4096
 
 
 class DeliveryOutcome(str, Enum):
@@ -138,3 +140,32 @@ async def deliver_bot_messages_to_users(
             else:
                 failed += 1
     return sent, blocked, failed
+
+
+def truncate_telegram_message(message: str) -> str:
+    if len(message) > TELEGRAM_MESSAGE_LIMIT:
+        return message[: TELEGRAM_MESSAGE_LIMIT - 1] + "…"
+    return message
+
+
+async def send_configured_bot_broadcast(
+    users: list[User],
+    text: str,
+    *,
+    context: str,
+) -> tuple[int, int, int]:
+    """Create a Bot from settings, deliver `text` to all users, close the session.
+
+    Returns (sent_count, blocked_count, other_failed_count). Shared by
+    participant and all-users broadcast senders.
+    """
+    settings = get_settings()
+    if not settings.bot_token_configured or not users:
+        return 0, 0, 0
+
+    message = truncate_telegram_message(text)
+    bot = Bot(token=settings.bot_token.strip())
+    try:
+        return await deliver_bot_messages_to_users(bot, users, message, context=context)
+    finally:
+        await bot.session.close()
