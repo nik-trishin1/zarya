@@ -25,7 +25,7 @@
 | ID | T-212 |
 | Title | Almost-full nudge for maybe RSVPs |
 | Status | `todo` |
-| Spec / ADR | Follow-on to [ADR-022](../decisions/022-maybe-rsvp-delayed-ping.md) / [T-211](T-211-maybe-rsvp-delayed-ping.md); needs thin ADR addendum before factory |
+| Spec / ADR | Follow-on to [ADR-022](../decisions/022-maybe-rsvp-delayed-ping.md) / [T-211](../archive/tickets/T-211-maybe-rsvp-delayed-ping.md); needs thin ADR addendum before factory |
 | App | `zarya-tg` |
 | Estimate | S |
 | Priority | Low |

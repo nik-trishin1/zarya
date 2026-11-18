@@ -32,7 +32,7 @@
 | ID | T-FACTORY-002 |
 | Title | Portable AI-Factory process + human-readable specs |
 | Status | `done` |
-| Spec / ADR | [S-FACTORY-001](../specs/S-FACTORY-001-ai-factory-foundation.md) |
+| Spec / ADR | [S-FACTORY-001](../../specs/S-FACTORY-001-ai-factory-foundation.md) |
 | Estimate | M |
 
 ## Goal

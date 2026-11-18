@@ -158,4 +158,4 @@ Some events (festivals, paid trips) need a human gate after «I want to come» a
 
 ---
 
-**Tickets:** [T-213](../tickets/T-213-approval-backend-bot.md) backend + bot · [T-214](../tickets/T-214-approval-mini-app.md) Mini App
+**Tickets:** [T-213](../archive/tickets/T-213-approval-backend-bot.md) backend + bot · [T-214](../archive/tickets/T-214-approval-mini-app.md) Mini App

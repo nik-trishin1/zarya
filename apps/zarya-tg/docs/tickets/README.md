@@ -8,6 +8,8 @@ Project-specific tickets live here. **Templates and DoR are portable** — use:
 
 Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-09-16).
 
+Done tickets: [`../archive/tickets/`](../archive/tickets/).
+
 ## Index
 
 ### Open
@@ -29,22 +31,3 @@ Canonical backlog triage: [`../tasks.md`](../tasks.md) (refreshed 2026-09-16).
 |----|-------|--------|-----|
 | [T-202](T-202-propose-event.md) | Propose event | `cancelled` | n/a — deferred until demand (ADR-016, concierge A) |
 | [T-205](T-205-english-i18n.md) | English i18n | `cancelled` | n/a (Russian-only, ADR-003) |
-
-### Done
-
-| ID | Title | Status | DoR |
-|----|-------|--------|-----|
-| [T-FACTORY-001](T-FACTORY-001-ci-gates.md) | CI gates + Railway log scan | `done` | yes |
-| [T-FACTORY-002](T-FACTORY-002-portable-process.md) | Portable AI-Factory process | `done` | yes |
-| [T-207](T-207-registration-plus-one.md) | Registration party size (+1) | `done` | yes |
-| [T-208](T-208-access-groups.md) | Access groups | `done` | yes |
-| [T-209](T-209-is-featured-bot.md) | Backend `is_featured` + bot create/edit | `done` | yes |
-| [T-210](T-210-home-poster-slider.md) | Frontend home poster slider | `done` | yes |
-| [T-211](T-211-maybe-rsvp-delayed-ping.md) | Maybe RSVP («Подумаю») + delayed bot ping | `done` | yes |
-| [T-203](T-203-past-events-archive.md) | Past events archive | `done` | yes — DoR approved 2026-08-12 |
-| [T-220](T-220-luma-event-cards.md) | Luma-style event cards + date headers | `done` | yes |
-| [T-221](T-221-circular-rsvp-details.md) | Circular RSVP + event details chrome | `done` | yes |
-| [T-222](T-222-tokens-header-empty.md) | Tokens, header chrome, empty states | `done` | yes |
-| [T-213](T-213-approval-backend-bot.md) | Backend + bot registration approval | `done` | yes — production confirmed 2026-09-16 (PR #28) |
-| [T-214](T-214-approval-mini-app.md) | Mini App registration approval UI | `done` | yes — production confirmed 2026-09-16 (PR #28) |
-| [T-215](T-215-event-price.md) | Event price + fact-row emphasis | `done` | yes — production confirmed 2026-09-16 (PR #28) |

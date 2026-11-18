@@ -142,4 +142,4 @@ Applies even when price is absent (time/place/guests still stronger).
 
 ---
 
-**Ticket:** [T-215](../tickets/T-215-event-price.md)
+**Ticket:** [T-215](../archive/tickets/T-215-event-price.md)
