@@ -12,7 +12,7 @@ Vendored trees (do not re-license):
 - `.claude/skills/` (`nmt-*`, contracts)
 - `.agents/skills/` (`nmt-*`, contracts)
 - `.cursor/skills/nmt-*` (copy of the Codex skills for Cursor)
-- `NextMoveTheory-README.md`
+- `process/next-move-theory/NextMoveTheory-README.md`
 - The `<!-- Next-Move-Theory-Rules:start -->` … `end` blocks the installer injects into `AGENTS.md` and `CLAUDE.md` (not kept inline in zarya; see README)
 
 Original to this repository (not part of the upstream canon):
