@@ -56,7 +56,24 @@ Ordered for product triage — not a factory queue. Nothing below is factory-rea
 
 ### Ops / launch (Phase 4 leftovers)
 
-Tracked in [`launch-ops-checklist.md`](launch-ops-checklist.md) (Railway CI vars, webhook, deploy health, e2e, 20-user pilot, `factory-implement` automation).
+Tracked in [`launch-ops-checklist.md`](launch-ops-checklist.md) (Railway CI vars, webhook, deploy health, e2e, 20-user pilot, `factory-implement` automation). Pilot kit (invite text): [`pilot-kit.md`](pilot-kit.md).
+
+### Pilot bugs
+
+Bugs from the friend pilot go here directly — no DoR, no NMT, no new ticket file; fix on `fix/…` branches, small PR. Anything that is a feature request or touches MVP-out scope (access codes, profiles, participant list, English i18n, public web) is **not** a bug: note it under "Suggested next product decisions" instead.
+
+Severity: **P1** blocks register / cancel / reminders or loses data · **P2** wrong text/status, broken `.ics`, layout break on one platform · **P3** cosmetic / confusing wording.
+
+Add one row per bug at the bottom of the table below (newest last). Row template:
+
+```markdown
+| **PB-001** | P2 | <one-line summary, RU user wording ok> | <who> · <phone, OS> · <Mini App / bot / DM> · <YYYY-MM-DD HH:MM MSK> | 1. … 2. … → expected …, got … | <screenshot link / log line, no secrets> | `[ ]` |
+```
+
+Before adding: check for a duplicate row; reproduce or find the matching `be`/`fe` log line when possible; never paste tokens, init data or Telegram ids from logs.
+
+| ID | Sev | Summary | Reporter · device | Steps / expected vs actual | Evidence | Status |
+|----|-----|---------|-------------------|----------------------------|----------|--------|
 
 ---
 
